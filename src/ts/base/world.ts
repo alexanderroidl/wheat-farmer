@@ -1,31 +1,28 @@
 import EmptyTile from '../tiles/empty';
-import Tile from './tile';
 import PoppyTile from '../tiles/poppy';
 import Player from "./player";
+import TileInterface from 'interfaces/tile-interface';
 
 export default class World {
-    tiles: Tile[][];
-    createdAt: number;
+    tiles: TileInterface[][];
+    createdAt: number = Date.now();;
     player: Player = new Player();
 
     constructor () {
-        const tiles = Array(20).fill([]);
-
-        this.tiles = tiles.map((v) => {
+        this.tiles = Array(20).fill([]).map(() => {
             const emptyTile = new EmptyTile();
             return Array(20).fill(emptyTile);
         });
-
-        this.createdAt = Date.now();
     }
 
-    onTileClicked (tile: Tile, x: number, y: number) {
+    onTileClicked (tile: TileInterface, x: number, y: number) {
         tile.onClicked();
 
         if (tile instanceof EmptyTile) {
             if (this.player.items.poppySeeds > 0) {
-                this.tiles[y][x] = new PoppyTile();
                 this.player.items.poppySeeds--;
+
+                this.tiles[y][x] = new PoppyTile();
             }
         }
 
@@ -38,6 +35,5 @@ export default class World {
                 this.tiles[y][x] = new EmptyTile();
             }
         }
-
     }
 }

@@ -1,2 +1,2 @@
 import Game from "./base/game";
-new Game();
+Game.instance;

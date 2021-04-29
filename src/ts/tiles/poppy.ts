@@ -1,21 +1,16 @@
-import Tile from '../base/tile';
+import TileInterface from '../interfaces/tile-interface';
 
-export default class PoppyTile implements Tile {
+export default class PoppyTile implements TileInterface {
     readonly PUPPY_GROWTH_TIME = 10 * 1000;
     readonly PUPPY_MIN_SEED_DROP = 0;
     readonly PUPPY_MAX_SEED_DROP = 3;
 
-    timeCreated: number;
-
     name: string = "Poppy";
+    timeCreated: number = Date.now();
 
     get growthState () {
         const growth = (Date.now() - this.timeCreated) / this.PUPPY_GROWTH_TIME;
         return growth > 1 ? 1 : growth;
-    }
-
-    constructor () {
-        this.timeCreated = Date.now();
     }
 
     getChar (): string {
@@ -27,7 +22,6 @@ export default class PoppyTile implements Tile {
     }
 
     onClicked (): void {
-        //this.growthState++;
     }
 
     harvest (): number {

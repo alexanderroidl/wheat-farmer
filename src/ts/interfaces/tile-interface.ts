@@ -1,4 +1,4 @@
-export default interface Tile {
+export default interface TileInterface {
     readonly name: string;
     readonly timeCreated: number;
 

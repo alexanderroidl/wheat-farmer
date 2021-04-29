@@ -1,12 +1,8 @@
-import Tile from '../base/tile';
+import TileInterface from '../interfaces/tile-interface';
 
-export default class EmptyTile implements Tile {
+export default class EmptyTile implements TileInterface {
     name: string = "Empty";
-    timeCreated: number;
-
-    constructor () {
-        this.timeCreated = Date.now();
-    }
+    timeCreated: number = Date.now();
     
     getChar (): string {
         return 'x';
@@ -17,6 +13,5 @@ export default class EmptyTile implements Tile {
     }
 
     onClicked (): void {
-
     }
 }
