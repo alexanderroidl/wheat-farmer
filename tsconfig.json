@@ -1,0 +1,26 @@
+{
+	"files": [
+        "src/ts/index.ts"
+	],
+	"compilerOptions": {
+        "target": "es2018",
+        "lib": ["es2018", "dom"],
+		"moduleResolution": "node",
+		"allowJs": true,
+		"noEmit": false,
+		"strict": true,
+		"isolatedModules": false,
+		"esModuleInterop": true,
+		"baseUrl": "./src/ts",
+		"module": "commonjs",
+		"resolveJsonModule": true,
+		"removeComments": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"allowSyntheticDefaultImports": true,
+		"sourceMap": true
+	},
+	"include": [
+		"src/ts/**/*"
+	]
+}
