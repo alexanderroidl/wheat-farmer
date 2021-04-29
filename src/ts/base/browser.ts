@@ -7,6 +7,14 @@ export default class Browser {
     statsDisplay: HTMLDivElement = document.createElement('div');
     actionsDisplay: HTMLDivElement = document.createElement('div');
 
+    mouseDown: boolean = false;
+
+    onScroll = (delta: number): void => {};
+    onMouseDown = (x: number, y: number): void => {};
+    onMouseUp = (x: number, y: number): void => {};
+    onMouseMove = (x: number, y: number): void => {};
+    onMouseDrag = (x: number, y: number): void => {};
+
     constructor (world: World) {
         this.world = world;
         this.setupDOM();
@@ -51,32 +59,42 @@ export default class Browser {
             this.statsDisplay, 
             this.actionsDisplay
         );
-    }
 
-    renderWorld (): void {
-        this.grid.innerHTML = '';
+        // The flag that determines whether the wheel event is supported
+        let supportsWheel = false;
 
-        for (let y = 0; y < this.world.tiles.length; y++) {
-            const gridRow: HTMLTableRowElement = document.createElement('tr');
+        // The function that will run when the events are triggered
+        const wheelHandler = (e: any) => {
+            if (e.type == "wheel") supportsWheel = true;
+            else if (supportsWheel) return;
 
-            for (let x = 0; x < this.world.tiles[y].length; x++) {
-                const tile = this.world.tiles[y][x];
-
-                const gridCell: HTMLTableCellElement = document.createElement('td');
-                gridCell.style.width = `calc(100% / ${this.world.tiles[0].length})`;
-                gridCell.style.backgroundColor = tile.getHexColor();
-
-                gridCell.innerHTML = tile.getChar();
-
-                gridCell.addEventListener('click', (e) => {
-                    this.world.onTileClicked(tile, x, y);
-                    this.render();
-                });
-
-                gridRow.append(gridCell);
-            }
-            this.grid.append(gridRow);
+            const delta = ((e.deltaY || -e.wheelDelta || e.detail) >> 10) || 1;
+            this.onScroll(delta);
         }
+
+        // Add the event listeners for each event.
+        document.addEventListener('wheel', wheelHandler);
+        document.addEventListener('mousewheel', wheelHandler);
+        document.addEventListener('DOMMouseScroll', wheelHandler);
+        document.addEventListener('mousedown', (e) => {
+            this.mouseDown = true;
+            document.body.style.cursor = 'move';
+            this.onMouseDown(e.screenX, e.screenY);
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            this.mouseDown = false;
+            document.body.style.cursor = '';
+            this.onMouseUp(e.screenX, e.screenY);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            this.onMouseMove(e.screenX, e.screenY);
+
+            if (this.mouseDown) {
+                this.onMouseDrag(e.screenX, e.screenY);
+            }
+        })
     }
 
     renderStats (): void {
@@ -89,7 +107,7 @@ export default class Browser {
     }
 
     render (): void {
-        this.renderWorld();
+        //this.renderWorld();
         this.renderStats();
     }
 

@@ -13,6 +13,8 @@ export default class World {
             const emptyTile = new EmptyTile();
             return Array(20).fill(emptyTile);
         });
+
+        this.tiles[1][1] = new PoppyTile();
     }
 
     onTileClicked (tile: TileInterface, x: number, y: number) {
