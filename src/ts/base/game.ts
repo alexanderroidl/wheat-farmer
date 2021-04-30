@@ -9,7 +9,7 @@ export default class Game {
     private loop: GameLoop = new GameLoop();
     private renderer: Renderer = new Renderer();
     private world: World = new World();
-    private browser: Browser = new Browser(this.world);
+    private browser: Browser = new Browser();
 
     public static get instance () {
         if (!Game._instance) {
@@ -27,7 +27,7 @@ export default class Game {
         this.renderer.camera.setup(this.world.SIZE);
     }
 
-    setupMouse (): void {
+    private setupMouse (): void {
         let mouseDownX: number | null = null;
         let mouseDownY: number | null = null;
 
@@ -62,18 +62,18 @@ export default class Game {
         };
     }
 
-    setupWindow (): void {
+    private setupWindow (): void {
         this.browser.onResize = (width: number, height: number, oldWidth: number, oldHeight: number) => {
             // Todo: Add logic
         };
     }
 
-    setupLoop (): void {
+    private setupLoop (): void {
         this.loop.update = (delta: number) => {};
         this.loop.render = (interpolation: number) => {
             this.renderer.render(this.world);
 
-            this.browser.renderStats();
+            this.browser.renderStats(this.world);
 
             if (this.browser.getParameter('debug')) {
                 this.browser.renderDebug(this.renderer.camera);

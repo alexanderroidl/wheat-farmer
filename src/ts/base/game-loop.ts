@@ -1,21 +1,21 @@
 class GameLoop {
-    simulationStep = 1000 / 60;
-    frameDelta = 0;
-    lastFrameTimeMs = 0;
-    fps = 60;
-    lastFpsUpdate = 0;
-    framesThisSecond = 0;
-    numUpdateSteps = 0;
-    minFrameDelay = 0;
-    running = false;
-    started = false;
-    panic = false;
-    rafHandle?: number;
+    public simulationStep = 1000 / 60;
+    public frameDelta = 0;
+    public lastFrameTimeMs = 0;
+    public fps = 60;
+    public lastFpsUpdate = 0;
+    public framesThisSecond = 0;
+    public numUpdateSteps = 0;
+    public minFrameDelay = 0;
+    public running = false;
+    public started = false;
+    public panic = false;
+    public rafHandle?: number;
 
-    begin = (time: number, delta: number) => {};
-    end = (fps: number, panic: boolean) => {};
-    update = (delta: number) => {};
-    render = (interpolation: number) => {};
+    public begin = (time: number, delta: number) => {};
+    public end = (fps: number, panic: boolean) => {};
+    public update = (delta: number) => {};
+    public render = (interpolation: number) => {};
 
     constructor() {
         this.animate = this.animate.bind(this);
@@ -36,16 +36,17 @@ class GameLoop {
         }
     }
 
-    resetFrameDelta() {
+    public resetFrameDelta (): number {
         const frameDelta = this.frameDelta;
         this.frameDelta = 0;
         return frameDelta;
     }
 
-    start() {
+    public start (): void {
         if (this.started) {
             return;
         }
+        
         this.started = true;
         this.rafHandle = requestAnimationFrame((timestamp) => {
             this.render(1);
@@ -57,15 +58,16 @@ class GameLoop {
         })
     }
 
-    stop() {
+    public stop (): void {
         this.running = false;
         this.started = false;
+
         if (this.rafHandle) {
             cancelAnimationFrame(this.rafHandle);
         }
     }
 
-    animate(time: number) {
+    public animate (time: number): void {
         this.rafHandle = requestAnimationFrame(this.animate);
         if (time < this.lastFrameTimeMs + this.minFrameDelay) {
             return;

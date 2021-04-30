@@ -1,5 +1,5 @@
 export default class Util {
-  static leadZeros (value: number | string, size: number): number | string {
+  public static leadZeros (value: number | string, size: number): number | string {
     value = value.toString();
 
     while (value.length < size) {

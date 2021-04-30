@@ -1,7 +1,7 @@
 import Game from "./game";
 
 export default class Inventory {
-    poppySeeds: number = 0;
-    opium: number = 0;
-    money: number = 0;
+    public poppySeeds: number = 0;
+    public opium: number = 0;
+    public money: number = 0;
 }

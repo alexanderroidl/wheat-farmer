@@ -2,73 +2,56 @@ import World from "./world";
 import Camera from "./camera";
 
 export default class Browser {
-    world: World;
+    private _statsDisplay: HTMLDivElement = document.createElement('div');
 
-    grid: HTMLTableElement = document.createElement('table');
-    statsDisplay: HTMLDivElement = document.createElement('div');
-    actionsDisplay: HTMLDivElement = document.createElement('div');
+    private _mouseDown: boolean = false;
+    private _mouseX?: number;
+    private _mouseY?: number;
 
-    mouseDown: boolean = false;
-    mouseX?: number;
-    mouseY?: number;
-    oldWindowWidth: number = window.innerWidth;
-    oldWindowHeight: number = window.innerHeight;
+    private _oldWindowWidth: number = window.innerWidth;
+    private _oldWindowHeight: number = window.innerHeight;
 
-    onScroll = (delta: number): void => {};
-    onMouseDown = (x: number, y: number): void => {};
-    onMouseUp = (x: number, y: number): void => {};
-    onMouseMove = (x: number, y: number): void => {};
-    onMouseDrag = (x: number, y: number): void => {};
-    onMouseClick = (x: number, y: number): void => {};
-    onResize = (width: number, height: number, oldWidth: number, oldHeight: number): void => {};
-
-    constructor (world: World) {
-        this.world = world;
-        this.setupDOM();
+    get mouseDown () {
+        return this._mouseDown;
     }
 
-    setupDOM (): void {
-        // Grid and grid wrapper
-        this.grid.classList.add('grid');
+    get mouseX () {
+        return this._mouseX;
+    }
 
-        const gridWrapper = document.createElement('div');
-        gridWrapper.classList.add('grid-wrapper');
-        gridWrapper.append(this.grid);
+    get mouseY () {
+        return this._mouseY;
+    }
 
+    public onScroll = (delta: number): void => {};
+    public onMouseDown = (x: number, y: number): void => {};
+    public onMouseUp = (x: number, y: number): void => {};
+    public onMouseMove = (x: number, y: number): void => {};
+    public onMouseDrag = (x: number, y: number): void => {};
+    public onMouseClick = (x: number, y: number): void => {};
+    public onResize = (width: number, height: number, oldWidth: number, oldHeight: number): void => {};
+
+    constructor () {
+        this.setupDOM();
+        this.setupEvents();
+    }
+
+    private setupDOM (): void {
         // Stats display
-        this.statsDisplay.classList.add('gui');
-        this.statsDisplay.classList.add('stats-display');
-
-        // Buttons and actions display
-        const saveButton = document.createElement('button');
-        saveButton.innerHTML = 'Save';
-        saveButton.addEventListener('click', () => {
-            // Game.save();
-        });
-
-        const loadButton = document.createElement('button');
-        loadButton.innerHTML = 'Load';
-        loadButton.addEventListener('click', () => {
-           // Game.load();
-        });
-
-        this.actionsDisplay.classList.add('gui');
-        this.actionsDisplay.classList.add('actions-display');
-        //this.actionsDisplay.append(saveButton, loadButton);
+        this._statsDisplay.classList.add('gui');
+        this._statsDisplay.classList.add('stats-display');
 
         // Add everything to DOM
-        document.body.append(
-            gridWrapper, 
-            this.statsDisplay, 
-            this.actionsDisplay
-        );
+        document.body.append(this._statsDisplay);
+    }
 
+    private setupEvents (): void {
         // The flag that determines whether the wheel event is supported
         let supportsWheel = false;
 
         // The function that will run when the events are triggered
         const wheelHandler = (e: any) => {
-            if (e.type == "wheel") supportsWheel = true;
+            if (e.type == 'wheel') supportsWheel = true;
             else if (supportsWheel) return;
 
             const delta = ((e.deltaY || -e.wheelDelta || e.detail) >> 10) || 1;
@@ -80,46 +63,47 @@ export default class Browser {
         document.addEventListener('mousewheel', wheelHandler);
         document.addEventListener('DOMMouseScroll', wheelHandler);
         document.addEventListener('mousedown', (e) => {
-            this.mouseDown = true;
+            this._mouseDown = true;
             this.onMouseDown(e.screenX, e.screenY);
         });
 
         document.addEventListener('mouseup', (e) => {
-            this.mouseDown = false;
+            this._mouseDown = false;
             document.body.style.cursor = '';
             this.onMouseUp(e.screenX, e.screenY);
         });
 
         document.addEventListener('mousemove', (e) => {
-            this.mouseX = e.clientX;
-            this.mouseY = e.clientY;
+            this._mouseX = e.clientX;
+            this._mouseY = e.clientY;
 
             this.onMouseMove(e.clientX, e.clientY);
 
-            if (this.mouseDown) {
+            if (this._mouseDown) {
                 document.body.style.cursor = 'move';
                 this.onMouseDrag(e.clientX, e.clientY);
             }
         });
 
         document.addEventListener('click', (e) => {
-            if (this.mouseX != null && this.mouseY != null) {
-                this.onMouseClick(this.mouseX, this.mouseY);
+            if (this._mouseX != null && this._mouseY != null) {
+                this.onMouseClick(this._mouseX, this._mouseY);
             }
         });
 
         window.addEventListener('load', () => {
-            this.oldWindowWidth = window.innerWidth;
+            this._oldWindowWidth = window.innerWidth;
         });
 
         window.addEventListener('resize', () => {
-            this.onResize(window.innerWidth, window.innerHeight, this.oldWindowWidth, this.oldWindowHeight);
-            this.oldWindowWidth = window.innerWidth;
-            this.oldWindowHeight = window.innerHeight;
+            this.onResize(window.innerWidth, window.innerHeight, this._oldWindowWidth, this._oldWindowHeight);
+
+            this._oldWindowWidth = window.innerWidth;
+            this._oldWindowHeight = window.innerHeight;
         });
     }
 
-    getParameter (name: string): string | null {
+    public getParameter (name: string): string | null {
         let result: string | null = null;
         let tmp = [];
 
@@ -133,25 +117,25 @@ export default class Browser {
                     result = decodeURIComponent(tmp[1]);
                 }
             });
-            
+
         return result;
     }
 
-    getStatsHTML (): string {
+    private getWorldStatsHTML (world: World): string {
         return `
-            <strong>Time:</strong> ${Math.floor((Date.now() - this.world.createdAt) / 1000)}s<br>
-            <strong>Poppy seeds</strong>: ${this.world.player.items.poppySeeds}<br>
-            <strong>Opium</strong>: ${this.world.player.items.opium}<br>
-            <strong>Money</strong>: ${this.world.player.items.money} €<br>
+            <strong>Time:</strong> ${Math.floor((Date.now() - world.createdAt) / 1000)}s<br>
+            <strong>Poppy seeds</strong>: ${world.player.items.poppySeeds}<br>
+            <strong>Opium</strong>: ${world.player.items.opium}<br>
+            <strong>Money</strong>: ${world.player.items.money} €<br>
         `;
     }
 
-    getCameraDebugHTML (camera: Camera): string {
+    private getCameraDebugHTML (camera: Camera): string {
         let deltaXText = 'error';
         let deltaYText = 'error';
 
-        if (this.mouseX != null && this.mouseY != null) {
-            let {x, y} = camera.worldPosFromScreen(this.mouseX, this.mouseY);
+        if (this._mouseX != null && this._mouseY != null) {
+            let {x, y} = camera.worldPosFromScreen(this._mouseX, this._mouseY);
             deltaXText = x.toFixed(3);
             deltaYText = y.toFixed(3);
         }
@@ -166,29 +150,29 @@ export default class Browser {
         `;
     }
 
-    getMouseDebugHTML (): string {
+    private getMouseDebugHTML (): string {
         return `
-            <strong>Mouse${(this.mouseDown ? ' (down)' : '')}:</strong><br>
-            <strong>X:</strong> ${this.mouseX}<br>
-            <strong>Y:</strong> ${this.mouseY}<br>
+            <strong>Mouse${(this._mouseDown ? ' (down)' : '')}:</strong><br>
+            <strong>X:</strong> ${this._mouseX}<br>
+            <strong>Y:</strong> ${this._mouseY}<br>
         `;
     }
 
-    renderStats (): void {
-        this.statsDisplay.innerHTML = `<div class="gui-item">${this.getStatsHTML()}</div>`;
+    public renderStats (world: World): void {
+        this._statsDisplay.innerHTML = `<div class="gui-item">${this.getWorldStatsHTML(world)}</div>`;
     }
 
-    renderDebug (camera: Camera, includeStats: boolean = true): void {
+    public renderDebug (camera: Camera, world?: World): void {
         const debugHTMLParts = [
             this.getCameraDebugHTML(camera),
             this.getMouseDebugHTML()
         ];
 
-        if (includeStats) {
-            debugHTMLParts.unshift(this.getStatsHTML());
+        if (world != null) {
+            debugHTMLParts.unshift(this.getWorldStatsHTML(world));
         }
 
-        this.statsDisplay.innerHTML = (
+        this._statsDisplay.innerHTML = (
             '<div class="gui-item">' + 
                 debugHTMLParts.join('</div><hr><div class="gui-item">') +
             '</div>'

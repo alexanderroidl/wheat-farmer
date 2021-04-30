@@ -2,10 +2,10 @@ import World from "./world";
 import Camera from "./camera";
 
 export default class Renderer {
-    readonly FONT_SIZE = 12;
-    readonly SQUARE_SIZE = 32;
+    public readonly FONT_SIZE = 12;
+    public readonly SQUARE_SIZE = 32;
 
-    private canvas: HTMLCanvasElement = document.createElement('canvas');
+    private _canvas: HTMLCanvasElement = document.createElement('canvas');
     public readonly camera: Camera;
 
     private _mouseX: number = 0;
@@ -20,11 +20,11 @@ export default class Renderer {
     }
 
     get width () {
-        return this.canvas.width;
+        return this._canvas.width;
     }
 
     get height () {
-        return this.canvas.height;
+        return this._canvas.height;
     }
 
     constructor () {
@@ -32,7 +32,7 @@ export default class Renderer {
         this.camera = new Camera(this.SQUARE_SIZE);
     }
 
-    setupCanvas () {
+    private setupCanvas (): void {
         this.setToWindowSize();
 
         window.addEventListener('load', (e) => {
@@ -43,16 +43,16 @@ export default class Renderer {
             this.setToWindowSize();
         });
 
-        document.body.append(this.canvas);
+        document.body.append(this._canvas);
     }
 
-    setToWindowSize () {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+    private setToWindowSize (): void {
+        this._canvas.width = window.innerWidth;
+        this._canvas.height = window.innerHeight;
     }
 
-    render (world: World): void {
-        const ctx = this.canvas.getContext('2d');
+    public render (world: World): void {
+        const ctx = this._canvas.getContext('2d');
         if (!ctx) {
             return;
         }
@@ -60,7 +60,7 @@ export default class Renderer {
         const zoom = this.camera.zoomAmount;
         const mouseWorldPos = this.camera.worldPosFromScreen(this._mouseX, this._mouseY);
 
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 
         for (let y = 0; y < world.tiles.length; y++) {
             for (let x = 0; x < world.tiles[y].length; x++) {
@@ -85,8 +85,6 @@ export default class Renderer {
                     this.SQUARE_SIZE * x * zoom + this.SQUARE_SIZE / 2 * zoom - this.camera.x, 
                     this.SQUARE_SIZE * y * zoom + this.SQUARE_SIZE / 2 * zoom - this.camera.y
                 ); 
-
-
 
                 if (Math.floor(mouseWorldPos.x) === x && Math.floor(mouseWorldPos.y)  === y) {
                     ctx.globalAlpha = 0.5;

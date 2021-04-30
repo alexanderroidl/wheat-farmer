@@ -1,12 +1,12 @@
 import TileInterface from '../interfaces/tile-interface';
 
 export default class PoppyTile implements TileInterface {
-    readonly PUPPY_GROWTH_TIME = 10 * 1000;
-    readonly PUPPY_MIN_SEED_DROP = 0;
-    readonly PUPPY_MAX_SEED_DROP = 3;
+    public readonly PUPPY_GROWTH_TIME = 10 * 1000;
+    public readonly PUPPY_MIN_SEED_DROP = 0;
+    public readonly PUPPY_MAX_SEED_DROP = 3;
 
-    name: string = "Poppy";
-    timeCreated: number = Date.now();
+    public name: string = "Poppy";
+    public timeCreated: number = Date.now();
 
     get growthState () {
         const growth = (Date.now() - this.timeCreated) / this.PUPPY_GROWTH_TIME;
