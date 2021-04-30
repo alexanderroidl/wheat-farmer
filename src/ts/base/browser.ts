@@ -119,6 +119,24 @@ export default class Browser {
         });
     }
 
+    getParameter (name: string): string | null {
+        let result: string | null = null;
+        let tmp = [];
+
+        location.search
+            .substr(1)
+            .split("&")
+            .forEach(item => {
+                tmp = item.split('=');
+
+                if (tmp[0] === name) {
+                    result = decodeURIComponent(tmp[1]);
+                }
+            });
+            
+        return result;
+    }
+
     getStatsHTML (): string {
         return `
             <strong>Time:</strong> ${Math.floor((Date.now() - this.world.createdAt) / 1000)}s<br>
