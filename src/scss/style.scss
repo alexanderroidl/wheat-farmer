@@ -8,6 +8,10 @@ body {
     font: 12pt "Courier New";
 }
 
+strong, b {
+    font-weight: bold;
+}
+
 canvas {
     position: fixed;
     top: 0;
@@ -64,5 +68,10 @@ canvas {
 }
 
 .gui {
-    position: relative;
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-block;
+    border: 1px solid #000;
+    background: #fff;
 }

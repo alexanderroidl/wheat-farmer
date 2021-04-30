@@ -29,6 +29,10 @@ function scripts () {
          extensions: [".ts"]
        })
       .bundle()
+      .on('error', function (err) {
+        console.log(err);
+        this.emit('end')
+      })
       .pipe(prettyError())
       .pipe(source("index.js"))
       .pipe(gulp.dest('build/js'));

@@ -1,4 +1,5 @@
 import World from "./world";
+import Camera from "./camera";
 
 export default class Browser {
     world: World;
@@ -8,6 +9,8 @@ export default class Browser {
     actionsDisplay: HTMLDivElement = document.createElement('div');
 
     mouseDown: boolean = false;
+    mouseX?: number;
+    mouseY?: number;
 
     onScroll = (delta: number): void => {};
     onMouseDown = (x: number, y: number): void => {};
@@ -78,7 +81,6 @@ export default class Browser {
         document.addEventListener('DOMMouseScroll', wheelHandler);
         document.addEventListener('mousedown', (e) => {
             this.mouseDown = true;
-            document.body.style.cursor = 'move';
             this.onMouseDown(e.screenX, e.screenY);
         });
 
@@ -89,16 +91,22 @@ export default class Browser {
         });
 
         document.addEventListener('mousemove', (e) => {
-            this.onMouseMove(e.screenX, e.screenY);
+            this.mouseX = e.clientX;
+            this.mouseY = e.clientY;
+
+            console.log(e); 
+
+            this.onMouseMove(e.clientX, e.clientY);
 
             if (this.mouseDown) {
-                this.onMouseDrag(e.screenX, e.screenY);
+                document.body.style.cursor = 'move';
+                this.onMouseDrag(e.clientX, e.clientY);
             }
         })
     }
 
-    renderStats (): void {
-        this.statsDisplay.innerHTML = `
+    getStatsHTML (): string {
+        return `
             <strong>Time:</strong> ${Math.floor((Date.now() - this.world.createdAt) / 1000)}s<br>
             <strong>Poppy seeds</strong>: ${this.world.player.items.poppySeeds}<br>
             <strong>Opium</strong>: ${this.world.player.items.opium}<br>
@@ -106,9 +114,49 @@ export default class Browser {
         `;
     }
 
-    render (): void {
-        //this.renderWorld();
-        this.renderStats();
+    getCameraDebugHTML (camera: Camera): string {
+        let deltaXText = 'error';
+        let deltaYText = 'error';
+
+        if (this.mouseX != null && this.mouseY != null) {
+            let {x, y} = camera.getWorldCoordsFromScreen(this.mouseX, this.mouseY);
+            deltaXText = x.toFixed(3);
+            deltaYText = y.toFixed(3);
+        }
+
+        return `
+            <strong>Camera:</strong><br>
+            <strong>X:</strong> ${camera.x.toFixed(3)}<br>
+            <strong>Y:</strong> ${camera.y.toFixed(3)}<br>
+            <strong>Zoom:</strong> ${camera.zoomAmount.toFixed(3)}<br>
+            <strong>World X:</strong> ${deltaXText}<br>
+            <strong>World Y:</strong> ${deltaYText}<br>
+        `;
+    }
+
+    getMouseDebugHTML (): string {
+        return `
+            <strong>Mouse${(this.mouseDown ? ' (down)' : '')}:</strong><br>
+            <strong>X:</strong> ${this.mouseX}<br>
+            <strong>Y:</strong> ${this.mouseY}<br>
+        `;
+    }
+
+    renderStats (): void {
+        this.statsDisplay.innerHTML = this.getStatsHTML();
+    }
+
+    renderDebug (camera: Camera, includeStats: boolean = true): void {
+        const debugHTMLParts = [
+            this.getCameraDebugHTML(camera),
+            this.getMouseDebugHTML()
+        ];
+
+        if (includeStats) {
+            debugHTMLParts.unshift(this.getStatsHTML());
+        }
+
+        this.statsDisplay.innerHTML = debugHTMLParts.join('<hr>');
     }
 
     alert (text: string): void {

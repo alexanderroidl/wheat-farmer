@@ -21,18 +21,29 @@ export default class Game {
 
     constructor () {
         this.setupLoop();
+        this.setupMouse();
+        this.renderer.camera.setup(this.world.SIZE);
+    }
 
-        this.browser.onScroll = (delta: number) => {
-            this.renderer.zoom += delta / 10;
-        }
-
+    setupMouse (): void {
         let mouseDownX: number | null = null;
         let mouseDownY: number | null = null;
+
+        this.browser.onScroll = (delta: number) => {
+            this.renderer.camera.zoom(-delta / 5)
+        }
 
         this.browser.onMouseDown = (x: number, y: number) => {
             mouseDownX = x;
             mouseDownY = y;
+
         }
+
+        this.browser.onMouseMove = (x: number, y: number) => {
+            this.renderer.mouseX = x;
+            this.renderer.mouseY = y;
+        }
+
 
         this.browser.onMouseDrag = (x: number, y: number) => {
             if (!(mouseDownX !== null && mouseDownY !== null)) {
@@ -41,22 +52,18 @@ export default class Game {
 
             const deltaX = mouseDownX - x;
             const deltaY = mouseDownY - y;
-
-            this.renderer.cameraX -= deltaX / 30;
-            this.renderer.cameraY -= deltaY / 30;
-
-            //console.log('cameraX', this.renderer.cameraX)
-            //console.log('cameraY', this.renderer.cameraY)
+            this.renderer.camera.move(deltaX / 30, deltaY / 30);
         }
     }
 
-    setupLoop () {
+    setupLoop (): void {
         this.loop.fps = 1;
         this.loop.simulationStep = 1000 / 1;
         this.loop.update = (delta: number) => {};
         this.loop.render = (interpolation: number) => {
             this.renderer.render(this.world);
-            this.browser.render();
+            this.browser.renderStats();
+            this.browser.renderDebug(this.renderer.camera);
         };
 
         this.loop.start();

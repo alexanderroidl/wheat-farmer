@@ -4,14 +4,16 @@ import Player from "./player";
 import TileInterface from 'interfaces/tile-interface';
 
 export default class World {
+    readonly SIZE: number = 20; // 20x20 world size
+
     tiles: TileInterface[][];
-    createdAt: number = Date.now();;
+    createdAt: number = Date.now();
     player: Player = new Player();
 
     constructor () {
-        this.tiles = Array(20).fill([]).map(() => {
+        this.tiles = Array(this.SIZE).fill([]).map(() => {
             const emptyTile = new EmptyTile();
-            return Array(20).fill(emptyTile);
+            return Array(this.SIZE).fill(emptyTile);
         });
 
         this.tiles[1][1] = new PoppyTile();
