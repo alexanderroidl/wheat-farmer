@@ -15,11 +15,18 @@ export default class World {
             const emptyTile = new EmptyTile();
             return Array(this.SIZE).fill(emptyTile);
         });
-
-        this.tiles[1][1] = new PoppyTile();
     }
 
-    onTileClicked (tile: TileInterface, x: number, y: number) {
+    isValidTilePos (x: number, y: number): boolean {
+        return this.tiles[y] != null && this.tiles[y][x] != null;
+    }
+
+    onTileClicked (x: number, y: number): void {
+        if (!this.isValidTilePos(x, y)) {
+            return;
+        }
+
+        const tile = this.tiles[y][x];
         tile.onClicked();
 
         if (tile instanceof EmptyTile) {

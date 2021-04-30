@@ -48,19 +48,23 @@ export default class Camera {
 
         const w = window.innerWidth/2;
         const h = window.innerHeight/2;
-        const multiplier = this.worldSquareSize * this.zoomAmount;
 
-        const oldPos = this.getWorldCoordsFromScreen(w, h);
+        const oldPos = this.worldPosFromScreen(w, h);
         this._zoomAmount += zoom;
 
-        const newPos = this.getWorldCoordsFromScreen(w, h);
-        this.move(-(newPos.x - oldPos.x) * multiplier, -(newPos.y - oldPos.y) * multiplier);
+        const newPos = this.worldPosFromScreen(w, h);
+        this.move(-(newPos.x - oldPos.x) *  this.worldSquareSize * this.zoomAmount, -(newPos.y - oldPos.y) *  this.worldSquareSize * this.zoomAmount);
     }
 
-    getWorldCoordsFromScreen (x: number, y: number): { x: number, y: number } {
-        return {
+    worldPosFromScreen (x: number, y: number, round: boolean = false): { x: number, y: number } {
+        const worldPos = {
             x: (x + this.x) / this.worldSquareSize / this._zoomAmount,
             y: (y + this.y) / this.worldSquareSize / this._zoomAmount
+        };
+
+        return {
+            x: round ? Math.floor(worldPos.x) : worldPos.x,
+            y: round ? Math.floor(worldPos.y) : worldPos.y
         }
     }
 }

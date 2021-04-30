@@ -11,12 +11,16 @@ export default class Browser {
     mouseDown: boolean = false;
     mouseX?: number;
     mouseY?: number;
+    oldWindowWidth: number = window.innerWidth;
+    oldWindowHeight: number = window.innerHeight;
 
     onScroll = (delta: number): void => {};
     onMouseDown = (x: number, y: number): void => {};
     onMouseUp = (x: number, y: number): void => {};
     onMouseMove = (x: number, y: number): void => {};
     onMouseDrag = (x: number, y: number): void => {};
+    onMouseClick = (x: number, y: number): void => {};
+    onResize = (width: number, height: number, oldWidth: number, oldHeight: number): void => {};
 
     constructor (world: World) {
         this.world = world;
@@ -24,10 +28,6 @@ export default class Browser {
     }
 
     setupDOM (): void {
-        // Canvas
-        const canvas = document.createElement('canvas');
-        document.body.append(canvas);
-
         // Grid and grid wrapper
         this.grid.classList.add('grid');
 
@@ -94,15 +94,29 @@ export default class Browser {
             this.mouseX = e.clientX;
             this.mouseY = e.clientY;
 
-            console.log(e); 
-
             this.onMouseMove(e.clientX, e.clientY);
 
             if (this.mouseDown) {
                 document.body.style.cursor = 'move';
                 this.onMouseDrag(e.clientX, e.clientY);
             }
-        })
+        });
+
+        document.addEventListener('click', (e) => {
+            if (this.mouseX != null && this.mouseY != null) {
+                this.onMouseClick(this.mouseX, this.mouseY);
+            }
+        });
+
+        window.addEventListener('load', () => {
+            this.oldWindowWidth = window.innerWidth;
+        });
+
+        window.addEventListener('resize', () => {
+            this.onResize(window.innerWidth, window.innerHeight, this.oldWindowWidth, this.oldWindowHeight);
+            this.oldWindowWidth = window.innerWidth;
+            this.oldWindowHeight = window.innerHeight;
+        });
     }
 
     getStatsHTML (): string {
@@ -119,7 +133,7 @@ export default class Browser {
         let deltaYText = 'error';
 
         if (this.mouseX != null && this.mouseY != null) {
-            let {x, y} = camera.getWorldCoordsFromScreen(this.mouseX, this.mouseY);
+            let {x, y} = camera.worldPosFromScreen(this.mouseX, this.mouseY);
             deltaXText = x.toFixed(3);
             deltaYText = y.toFixed(3);
         }
@@ -143,7 +157,7 @@ export default class Browser {
     }
 
     renderStats (): void {
-        this.statsDisplay.innerHTML = this.getStatsHTML();
+        this.statsDisplay.innerHTML = `<div class="gui-item">${this.getStatsHTML()}</div>`;
     }
 
     renderDebug (camera: Camera, includeStats: boolean = true): void {
@@ -156,10 +170,10 @@ export default class Browser {
             debugHTMLParts.unshift(this.getStatsHTML());
         }
 
-        this.statsDisplay.innerHTML = debugHTMLParts.join('<hr>');
-    }
-
-    alert (text: string): void {
-        window.alert(text);
+        this.statsDisplay.innerHTML = (
+            '<div class="gui-item">' + 
+                debugHTMLParts.join('</div><hr><div class="gui-item">') +
+            '</div>'
+        );
     }
 }

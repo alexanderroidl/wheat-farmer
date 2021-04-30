@@ -58,7 +58,7 @@ export default class Renderer {
         }
 
         const zoom = this.camera.zoomAmount;
-        const mouseWorldPos = this.camera.getWorldCoordsFromScreen(this._mouseX, this._mouseY);
+        const mouseWorldPos = this.camera.worldPosFromScreen(this._mouseX, this._mouseY);
 
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -90,8 +90,6 @@ export default class Renderer {
 
                 if (Math.floor(mouseWorldPos.x) === x && Math.floor(mouseWorldPos.y)  === y) {
                     ctx.globalAlpha = 0.5;
-
-                    console.log('indside')
 
                     ctx.fillStyle = 'red';
                     ctx.fillRect(
