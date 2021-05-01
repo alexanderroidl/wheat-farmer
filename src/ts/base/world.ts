@@ -52,6 +52,7 @@ export default class World {
         if (tile instanceof PoppyTile) {
             if (tile.growthState >= 1) {
                 const seedDrops = tile.harvest();
+                
                 this._player.items.poppySeeds += seedDrops;
                 this._player.items.opium += 1;
 

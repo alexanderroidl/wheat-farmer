@@ -13,18 +13,22 @@ export default class PoppyTile implements TileInterface {
         return growth > 1 ? 1 : growth;
     }
 
-    getChar (): string {
+    public getChar (): string {
         return '@' + (Math.floor(this.growthState * 10));
     }
 
-    getHexColor (): string {
+    public getCharColor (): string {
+        return '#ffffff';
+    }
+
+    public getHexColor (): string {
         return '#fc144e';
     }
 
-    onClicked (): void {
+    public onClicked (): void {
     }
 
-    harvest (): number {
+    public harvest (): number {
         return Math.floor(Math.random() * (this.PUPPY_MAX_SEED_DROP - this.PUPPY_MIN_SEED_DROP + 1)) + this.PUPPY_MIN_SEED_DROP;
     }
 }

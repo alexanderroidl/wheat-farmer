@@ -1,5 +1,6 @@
 import World from "./world";
 import Camera from "./camera";
+import EmptyTile from "../tiles/empty";
 
 export default class Renderer {
     public readonly FONT_SIZE = 12;
@@ -51,51 +52,63 @@ export default class Renderer {
         this._canvas.height = window.innerHeight;
     }
 
+    private paintSquare (ctx: any, x: number, y: number, fillStyle: string, opacity: number = 1, char?: string, charColor?: string): void {
+        const zoom = this.camera.zoomAmount;
+
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = fillStyle;
+        ctx.fillRect(
+            this.SQUARE_SIZE * x * zoom - this.camera.x, 
+            this.SQUARE_SIZE * y * zoom - this.camera.y, 
+            this.SQUARE_SIZE * zoom, 
+            this.SQUARE_SIZE * zoom
+        );
+
+        if (char) {
+            const charFillStyle = charColor ? charColor : 'white';
+
+            ctx.font = `${Math.floor(this.FONT_SIZE * zoom)}px "Courier New"`;
+            ctx.fillStyle = charFillStyle;
+            ctx.textAlign = "center";
+
+            ctx.fillText(
+                char, 
+                this.SQUARE_SIZE * x * zoom + this.SQUARE_SIZE / 2 * zoom - this.camera.x, 
+                this.SQUARE_SIZE * y * zoom + this.SQUARE_SIZE / 2 * zoom - this.camera.y
+            ); 
+        }
+
+    }
+
     public render (world: World): void {
         const ctx = this._canvas.getContext('2d');
         if (!ctx) {
             return;
         }
 
-        const zoom = this.camera.zoomAmount;
         const mouseWorldPos = this.camera.worldPosFromScreen(this._mouseX, this._mouseY);
 
         ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+
+        const xStart = Math.floor((this.camera.x % this.SQUARE_SIZE - (window.innerWidth / this.SQUARE_SIZE)) / this.camera.zoomAmount);
+        const yStart = Math.floor((this.camera.y % this.SQUARE_SIZE - (window.innerWidth / this.SQUARE_SIZE)) / this.camera.zoomAmount);
+        const xEnd = Math.ceil(window.innerWidth / this.SQUARE_SIZE / this.camera.zoomAmount);
+        const yEnd = Math.ceil(window.innerHeight / this.SQUARE_SIZE / this.camera.zoomAmount);
+        for (let y = yStart; y < yEnd; y++) {
+            for (let x = xStart; x < xEnd; x++) {
+                this.paintSquare(ctx, x, y, '#ebb434');
+            }
+        }
 
         for (let y = 0; y < world.tiles.length; y++) {
             for (let x = 0; x < world.tiles[y].length; x++) {
                 ctx.globalAlpha = 1;
 
                 const tile = world.tiles[y][x];
-
-                ctx.fillStyle = tile.getHexColor();
-                ctx.fillRect(
-                    this.SQUARE_SIZE * x * zoom - this.camera.x, 
-                    this.SQUARE_SIZE * y * zoom - this.camera.y, 
-                    this.SQUARE_SIZE * zoom, 
-                    this.SQUARE_SIZE * zoom
-                );
-
-                ctx.font = `${Math.floor(this.FONT_SIZE * zoom)}px "Courier New"`;
-                ctx.fillStyle = "white";
-                ctx.textAlign = "center";
-
-                ctx.fillText(
-                    tile.getChar(), 
-                    this.SQUARE_SIZE * x * zoom + this.SQUARE_SIZE / 2 * zoom - this.camera.x, 
-                    this.SQUARE_SIZE * y * zoom + this.SQUARE_SIZE / 2 * zoom - this.camera.y
-                ); 
+                this.paintSquare(ctx, x, y, tile.getHexColor(), 1, tile.getChar(), tile.getCharColor());
 
                 if (Math.floor(mouseWorldPos.x) === x && Math.floor(mouseWorldPos.y)  === y) {
-                    ctx.globalAlpha = 0.5;
-
-                    ctx.fillStyle = 'red';
-                    ctx.fillRect(
-                        this.SQUARE_SIZE * x * zoom - this.camera.x, 
-                        this.SQUARE_SIZE * y * zoom - this.camera.y, 
-                        this.SQUARE_SIZE * zoom, 
-                        this.SQUARE_SIZE * zoom
-                    );
+                    this.paintSquare(ctx, x, y, 'white', 0.5);
                 }
             }
         }

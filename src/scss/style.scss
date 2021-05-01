@@ -72,8 +72,8 @@ canvas {
     top: 0;
     right: 0;
     display: inline-block;
-    border: 1px solid #000;
-    background: #fff;
+    border: 1px solid #111;
+    background: rgba(#fff, 0.25);
     user-select: none;
 
     .gui-item {

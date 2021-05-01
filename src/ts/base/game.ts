@@ -76,7 +76,7 @@ export default class Game {
             this.browser.renderStats(this.world);
 
             if (this.browser.getParameter('debug')) {
-                this.browser.renderDebug(this.renderer.camera);
+                this.browser.renderDebug(this.renderer.camera, this.world);
             }
         };
 

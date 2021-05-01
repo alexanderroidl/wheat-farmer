@@ -4,5 +4,6 @@ export default interface TileInterface {
 
     getChar: () => string;
     getHexColor: () => string;
+    getCharColor: () => string;
     onClicked: () => void;
 }

@@ -9,7 +9,11 @@ export default class EmptyTile implements TileInterface {
     }
 
     public getHexColor (): string {
-        return '#0f8a13';
+        return '#ebb434';
+    }
+
+    public getCharColor (): string {
+        return '#000000';
     }
 
     public onClicked (): void {
