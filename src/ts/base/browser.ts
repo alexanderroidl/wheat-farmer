@@ -1,5 +1,6 @@
 import World from "./world";
 import Camera from "./camera";
+import Renderer from "../core/renderer";
 
 export default class Browser {
     private _statsDisplay: HTMLDivElement = document.createElement('div');
@@ -10,6 +11,8 @@ export default class Browser {
 
     private _oldWindowWidth: number = window.innerWidth;
     private _oldWindowHeight: number = window.innerHeight;
+
+    private _pressedKeys = {};
 
     get mouseDown () {
         return this._mouseDown;
@@ -101,6 +104,9 @@ export default class Browser {
             this._oldWindowWidth = window.innerWidth;
             this._oldWindowHeight = window.innerHeight;
         });
+
+        window.addEventListener('keyup', (e) => {
+        })
     }
 
     public getParameter (name: string): string | null {
@@ -158,19 +164,34 @@ export default class Browser {
         `;
     }
 
+    private getRendererDebugHTML (renderer: Renderer): string {
+        const camera = renderer.camera;
+
+        const xStart = Math.floor(camera.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const xEnd = Math.ceil((camera.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const yStart = Math.floor(camera.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const yEnd = Math.ceil((camera.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
+
+        return `
+            <strong>Renderer:</strong><br>
+            <strong>X-start:</strong> ${xStart}<br> 
+            <strong>X-end:</strong> ${xEnd}<br>
+            <strong>Y-start:</strong> ${yStart}<br>
+            <strong>Y-end:</strong> ${yEnd}
+        `
+    }
+
     public renderStats (world: World): void {
         this._statsDisplay.innerHTML = `<div class="gui-item">${this.getWorldStatsHTML(world)}</div>`;
     }
 
-    public renderDebug (camera: Camera, world?: World): void {
+    public renderDebug (camera: Camera, renderer: Renderer, world: World): void {
         const debugHTMLParts = [
+            this.getWorldStatsHTML(world),
             this.getCameraDebugHTML(camera),
-            this.getMouseDebugHTML()
+            this.getMouseDebugHTML(),
+            this.getRendererDebugHTML(renderer)
         ];
-
-        if (world != null) {
-            debugHTMLParts.unshift(this.getWorldStatsHTML(world));
-        }
 
         this._statsDisplay.innerHTML = (
             '<div class="gui-item">' + 

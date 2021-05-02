@@ -1,9 +1,13 @@
+import Renderer from "../core/renderer";
+
 export default interface TileInterface {
     readonly name: string;
     readonly timeCreated: number;
 
-    getChar: () => string;
-    getHexColor: () => string;
-    getCharColor: () => string;
+    getChar: () => string | null;
+    getHexColor: () => string | null;
+    getCharColor: () => string | null;
     onClicked: () => void;
+    render: (renderer: Renderer, ctx: CanvasRenderingContext2D, worldX: number, worldY: number, isHover: boolean) => void;
+    renderLatest: (renderer: Renderer, ctx: CanvasRenderingContext2D, worldX: number, worldY: number, isHover: boolean) => void;
 }

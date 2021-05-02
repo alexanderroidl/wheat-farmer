@@ -1,7 +1,7 @@
 import EmptyTile from '../tiles/empty';
 import PoppyTile from '../tiles/poppy';
 import Player from "./player";
-import TileInterface from 'interfaces/tile-interface';
+import TileInterface from '../interfaces/tile-interface';
 
 export default class World {
     public readonly SIZE: number = 12; // 20x20 world size
@@ -51,7 +51,7 @@ export default class World {
 
         if (tile instanceof PoppyTile) {
             if (tile.growthState >= 1) {
-                const seedDrops = tile.harvest();
+                const seedDrops = tile.dropSeeds();
                 
                 this._player.items.poppySeeds += seedDrops;
                 this._player.items.opium += 1;

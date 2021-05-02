@@ -1,18 +1,19 @@
-import TileInterface from '../interfaces/tile-interface';
+import Tile from './tile';
 
-export default class EmptyTile implements TileInterface {
+export default class EmptyTile extends Tile {
+    public static readonly COLOR = '#ebb434';
     public name: string = "Empty";
     public timeCreated: number = Date.now();
     
-    public getChar (): string {
+    public getChar (): string | null {
         return 'x';
     }
 
-    public getHexColor (): string {
-        return '#ebb434';
+    public getHexColor (): string | null {
+        return EmptyTile.COLOR;
     }
 
-    public getCharColor (): string {
+    public getCharColor (): string | null {
         return '#000000';
     }
 

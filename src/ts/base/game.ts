@@ -1,7 +1,7 @@
-import GameLoop from "./game-loop";
+import GameLoop from "../core/game-loop";
 import Browser from "./browser";
 import World from "./world";
-import Renderer from "./renderer";
+import Renderer from "../core/renderer";
 
 export default class Game {
     private static _instance: Game;
@@ -76,7 +76,7 @@ export default class Game {
             this.browser.renderStats(this.world);
 
             if (this.browser.getParameter('debug')) {
-                this.browser.renderDebug(this.renderer.camera, this.world);
+                this.browser.renderDebug(this.renderer.camera, this.renderer, this.world);
             }
         };
 
