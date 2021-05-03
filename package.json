@@ -1,7 +1,7 @@
 {
-  "name": "poppy-play",
-  "version": "1.0.0",
-  "description": "",
+  "name": "wheat-farmer",
+  "version": "0.0.1",
+  "description": "Farming/Tower Defense web-based game",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,12 +12,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/alexanderroidl/poppy-play.git"
+    "url": "git+ssh://git@github.com:alexanderroidl/wheat-farmer.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+      "typescript",
+      "farming",
+      "towerdefense",
+      "browsergame",
+      "canvas"
+    ],
+  "author": "Alexander Roidl",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/alexanderroidl/poppy-play#readme",
+  "homepage": "https://github.com/alexanderroidl/wheat-farmer",
   "dependencies": {
     "cross-env": "^7.0.3",
     "express": "^4.17.1"
