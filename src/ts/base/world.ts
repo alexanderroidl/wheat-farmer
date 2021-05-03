@@ -37,9 +37,11 @@ export default class World {
             return Array(this.SIZE).fill(emptyTile);
         });
 
-        const robot = new RobotEntity(-2, -2);
-        robot.target = new Vector(this.SIZE/2, this.SIZE/2);
-        this._entities.push(robot);
+        setTimeout(() => {
+            const robot = new RobotEntity(-2, -2);
+            robot.target = new Vector(this.SIZE/2, this.SIZE/2);
+            this._entities.push(robot);
+        }, 5 * 1000);
     }
 
     public isValidTilePos (x: number, y: number): boolean {

@@ -103,6 +103,8 @@ export default class Browser {
     }
 
     public getParameter (name: string): string | null {
+        // Source: https://stackoverflow.com/a/5448595/11379072
+        
         let result: string | null = null;
         let tmp = [];
 

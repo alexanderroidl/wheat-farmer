@@ -1,3 +1,7 @@
+/**
+ * Source: https://easings.net/
+ */
+
 export default class Easings {
     public static easeInCubic(x: number): number {
         return x * x * x;

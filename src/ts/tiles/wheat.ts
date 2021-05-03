@@ -5,7 +5,7 @@ import Tile from './tile';
 import Easings from '../core/easings';
 
 export default class WheatTile extends Tile {
-    public readonly GROWTH_TIME = 15 * 1000;
+    public readonly GROWTH_TIME = 7.5 * 1000;
     public readonly MIN_SEED_DROP = 0;
     public readonly MAX_SEED_DROP = 3;
     private readonly COLOR_GROWN = '#7dbf21';
@@ -27,7 +27,7 @@ export default class WheatTile extends Tile {
         if (this.growthState >= 1) {
             char = '🌾';
         }
-        
+
         return char;
     }
 
