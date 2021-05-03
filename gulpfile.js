@@ -47,7 +47,7 @@ function html () {
         cwd: 'src/html'
     })
     .pipe(prettyError())
-    .pipe(gulp.dest('html', {
+    .pipe(gulp.dest('.', {
         cwd: 'build'
     }));
 }
@@ -73,12 +73,27 @@ function styles () {
 
 
 /**
+ * Static task
+ */
+function static () {
+    return gulp.src('**/*', {
+        cwd: 'src/static',
+        dot: true
+    })
+    .pipe(gulp.dest('.', {
+        cwd: 'build'
+    }))
+}
+
+
+/**
  * Watch task
  */
 function watch () {
     gulp.watch('**/*.html', { cwd: 'src/html' }, html);
     gulp.watch('**/*.scss', { cwd: 'src/scss' }, styles);
     gulp.watch('**/*.ts', { cwd: 'src/ts' }, scripts);
+    gulp.watch('**/*', { cwd: 'src/static', static});
 }
 
 
@@ -86,6 +101,6 @@ function watch () {
  * Export tasks
  */
 module.exports = {
-    default: gulp.parallel(scripts, html, styles),
+    default: gulp.parallel(scripts, html, styles, static),
     watch
 };
