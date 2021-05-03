@@ -1,38 +1,34 @@
 import World from "./world";
 import Camera from "./camera";
 import Renderer from "../core/renderer";
+import Vector from "../core/vector";
 
 export default class Browser {
     private _statsDisplay: HTMLDivElement = document.createElement('div');
 
     private _mouseDown: boolean = false;
-    private _mouseX?: number;
-    private _mouseY?: number;
+    private _mousePos: Vector = new Vector(0, 0);
 
     private _oldWindowWidth: number = window.innerWidth;
     private _oldWindowHeight: number = window.innerHeight;
 
-    private _pressedKeys = {};
-
-    get mouseDown () {
+    get mouseDown (): boolean {
         return this._mouseDown;
     }
 
-    get mouseX () {
-        return this._mouseX;
+    get mousePos (): Vector {
+        return this._mousePos;
     }
 
-    get mouseY () {
-        return this._mouseY;
-    }
-
+    /* eslint-disable @typescript-eslint/no-empty-function */
     public onScroll = (delta: number): void => {};
-    public onMouseDown = (x: number, y: number): void => {};
-    public onMouseUp = (x: number, y: number): void => {};
-    public onMouseMove = (x: number, y: number): void => {};
-    public onMouseDrag = (x: number, y: number): void => {};
-    public onMouseClick = (x: number, y: number): void => {};
+    public onMouseDown = (pos: Vector): void => {};
+    public onMouseUp = (pos: Vector): void => {};
+    public onMouseMove = (pos: Vector): void => {};
+    public onMouseDrag = (pos: Vector): void => {};
+    public onMouseClick = (pos: Vector): void => {};
     public onResize = (width: number, height: number, oldWidth: number, oldHeight: number): void => {};
+    /* eslint-enable @typescript-eslint/no-empty-function */
 
     constructor () {
         this.setupDOM();
@@ -52,6 +48,7 @@ export default class Browser {
         // The flag that determines whether the wheel event is supported
         let supportsWheel = false;
 
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         // The function that will run when the events are triggered
         const wheelHandler = (e: any) => {
             if (e.type == 'wheel') supportsWheel = true;
@@ -60,6 +57,7 @@ export default class Browser {
             const delta = ((e.deltaY || -e.wheelDelta || e.detail) >> 10) || 1;
             this.onScroll(delta);
         }
+        /* eslint-enable @typescript-eslint/no-explicit-any */
 
         // Add the event listeners for each event.
         document.addEventListener('wheel', wheelHandler);
@@ -67,31 +65,29 @@ export default class Browser {
         document.addEventListener('DOMMouseScroll', wheelHandler);
         document.addEventListener('mousedown', (e) => {
             this._mouseDown = true;
-            this.onMouseDown(e.screenX, e.screenY);
+            this.onMouseDown(new Vector(e.screenX, e.screenY));
         });
 
         document.addEventListener('mouseup', (e) => {
             this._mouseDown = false;
             document.body.style.cursor = '';
-            this.onMouseUp(e.screenX, e.screenY);
+            this.onMouseUp(new Vector(e.screenX, e.screenY));
         });
 
         document.addEventListener('mousemove', (e) => {
-            this._mouseX = e.clientX;
-            this._mouseY = e.clientY;
+            this._mousePos.x = e.clientX;
+            this._mousePos.y = e.clientY;
 
-            this.onMouseMove(e.clientX, e.clientY);
+            this.onMouseMove(new Vector(e.clientX, e.clientY));
 
             if (this._mouseDown) {
                 document.body.style.cursor = 'move';
-                this.onMouseDrag(e.clientX, e.clientY);
+                this.onMouseDrag(new Vector(e.clientX, e.clientY));
             }
         });
 
         document.addEventListener('click', (e) => {
-            if (this._mouseX != null && this._mouseY != null) {
-                this.onMouseClick(this._mouseX, this._mouseY);
-            }
+            this.onMouseClick(this._mousePos);
         });
 
         window.addEventListener('load', () => {
@@ -104,9 +100,6 @@ export default class Browser {
             this._oldWindowWidth = window.innerWidth;
             this._oldWindowHeight = window.innerHeight;
         });
-
-        window.addEventListener('keyup', (e) => {
-        })
     }
 
     public getParameter (name: string): string | null {
@@ -130,47 +123,41 @@ export default class Browser {
     private getWorldStatsHTML (world: World): string {
         return `
             <strong>Time:</strong> ${Math.floor((Date.now() - world.createdAt) / 1000)}s<br>
-            <strong>Poppy seeds</strong>: ${world.player.items.poppySeeds}<br>
-            <strong>Opium</strong>: ${world.player.items.opium}<br>
-            <strong>Money</strong>: ${world.player.items.money} €<br>
+            <strong>Seeds:</strong>: ${world.player.items.poppySeeds}<br>
+            <strong>Wheat:</strong> ${world.player.items.opium}<br>
+            <strong>Money:</strong> ${world.player.items.money} €<br>
         `;
     }
 
     private getCameraDebugHTML (camera: Camera): string {
-        let deltaXText = 'error';
-        let deltaYText = 'error';
-
-        if (this._mouseX != null && this._mouseY != null) {
-            let {x, y} = camera.worldPosFromScreen(this._mouseX, this._mouseY);
-            deltaXText = x.toFixed(3);
-            deltaYText = y.toFixed(3);
-        }
-
         return `
             <strong>Camera:</strong><br>
-            <strong>X:</strong> ${camera.x.toFixed(3)}<br>
-            <strong>Y:</strong> ${camera.y.toFixed(3)}<br>
-            <strong>Zoom:</strong> ${camera.zoomAmount.toFixed(3)}<br>
-            <strong>World X:</strong> ${deltaXText}<br>
-            <strong>World Y:</strong> ${deltaYText}<br>
+            <strong>X:</strong> ${camera.position.x.toFixed(3)}<br>
+            <strong>Y:</strong> ${camera.position.y.toFixed(3)}<br>
+            <strong>Zoom:</strong> ${camera.zoomAmount.toFixed(3)}
+
         `;
     }
 
-    private getMouseDebugHTML (): string {
+    private getMouseDebugHTML (camera: Camera): string {
+        const worldPos = camera.worldPosFromScreen(this._mousePos);
+
         return `
             <strong>Mouse${(this._mouseDown ? ' (down)' : '')}:</strong><br>
-            <strong>X:</strong> ${this._mouseX}<br>
-            <strong>Y:</strong> ${this._mouseY}<br>
+            <strong>X:</strong> ${this._mousePos.x}<br>
+            <strong>Y:</strong> ${this._mousePos.y}<br>
+            <strong>World X:</strong> ${worldPos.x.toFixed(3)}<br>
+            <strong>World Y:</strong> ${worldPos.y.toFixed(3)}
         `;
     }
 
     private getRendererDebugHTML (renderer: Renderer): string {
         const camera = renderer.camera;
 
-        const xStart = Math.floor(camera.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
-        const xEnd = Math.ceil((camera.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
-        const yStart = Math.floor(camera.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
-        const yEnd = Math.ceil((camera.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const xStart = Math.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const xEnd = Math.ceil((camera.position.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const yStart = Math.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const yEnd = Math.ceil((camera.position.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
 
         return `
             <strong>Renderer:</strong><br>
@@ -189,7 +176,7 @@ export default class Browser {
         const debugHTMLParts = [
             this.getWorldStatsHTML(world),
             this.getCameraDebugHTML(camera),
-            this.getMouseDebugHTML(),
+            this.getMouseDebugHTML(camera),
             this.getRendererDebugHTML(renderer)
         ];
 

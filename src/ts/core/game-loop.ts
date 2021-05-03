@@ -12,23 +12,26 @@ class GameLoop {
     public panic = false;
     public rafHandle?: number;
 
-    public begin = (time: number, delta: number) => {};
-    public end = (fps: number, panic: boolean) => {};
-    public update = (delta: number) => {};
-    public render = (interpolation: number) => {};
+    /* eslint-disable @typescript-eslint/no-empty-function */
+    public begin = (time: number, delta: number): void => {};
+    public end = (fps: number, panic: boolean): void => {};
+    public update = (delta: number): void => {};
+    public render = (interpolation: number): void => {};
+    /* eslint-enable @typescript-eslint/no-empty-function */
 
     constructor() {
         this.animate = this.animate.bind(this);
     }
 
-    get maxAllowedFps() {
+    get maxAllowedFps(): number {
         return 1000 / this.minFrameDelay;
     }
 
-    set maxAllowedFps(fps) {
+    set maxAllowedFps (fps: number) {
         if (fps == null) {
             fps = Infinity;
         }
+        
         if (fps === 0) {
             this.stop();
         } else {
@@ -97,7 +100,6 @@ class GameLoop {
         }
 
         this.render(this.frameDelta / this.simulationStep);
-
         this.end(this.fps, this.panic);
 
         this.panic = false;

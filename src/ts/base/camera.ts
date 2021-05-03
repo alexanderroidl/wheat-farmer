@@ -1,24 +1,21 @@
+import Vector from "../core/vector";
+
 export default class Camera {
     public readonly DEFAULT_ZOOM = 1;
 
-    private _x: number = 0;
-    private _y: number = 0;
+    private _position: Vector = new Vector(0, 0);
     private _zoomAmount: number = this.DEFAULT_ZOOM;
     private _worldSquareSize: number;
 
-    get x () {
-        return this._x;
+    get position (): Vector {
+        return this._position;
     }
 
-    get y () {
-        return this._y;
-    }
-
-    get zoomAmount () {
+    get zoomAmount (): number {
         return this._zoomAmount;
     }
 
-    get worldSquareSize () {
+    get worldSquareSize (): number {
         return this._worldSquareSize;
     }
 
@@ -29,13 +26,14 @@ export default class Camera {
     public setup (worldSize: number): void {
         const renderedWorldSize = worldSize * this._worldSquareSize * this._zoomAmount;
 
-        this._x = -window.innerWidth / 2 + renderedWorldSize / 2;
-        this._y = -window.innerHeight / 2 + renderedWorldSize / 2;
+        this._position = new Vector(
+            -window.innerWidth / 2 + renderedWorldSize / 2,
+            -window.innerHeight / 2 + renderedWorldSize / 2
+        );
     }
 
     public move (x: number, y: number): void {
-        this._x += x ;
-        this._y += y;
+        this._position = this._position.add(x, y);
     }
 
     public zoom (zoom: number): void {
@@ -44,25 +42,19 @@ export default class Camera {
             return;
         }
 
-        const w = window.innerWidth/2;
-        const h = window.innerHeight/2;
+        const halfWindowSize = new Vector(window.innerWidth / 2, window.innerHeight / 2);
 
-        const oldPos = this.worldPosFromScreen(w, h);
+        const oldPos = this.worldPosFromScreen(halfWindowSize);
         this._zoomAmount += zoom;
 
-        const newPos = this.worldPosFromScreen(w, h);
+        const newPos = this.worldPosFromScreen(halfWindowSize);
         this.move(-(newPos.x - oldPos.x) *  this.worldSquareSize * this.zoomAmount, -(newPos.y - oldPos.y) *  this.worldSquareSize * this.zoomAmount);
     }
 
-    public worldPosFromScreen (x: number, y: number, round: boolean = false): { x: number, y: number } {
-        const worldPos = {
-            x: (x + this.x) / this.worldSquareSize / this._zoomAmount,
-            y: (y + this.y) / this.worldSquareSize / this._zoomAmount
-        };
-
-        return {
-            x: round ? Math.floor(worldPos.x) : worldPos.x,
-            y: round ? Math.floor(worldPos.y) : worldPos.y
-        }
+    public worldPosFromScreen (screenPos: Vector): Vector {
+        return new Vector(
+            (screenPos.x + this.position.x) / this.worldSquareSize / this._zoomAmount,
+            (screenPos.y + this.position.y) / this.worldSquareSize / this._zoomAmount
+        );
     }
 }

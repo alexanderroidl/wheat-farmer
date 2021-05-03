@@ -4,31 +4,31 @@ import Renderer from '../core/renderer';
 import Tile from './tile';
 import Easings from '../core/easings';
 
-export default class PoppyTile extends Tile {
-    public readonly GROWTH_TIME = 10 * 1000;
+export default class WheatTile extends Tile {
+    public readonly GROWTH_TIME = 15 * 1000;
     public readonly MIN_SEED_DROP = 0;
     public readonly MAX_SEED_DROP = 3;
-    private readonly COLOR_GROWTH_START = '#7dbf21';
-    private readonly COLOR_GROWTH_END = '#1e8718';
+    private readonly COLOR_GROWN = '#7dbf21';
 
-    public name: string = "Poppy";
+    public name: string = "Wheat";
 
-    get growthState () {
+    get growthState (): number {
         const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME;
         return growth > 1 ? 1 : growth;
     }
 
     public getChar (): string | null {
-        let plantEmoji = '🌿';
+        let char = '🌿';
 
         if (this.growthState < 0.4) {
-            plantEmoji = '🌱';
+            char = '🌱';
         }
 
         if (this.growthState >= 1) {
-            plantEmoji = '🌾';
+            char = '🌾';
         }
-        return plantEmoji;
+        
+        return char;
     }
 
     public getCharColor (): string | null {
@@ -37,10 +37,11 @@ export default class PoppyTile extends Tile {
 
     public getHexColor (): string | null { 
         const mixAmount = Easings.easeInCubic(this.growthState);
-        return Util.mixColors(EmptyTile.COLOR, this.COLOR_GROWTH_START, mixAmount);
+        return Util.mixColors(EmptyTile.COLOR, this.COLOR_GROWN, mixAmount);
     }
 
     public onClicked (): void {
+        // TODO: Implement logic
     }
 
     public dropSeeds (): number {

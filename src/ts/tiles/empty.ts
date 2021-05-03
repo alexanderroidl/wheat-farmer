@@ -14,9 +14,10 @@ export default class EmptyTile extends Tile {
     }
 
     public getCharColor (): string | null {
-        return '#000000';
+        return '#333333';
     }
 
     public onClicked (): void {
+        // TODO: Implement logic
     }
 }

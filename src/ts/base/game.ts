@@ -2,6 +2,7 @@ import GameLoop from "../core/game-loop";
 import Browser from "./browser";
 import World from "./world";
 import Renderer from "../core/renderer";
+import Vector from "../core/vector";
 
 export default class Game {
     private static _instance: Game;
@@ -11,7 +12,7 @@ export default class Game {
     private world: World = new World();
     private browser: Browser = new Browser();
 
-    public static get instance () {
+    public static get instance (): Game {
         if (!Game._instance) {
             Game._instance = new Game();
         }
@@ -28,37 +29,32 @@ export default class Game {
     }
 
     private setupMouse (): void {
-        let mouseDownX: number | null = null;
-        let mouseDownY: number | null = null;
+        const mouseDownPos = new Vector(0, 0);
 
         this.browser.onScroll = (delta: number) => {
             this.renderer.camera.zoom(-delta / 5)
         }
 
-        this.browser.onMouseDown = (x: number, y: number) => {
-            mouseDownX = x;
-            mouseDownY = y;
+        this.browser.onMouseDown = (pos: Vector) => {
+            mouseDownPos.x = pos.x;
+            mouseDownPos.y = pos.y;
         }
 
-        this.browser.onMouseMove = (x: number, y: number) => {
-            this.renderer.mouseX = x;
-            this.renderer.mouseY = y;
+        this.browser.onMouseMove = (pos: Vector) => {
+            this.renderer.mousePos.x = pos.x;
+            this.renderer.mousePos.y = pos.y;
         }
 
-        this.browser.onMouseDrag = (x: number, y: number) => {
-            if (!(mouseDownX !== null && mouseDownY !== null)) {
-                return;
-            }
-
-            const deltaX = mouseDownX - x;
-            const deltaY = mouseDownY - y;
+        this.browser.onMouseDrag = (pos: Vector) => {
+            const deltaX = mouseDownPos.x - pos.x;
+            const deltaY = mouseDownPos.y - pos.y;
 
             this.renderer.camera.move(deltaX / 25, deltaY / 25);
         }
 
-        this.browser.onMouseClick = (x: number, y: number) => {
-            const worldClickPos = this.renderer.camera.worldPosFromScreen(x, y, true);
-            this.world.onTileClicked(worldClickPos.x, worldClickPos.y);
+        this.browser.onMouseClick = (pos: Vector) => {
+            const worldClickPos = this.renderer.camera.worldPosFromScreen(pos);
+            this.world.onTileClicked(worldClickPos.floor());
         };
     }
 
@@ -69,7 +65,10 @@ export default class Game {
     }
 
     private setupLoop (): void {
-        this.loop.update = (delta: number) => {};
+        this.loop.update = (delta: number) => {
+            this.world.update(delta);
+        };
+
         this.loop.render = (interpolation: number) => {
             this.renderer.render(this.world);
 

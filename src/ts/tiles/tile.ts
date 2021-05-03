@@ -19,6 +19,7 @@ export default class Tile implements TileInterface {
     }
 
     public onClicked (): void {
+        // TODO: Implement logic
     }
 
     private paintSquare(renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean) {
@@ -35,6 +36,6 @@ export default class Tile implements TileInterface {
     }
 
     public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-
+        // TODO: Implement logic
     }
 }
