@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "gulp",
-    "dev": "gulp default watch --series"
+    "dev": "gulp default watch --series",
+    "lint": "eslint . --ext .ts",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -17,11 +19,19 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/alexanderroidl/poppy-play#readme",
   "dependencies": {
-    "@babel/core": "^7.13.16",
-    "@babel/preset-env": "^7.13.15",
+    "cross-env": "^7.0.3",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.0",
+    "@babel/preset-env": "^7.14.0",
     "@babel/preset-typescript": "^7.13.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",
+    "del": "^6.0.0",
+    "eslint": "^7.25.0",
     "gulp": "^4.0.2",
     "gulp-autoprefixer": "^7.0.1",
     "gulp-csso": "^4.0.1",
