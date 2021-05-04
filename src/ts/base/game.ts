@@ -5,12 +5,15 @@ import Renderer from "../core/renderer";
 import Vector from "../core/vector";
 
 export default class Game {
+    private static readonly MOUSE_MOVE_TRESHOLD = 10;
     private static _instance: Game;
 
     private loop: GameLoop = new GameLoop();
     private renderer: Renderer = new Renderer();
     private world: World = new World();
     private browser: Browser = new Browser();
+
+    private _mouseDown: boolean = false;
 
     public static get instance (): Game {
         if (!Game._instance) {
@@ -29,27 +32,20 @@ export default class Game {
     }
 
     private setupMouse (): void {
-        const mouseDownPos = new Vector(0, 0);
-
         this.browser.onScroll = (delta: number) => {
             this.renderer.camera.zoom(-delta / 5)
         }
 
         this.browser.onMouseDown = (pos: Vector) => {
-            mouseDownPos.x = pos.x;
-            mouseDownPos.y = pos.y;
+            this._mouseDown = true;
+        }
+
+        this.browser.onMouseUp = (pos: Vector) => {
+            this._mouseDown = false;
         }
 
         this.browser.onMouseMove = (pos: Vector) => {
-            this.renderer.mousePos.x = pos.x;
-            this.renderer.mousePos.y = pos.y;
-        }
-
-        this.browser.onMouseDrag = (pos: Vector) => {
-            const deltaX = mouseDownPos.x - pos.x;
-            const deltaY = mouseDownPos.y - pos.y;
-
-            this.renderer.camera.move(deltaX / 25, deltaY / 25);
+            this.renderer.mousePos = new Vector(pos.x, pos.y);
         }
 
         this.browser.onMouseClick = (pos: Vector) => {

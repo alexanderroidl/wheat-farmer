@@ -51,7 +51,7 @@ export default class RobotEntity implements EntityInterface {
             }
         }
 
-        return '👳🏾';
+        return '🤖';
     }
 
     public explode (): void {

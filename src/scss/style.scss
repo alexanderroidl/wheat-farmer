@@ -2,7 +2,12 @@
 
 @font-face {
     font-family: 'OpenMoji';
-    src: URL('../fonts/OpenMoji-Color.ttf') format('truetype');
+    src: url('../fonts/OpenMojiColor.woff2') format('woff2'),
+        url('../fonts/OpenMojiColor.woff') format('woff'),
+        url('../fonts/OpenMojiColor.svg#OpenMojiColor') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }
 
 html, body {
