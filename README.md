@@ -3,6 +3,8 @@ Wheat Farmer
 
 Farming/Tower Defense web-based game, written in TypeScript. Rendering on HTML Canvas.
 
+**[Live demo](https://360-noscope.de/wheat-farmer)** (desktop-only)
+
 ![](preview.gif)
 
 # Table of contents
