@@ -16,7 +16,7 @@ Farming/Tower Defense web-based game, written in TypeScript. Rendering on HTML C
 **The game is currently at early alpha developing stage**, meaning it is neither complete, nor bug-free.
 
 **Implemented mechanics:**
-- Gather wheat by planting your seeds and waiting on your crops to growth, harvesting them upon completion ✅ 
+- Gather wheat by planting seeds and waiting on your crops to grow, harvesting them upon completion ✅ 
 - Avoid hostile robot attacks while farming ✅
 
 **Road map:**
