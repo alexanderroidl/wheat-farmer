@@ -104,7 +104,7 @@ export default class Browser {
 
     public getParameter (name: string): string | null {
         // Source: https://stackoverflow.com/a/5448595/11379072
-        
+
         let result: string | null = null;
         let tmp = [];
 
@@ -170,6 +170,12 @@ export default class Browser {
         `
     }
 
+    private getMiscDebugHTML (world: World): string {
+        return `
+            <strong>Tiles/Min:</strong> ${world.tilesPlantedPerMin}
+        `;
+    }
+
     public renderStats (world: World): void {
         this._statsDisplay.innerHTML = `<div class="gui-item">${this.getWorldStatsHTML(world)}</div>`;
     }
@@ -179,7 +185,8 @@ export default class Browser {
             this.getWorldStatsHTML(world),
             this.getCameraDebugHTML(camera),
             this.getMouseDebugHTML(camera),
-            this.getRendererDebugHTML(renderer)
+            this.getRendererDebugHTML(renderer),
+            this.getMiscDebugHTML(world)
         ];
 
         this._statsDisplay.innerHTML = (
