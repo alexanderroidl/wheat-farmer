@@ -1,3 +1,7 @@
+/**
+ * Dependencies
+ */
+const spawn = require('child_process').spawn;
 // Gulp general 
 const gulp = require('gulp');
 const sourceMaps = require('gulp-sourcemaps');
@@ -10,6 +14,13 @@ const tsify = require("tsify");
 const sass = require('gulp-sass');
 const csso = require('gulp-csso');
 const autoPrefixer = require('gulp-autoprefixer');
+
+
+/**
+ * Variables/Constants
+ */
+let webServerProcess = null;
+
 
 
 /**
@@ -87,6 +98,23 @@ function static () {
 
 
 /**
+ * Start or restart server
+ */
+function initWebServer () {
+    if (webServerProcess) {
+        webServerProcess.stdin.pause();
+        webServerProcess.kill();
+    }
+
+    webServerProcess = spawn('node', ['index.js']);
+
+    webServerProcess.stdout.on('data', (data) => console.log(data.toString()));
+    webServerProcess.stderr.on('data', (data) => console.log(data.toString()));
+    webServerProcess.stdin.on('data', (data) => console.log(data.toString()));
+}
+
+
+/**
  * Watch task
  */
 function watch () {
@@ -94,6 +122,12 @@ function watch () {
     gulp.watch('**/*.scss', { cwd: 'src/scss' }, styles);
     gulp.watch('**/*.ts', { cwd: 'src/ts' }, scripts);
     gulp.watch('**/*', { cwd: 'src/static', static});
+    gulp.watch('**/*', { cwd: 'src', delay: 1000 }, (cb) => {
+        initWebServer();
+        cb();
+    });
+
+    initWebServer();
 }
 
 
