@@ -58,19 +58,17 @@ export default class Renderer {
             ctx.shadowBlur = Math.floor(5 * this.z);
         }
 
-        let textDeltaX = 0;
         let fontSize = this.FONT_SIZE;
         let fontFamily = "Courier New";
 
         // Isn't alphanumeric -> must be emoji
         if (!Util.isAlphaNumeric(char)) {
-            textDeltaX = - (this.SQUARE_SIZE - fontSize) / 8;
             fontSize = this.FONT_EMOJI_SIZE;
             fontFamily = "OpenMoji";
         }
 
         const textDrawPos = new Vector(
-            (this.SQUARE_SIZE * x + this.SQUARE_SIZE / 2 + textDeltaX) * this.z - this.camera.position.x,
+            (this.SQUARE_SIZE * x + this.SQUARE_SIZE / 2) * this.z - this.camera.position.x,
             (this.SQUARE_SIZE * y + this.SQUARE_SIZE / 2) * this.z - this.camera.position.y
         );
 
@@ -101,6 +99,17 @@ export default class Renderer {
             const charFillStyle = charColor ? charColor : 'white';
             this.paintChar(ctx, char, charFillStyle, x, y, isHover);
         }
+    }
+
+    public outlineSquare (ctx: CanvasRenderingContext2D, x: number, y: number, borderWidth: number = 1): void {
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = borderWidth * this.z;
+        ctx.strokeRect(
+            (this.SQUARE_SIZE * x + borderWidth / 2) * this.z - this.camera.position.x, 
+            (this.SQUARE_SIZE * y + borderWidth / 2) * this.z - this.camera.position.y, 
+            (this.SQUARE_SIZE - borderWidth) * this.z, 
+            (this.SQUARE_SIZE - borderWidth) * this.z
+        );
     }
 
     public paintProgressBar (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, progress: number): void {
@@ -158,14 +167,7 @@ export default class Renderer {
                 tile.render(this, ctx, x, y, isHover);
 
                 if (isHover) {
-                    ctx.strokeStyle = 'white';
-                    ctx.lineWidth = 1 * this.z;
-                    ctx.strokeRect(
-                        (this.SQUARE_SIZE * x + 1/2) * this.z - this.camera.position.x, 
-                        (this.SQUARE_SIZE * y + 1/2) * this.z - this.camera.position.y, 
-                        (this.SQUARE_SIZE - 1) * this.z, 
-                        (this.SQUARE_SIZE - 1) * this.z
-                    );
+                    this.outlineSquare(ctx, x, y);
                 }
 
                 tile.renderLatest(this, ctx, x, y, isHover);

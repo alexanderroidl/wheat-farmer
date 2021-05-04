@@ -2,24 +2,35 @@
  * Dependencies
  */
 const spawn = require('child_process').spawn;
+const del = require('del');
 // Gulp general 
 const gulp = require('gulp');
 const sourceMaps = require('gulp-sourcemaps');
 const prettyError = require('gulp-prettyerror');
+const gulpif = require('gulp-if');
+const browserSync = require('browser-sync').create();
 // Gulp scripts
 const browserify = require("browserify");
 const source = require("vinyl-source-stream");
+const buffer = require('vinyl-buffer');
 const tsify = require("tsify");
+const uglify = require("gulp-uglify");
+const stripDebug = require("gulp-strip-debug");
 // Gulp styles
 const sass = require('gulp-sass');
 const csso = require('gulp-csso');
 const autoPrefixer = require('gulp-autoprefixer');
+// Gulp HTML
+const htmlmin = require('gulp-htmlmin');
 
 
 /**
  * Variables/Constants
  */
 let webServerProcess = null;
+let webServerTimeout = null;
+let browserSyncRunning = false;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 
 
@@ -44,8 +55,12 @@ function scripts () {
         console.log(err);
         this.emit('end')
       })
-      .pipe(prettyError())
       .pipe(source("index.js"))
+      .pipe(buffer())
+      .pipe(gulpif(!IS_PRODUCTION, sourceMaps.init({ loadMaps: true })))
+      .pipe(gulpif(IS_PRODUCTION, uglify()))
+      .pipe(gulpif(IS_PRODUCTION, stripDebug()))
+      .pipe(gulpif(!IS_PRODUCTION, sourceMaps.write('.')))
       .pipe(gulp.dest('build/js'));
 }
 
@@ -58,6 +73,7 @@ function html () {
         cwd: 'src/html'
     })
     .pipe(prettyError())
+    .pipe(gulpif(IS_PRODUCTION, htmlmin({ collapseWhitespace: true })))
     .pipe(gulp.dest('.', {
         cwd: 'build'
     }));
@@ -72,11 +88,11 @@ function styles () {
         cwd: 'src/scss'
     })
     .pipe(prettyError())
-    .pipe(sourceMaps.init())
+    .pipe(gulpif(!IS_PRODUCTION, sourceMaps.init()))
     .pipe(sass())
-    .pipe(csso())
+    .pipe(gulpif(IS_PRODUCTION, csso()))
     .pipe(autoPrefixer())
-    .pipe(sourceMaps.write())
+    .pipe(gulpif(!IS_PRODUCTION, sourceMaps.write('.')))
     .pipe(gulp.dest('css', {
         cwd: 'build'
     }));
@@ -98,6 +114,16 @@ function static () {
 
 
 /**
+ * Clear build directory
+ */
+async function clearBuild (cb) {
+    await del('**/*', {
+        cwd: 'build'
+    }, )
+}
+
+
+/**
  * Start or restart server
  */
 function initWebServer () {
@@ -107,6 +133,17 @@ function initWebServer () {
     }
 
     webServerProcess = spawn('node', ['index.js']);
+    if (!browserSyncRunning) {
+        browserSync.init(null, {
+            proxy: "http://localhost:3000",
+            files: ["build/**/*.*"],
+            port: 7000,
+        });
+
+        browserSyncRunning = true;
+    } else {
+        browserSync.reload();
+    }
 
     webServerProcess.stdout.on('data', (data) => console.log(data.toString()));
     webServerProcess.stderr.on('data', (data) => console.log(data.toString()));
@@ -122,6 +159,7 @@ function watch () {
     gulp.watch('**/*.scss', { cwd: 'src/scss' }, styles);
     gulp.watch('**/*.ts', { cwd: 'src/ts' }, scripts);
     gulp.watch('**/*', { cwd: 'src/static', static});
+
     gulp.watch('**/*', { cwd: 'src', delay: 1000 }, (cb) => {
         initWebServer();
         cb();
@@ -136,5 +174,6 @@ function watch () {
  */
 module.exports = {
     default: gulp.parallel(scripts, html, styles, static),
+    clearBuild,
     watch
 };

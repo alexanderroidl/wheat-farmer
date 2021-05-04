@@ -3,7 +3,7 @@ Wheat Farmer
 
 Farming/Tower Defense web-based game, written in TypeScript. Rendering on HTML Canvas.
 
-**[Live demo](https://360-noscope.de/wheat-farmer)** (desktop-only)
+**[Live demo (desktop-only)](https://360-noscope.de/wheat-farmer)**
 
 ![](preview.gif)
 
@@ -31,15 +31,17 @@ Farming/Tower Defense web-based game, written in TypeScript. Rendering on HTML C
 
 # 3. Installation
 ```bash
-npm install
+$ npm install --global yarn
+$ yarn install
 ```
 
 # 4. Usage
 ```bash
-npm run build # Build once
-npm run dev # Build once and watch afterwards - (Re-)starts Express webserver
-npm run start # Serve files using Express webserver
-npm run lint # Run ESLint on TypeScript code
+$ yarn build # Build once
+$ yarn develop # Build once and watch afterwards - (Re-)starts Express webserver and BrowserSync
+$ yarn production # Build in production mode (Compress everything, strip debug)ya
+$ yarn start # Start Express webserver to serve files on http://localhost:3000
+$ yarn lint # Run ESLint on TypeScript code
 ```
 
 # 5. Third-party contents
