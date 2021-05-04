@@ -4,6 +4,6 @@ export default class Player {
     public readonly items: Inventory = new Inventory();
 
     constructor () {
-        this.items.poppySeeds = 10;
+        this.items.wheatSeeds = 10;
     }
 }

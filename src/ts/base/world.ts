@@ -57,8 +57,8 @@ export default class World {
         tile.onClicked();
 
         if (tile instanceof EmptyTile) {
-            if (this._player.items.poppySeeds > 0) {
-                this._player.items.poppySeeds--;
+            if (this._player.items.wheatSeeds > 0) {
+                this._player.items.wheatSeeds--;
 
                 this._tiles[pos.y][pos.x] = new WheatTile();
             }
@@ -68,7 +68,7 @@ export default class World {
             if (tile.growthState >= 1) {
                 const seedDrops = tile.dropSeeds();
                 
-                this._player.items.poppySeeds += seedDrops;
+                this._player.items.wheatSeeds += seedDrops;
                 this._player.items.opium += 1;
 
                 this._tiles[pos.y][pos.x] = new EmptyTile();

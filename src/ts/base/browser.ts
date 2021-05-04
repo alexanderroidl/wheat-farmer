@@ -125,7 +125,7 @@ export default class Browser {
     private getWorldStatsHTML (world: World): string {
         return `
             <strong>Time:</strong> ${Math.floor((Date.now() - world.createdAt) / 1000)}s<br>
-            <strong>Seeds:</strong>: ${world.player.items.poppySeeds}<br>
+            <strong>Seeds:</strong>: ${world.player.items.wheatSeeds}<br>
             <strong>Wheat:</strong> ${world.player.items.opium}<br>
             <strong>Money:</strong> ${world.player.items.money} €<br>
         `;
