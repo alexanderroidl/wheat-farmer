@@ -70,7 +70,6 @@ export default class Browser {
 
         document.addEventListener('mouseup', (e) => {
             this._mouseDown = false;
-            document.body.style.cursor = '';
             this.onMouseUp(new Vector(e.screenX, e.screenY));
         });
 
@@ -81,7 +80,6 @@ export default class Browser {
             this.onMouseMove(new Vector(e.clientX, e.clientY));
 
             if (this._mouseDown) {
-                document.body.style.cursor = 'move';
                 this.onMouseDrag(new Vector(e.clientX, e.clientY));
             }
         });

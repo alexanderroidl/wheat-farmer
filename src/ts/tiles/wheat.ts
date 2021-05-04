@@ -13,7 +13,7 @@ export default class WheatTile extends Tile {
     public name: string = "Wheat";
 
     get growthState (): number {
-        const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME;
+        const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME * (1 - this.damage);
         return growth > 1 ? 1 : growth;
     }
 

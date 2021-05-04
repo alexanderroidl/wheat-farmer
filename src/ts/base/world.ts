@@ -85,6 +85,7 @@ export default class World {
 
                 // Replace with empty tile
                 newTile = new EmptyTile();
+                newTile.damage = tile.damage;
             }
         }
 
@@ -100,52 +101,36 @@ export default class World {
         }
     }
 
-    public getSurroundingTileCoords (x: number, y: number, includeSelf: boolean = false): Vector[] {
+    public getSurroundingTileCoords (v: Vector, radius: number = 1, includeSelf: boolean = true): Vector[] {
         const tiles: Vector[] = [];
 
-        if (this._tiles[y - 1]) {
-            if (this._tiles[y - 1][x - 1]) {
-                tiles.push(new Vector(x - 1, y - 1));
-            }
-    
-            if (this._tiles[y - 1][x]) {
-                tiles.push(new Vector(x, y - 1));
+        for (let y = v.y - Math.ceil(radius); y <= v.y + Math.ceil(radius); y++) {
+            if (!this._tiles[y]) {
+                continue;
             }
 
-            if (this._tiles[y - 1][x + 1]) {
-                tiles.push(new Vector(x + 1, y - 1));
-            }
-        }
+            for (let x = v.x - Math.ceil(radius); x <= v.x + Math.ceil(radius); x++) {
+                if (!this._tiles[y][x] || 
+                    (x === v.x && y === v.y && !includeSelf) ||
+                    new Vector(v.x - x, v.y - y).length > Math.ceil(radius)) {
+                    continue;
+                }
 
-        if (this._tiles[y]) {
-            if (this._tiles[y][x - 1]) {
-                tiles.push(new Vector(x - 1, y));
-            }
-
-            if (includeSelf) {
                 tiles.push(new Vector(x, y));
-            }
-    
-            if (this._tiles[y][x + 1]) {
-                tiles.push(new Vector(x + 1, y));
-            }
-        }
-
-        if (this._tiles[y + 1]) {
-            if (this._tiles[y + 1][x - 1]) {
-                tiles.push(new Vector(x - 1, y + 1));
-            }
-    
-            if (this._tiles[y + 1][x]) {
-                tiles.push(new Vector(x, y + 1));
-            }
-
-            if (this._tiles[y + 1][x + 1]) {
-                tiles.push(new Vector(x + 1, y + 1));
             }
         }
 
         return tiles;
+    }
+
+    public getRandomOutsidePos (): Vector {
+        // Make spawn radius twice the game area's diameter
+        const spawnRadius = this.CENTER.length * 2;
+
+        // Set position randomly around the game area
+        return new Vector(spawnRadius, 0)
+            .rotate(Math.random() * 360)
+            .add(this.CENTER.x, this.CENTER.y);
     }
 
     /**
@@ -159,13 +144,7 @@ export default class World {
     public spawnEnemy (pos: Vector | null = null, randomShift?: Vector): EntityInterface {
         // No position given
         if (pos === null) {
-            // Make spawn radius twice the game area's diameter
-            const spawnRadius = this.CENTER.length * 2;
-
-            // Set position randomly around the game area
-            pos = new Vector(spawnRadius, 0)
-                .rotate(Math.random() * 360)
-                .add(this.CENTER.x, this.CENTER.y);
+            pos = this.getRandomOutsidePos();
         }
 
         if (randomShift) {
@@ -195,21 +174,22 @@ export default class World {
         });
 
         // Start spawning enemies at more than 50 planted tiles/min
-        if (this.tilesPlantedPerMin > 50) {
-            // Add an extra enemy for every additional 25 planted tiles/min
-            const enemieGroups = Math.floor((this.tilesPlantedPerMin - 50) / 25);
-
+        // Add an extra enemy for every additional 25 planted tiles/min
+        const enemieGroups = Math.ceil((this.tilesPlantedPerMin - 40) / 10);
+        if (enemieGroups > 0) {
             // Calculate spawnable enemie groups
             const spawnableGroupCount = enemieGroups - this.enemyGroupsPerMin;
+
             if (spawnableGroupCount > 0) {
                 // Create each spawnable enemie group
                 for (let groupIndex = 0; groupIndex < spawnableGroupCount; groupIndex++) {
                     // Determine random group size
-                    const groupSize = Math.floor(Math.random() * 2) + 1;
+                    const groupSize = Math.floor(Math.random() * 3) + 1;
+                    const spawnPos = this.getRandomOutsidePos();
 
                     // Create each enemy for set group size
                     for (let enemyIndex = 0; enemyIndex < groupSize; enemyIndex++) {
-                        const enemy = this.spawnEnemy();
+                        const enemy = this.spawnEnemy(spawnPos, new Vector(Math.random() * 3, Math.random() * 3));
 
                         // Assign random world coordinates as target for spawned enemie
                         enemy.target =  new Vector(Math.random() * this.SIZE, Math.random() * this.SIZE).floor();
@@ -229,16 +209,24 @@ export default class World {
                     // Remove this entity from list
                     this._entities = this._entities.filter((v) => v != entity);
 
+                    const MAX_EXPLOSION_RADIUS = 3;
+
+                    const entityPos = entity.position.floor();
+
                     // Get coordinates for surrounding tiles
-                    const surroundingTileCoords = this.getSurroundingTileCoords(Math.floor(entity.position.x), Math.floor(entity.position.y), true);
+                    const surroundingTileCoords = this.getSurroundingTileCoords(
+                        entityPos, 
+                        Math.floor(MAX_EXPLOSION_RADIUS - 1) + 1
+                    );
 
                     // Iterate through surrounding tile coordinates
-                    for (const surroundingTilePos of surroundingTileCoords) {
-                        const surroundingTile = this._tiles[surroundingTilePos.y][surroundingTilePos.x];
+                    for (const tilePos of surroundingTileCoords) {
+                        const distance = tilePos.add(0.5, 0.5).add(-entityPos.x, -entityPos.y).length;
+                        const damage = 1 - (distance / MAX_EXPLOSION_RADIUS);
 
-                        if (!(surroundingTile instanceof EmptyTile)) {
-                            this._tiles[surroundingTilePos.y][surroundingTilePos.x] = new EmptyTile();
-                        }
+                        const emptyTile = new EmptyTile();
+                        emptyTile.damage = damage > 1 ? 1 : damage < 0 ? 0 : damage;
+                        this._tiles[tilePos.y][tilePos.x] = emptyTile;
                     }
                 }
             }

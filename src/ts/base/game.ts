@@ -46,11 +46,16 @@ export default class Game {
 
         this.browser.onMouseMove = (pos: Vector) => {
             this.renderer.mousePos = new Vector(pos.x, pos.y);
+
+            if (this._mouseDown) {
+                const worldPos = this.renderer.camera.worldPosFromScreen(pos);
+                this.world.onTileClicked(worldPos.floor());
+            }
         }
 
         this.browser.onMouseClick = (pos: Vector) => {
-            const worldClickPos = this.renderer.camera.worldPosFromScreen(pos);
-            this.world.onTileClicked(worldClickPos.floor());
+            const worldPos = this.renderer.camera.worldPosFromScreen(pos);
+            this.world.onTileClicked(worldPos.floor());
         };
     }
 

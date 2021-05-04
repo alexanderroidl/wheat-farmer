@@ -5,6 +5,8 @@ export default class Tile implements TileInterface {
     public static readonly COLOR: string = '';
     public name: string = "";
     public timeCreated: number = Date.now();
+
+    damage: number = 0;
     
     public getChar (): string | null {
         return 'x';
@@ -36,6 +38,10 @@ export default class Tile implements TileInterface {
     }
 
     public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
+        // TODO: Implement logic
+    }
+
+    public update (delta: number): void {
         // TODO: Implement logic
     }
 }

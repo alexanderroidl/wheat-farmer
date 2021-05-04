@@ -135,7 +135,7 @@ function initWebServer () {
     webServerProcess = spawn('node', ['index.js']);
     if (!browserSyncRunning) {
         browserSync.init(null, {
-            proxy: "http://localhost:3000",
+            proxy: "http://localhost:3000/?debug",
             files: ["build/**/*.*"],
             port: 7000,
         });
