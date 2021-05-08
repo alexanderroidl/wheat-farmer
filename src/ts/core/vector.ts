@@ -1,3 +1,5 @@
+import BitMath from "./bit-math";
+
 export default class Vector {
     public x: number;
     public y: number;
@@ -39,7 +41,7 @@ export default class Vector {
      * @returns Vector with rounded off coordinates
      */
     public floor (): Vector {
-        return new Vector(Math.floor(this.x), Math.floor(this.y));
+        return new Vector(BitMath.floor(this.x), BitMath.floor(this.y));
     }
 
     /**
@@ -58,5 +60,9 @@ export default class Vector {
             Math.round(10000 * (this.x * cos - this.y * sin)) / 10000, 
             Math.round(10000 * (this.x * sin + this.y * cos)) / 10000
         );
+    }
+
+    public toString(): string {
+        return `Vector (${this.x}, ${this.y})`;
     }
 }

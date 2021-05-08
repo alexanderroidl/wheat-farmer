@@ -3,6 +3,7 @@ import EmptyTile from './empty';
 import Renderer from '../core/renderer';
 import Tile from './tile';
 import Easings from '../core/easings';
+import BitMath from '../core/bit-math';
 
 export default class WheatTile extends Tile {
     public readonly GROWTH_TIME = 7.5 * 1000;
@@ -13,7 +14,10 @@ export default class WheatTile extends Tile {
     public name: string = "Wheat";
 
     get growthState (): number {
-        const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME * (1 - this.damage);
+        const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME;
+        if (growth < 1) {
+            return growth * (1 - this.damage)
+        }
         return growth > 1 ? 1 : growth;
     }
 
@@ -37,7 +41,8 @@ export default class WheatTile extends Tile {
 
     public getHexColor (): string | null { 
         const mixAmount = Easings.easeInCubic(this.growthState);
-        return Util.mixColors(EmptyTile.COLOR, this.COLOR_GROWN, mixAmount);
+        const growthColor = Util.mixColors(EmptyTile.COLOR, this.COLOR_GROWN, mixAmount);
+        return this.getDamagedHexColor(growthColor);
     }
 
     public onClicked (): void {
@@ -45,7 +50,7 @@ export default class WheatTile extends Tile {
     }
 
     public dropSeeds (): number {
-        return Math.floor(Math.random() * (this.MAX_SEED_DROP - this.MIN_SEED_DROP + 1)) + this.MIN_SEED_DROP;
+        return BitMath.floor(Math.random() * (this.MAX_SEED_DROP - this.MIN_SEED_DROP + 1)) + this.MIN_SEED_DROP;
     }
 
     public render (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
@@ -56,7 +61,7 @@ export default class WheatTile extends Tile {
         super.renderLatest(renderer, ctx, x, y, isHover);
 
         if (isHover && this.growthState < 1) {
-            renderer.paintProgressBar(ctx, x + 0.25/2, y + 0.7, 0.75, 0.2, this.growthState);
+            renderer.paintProgressBar(ctx, x + 0.25/2, y + 0.7, 0.75, 0.15, this.growthState);
         }
     }
 }

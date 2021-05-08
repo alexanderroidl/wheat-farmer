@@ -1,19 +1,17 @@
 import Tile from './tile';
-import Util from '../core/util';
+import Renderer from '../core/renderer';
 
 export default class EmptyTile extends Tile {
     public static readonly COLOR = '#ebb434';
     public name: string = "Empty";
     public timeCreated: number = Date.now();
-    public tagged: boolean = false;
     
     public getChar (): string | null {
         return 'x';
     }
 
     public getHexColor (): string | null {
-        const lightenDarkenFactor = -(this.damage) * 60;
-        return Util.lightenDarkenColor(EmptyTile.COLOR, lightenDarkenFactor);
+        return this.getDamagedHexColor(EmptyTile.COLOR);
     }
 
     public getCharColor (): string | null {
@@ -22,5 +20,9 @@ export default class EmptyTile extends Tile {
 
     public onClicked (): void {
         // TODO: Implement logic
+    }
+
+    public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
+        super.renderLatest(renderer, ctx, x, y, isHover);
     }
 }
