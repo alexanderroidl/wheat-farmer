@@ -21,6 +21,7 @@ const sass = require('gulp-sass');
 const csso = require('gulp-csso');
 const autoPrefixer = require('gulp-autoprefixer');
 // Gulp HTML
+const pug = require('gulp-pug');
 const htmlmin = require('gulp-htmlmin');
 
 
@@ -69,10 +70,11 @@ function scripts () {
  * HTML task
  */
 function html () {
-    return gulp.src('**/*.html', {
-        cwd: 'src/html'
+    return gulp.src('**/*.pug', {
+        cwd: 'src/pug'
     })
     .pipe(prettyError())
+    .pipe(pug())
     .pipe(gulpif(IS_PRODUCTION, htmlmin({ collapseWhitespace: true })))
     .pipe(gulp.dest('.', {
         cwd: 'build'
@@ -155,7 +157,7 @@ function initWebServer () {
  * Watch task
  */
 function watch () {
-    gulp.watch('**/*.html', { cwd: 'src/html' }, html);
+    gulp.watch('**/*.pug', { cwd: 'src/pug' }, html);
     gulp.watch('**/*.scss', { cwd: 'src/scss' }, styles);
     gulp.watch('**/*.ts', { cwd: 'src/ts' }, scripts);
     gulp.watch('**/*', { cwd: 'src/static', static});
