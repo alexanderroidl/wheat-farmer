@@ -1,6 +1,7 @@
 import SlideInterface from "../interfaces/slide-interface";
 import Renderer from "../core/renderer";
 import Util from "../core/util";
+import Vector from "../core/vector";
 
 export default class TitleScreenLogoSlide implements SlideInterface {
 
@@ -59,6 +60,10 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     }
 
     update (delta: number): void {
+        // TODO: Implement logic
+    }
+
+    onClick (pos: Vector): void {
         // TODO: Implement logic
     }
 }

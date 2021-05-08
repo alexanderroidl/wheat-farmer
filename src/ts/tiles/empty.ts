@@ -15,7 +15,7 @@ export default class EmptyTile extends Tile {
     }
 
     public getCharColor (): string | null {
-        return '#333333';
+        return '#666666';
     }
 
     public onClicked (): void {

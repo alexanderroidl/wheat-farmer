@@ -37,8 +37,8 @@ export default class Camera {
     }
 
     public zoom (zoom: number): void {
-        if (this._zoomAmount + zoom < 0) {
-            this._zoomAmount = 0.1;
+        if (this._zoomAmount + zoom < 0.2) {
+            this._zoomAmount = 0.2;
             return;
         }
 
