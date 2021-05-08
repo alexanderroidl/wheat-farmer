@@ -2,6 +2,7 @@ import World from "./world";
 import Camera from "./camera";
 import Renderer from "../core/renderer";
 import Vector from "../core/vector";
+import BitMath from "../core/bit-math";
 
 export default class Browser {
     private _statsDisplay: HTMLDivElement = document.createElement('div');
@@ -122,7 +123,7 @@ export default class Browser {
 
     private getWorldStatsHTML (world: World): string {
         return `
-            <strong>Time:</strong> ${Math.floor((Date.now() - world.createdAt) / 1000)}s<br>
+            <strong>Time:</strong> ${BitMath.floor((Date.now() - world.createdAt) / 1000)}s<br>
             <strong>Seeds:</strong>: ${world.player.items.wheatSeeds}<br>
             <strong>Wheat:</strong> ${world.player.items.opium}<br>
             <strong>Money:</strong> ${world.player.items.money} €<br>
@@ -154,9 +155,9 @@ export default class Browser {
     private getRendererDebugHTML (renderer: Renderer): string {
         const camera = renderer.camera;
 
-        const xStart = Math.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const xStart = BitMath.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
         const xEnd = Math.ceil((camera.position.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
-        const yStart = Math.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const yStart = BitMath.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
         const yEnd = Math.ceil((camera.position.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
 
         return `

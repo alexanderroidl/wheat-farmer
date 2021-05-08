@@ -14,6 +14,7 @@ export default class Game {
     private browser: Browser = new Browser();
 
     private _mouseDown: boolean = false;
+    private _lastClickAt: number = Date.now();
 
     public static get instance (): Game {
         if (!Game._instance) {
@@ -46,14 +47,15 @@ export default class Game {
 
         this.browser.onMouseMove = (pos: Vector) => {
             this.renderer.mousePos = new Vector(pos.x, pos.y);
-
-            if (this._mouseDown) {
-                const worldPos = this.renderer.camera.worldPosFromScreen(pos);
-                this.world.onTileClicked(worldPos.floor());
-            }
         }
 
         this.browser.onMouseClick = (pos: Vector) => {
+            if (!this.renderer.titleScreen.hidden) {
+                this.renderer.titleScreen.onClick(pos);
+                this._lastClickAt = Date.now();
+                return;
+            }
+
             const worldPos = this.renderer.camera.worldPosFromScreen(pos);
             this.world.onTileClicked(worldPos.floor());
         };
@@ -61,22 +63,41 @@ export default class Game {
 
     private setupWindow (): void {
         this.browser.onResize = (width: number, height: number, oldWidth: number, oldHeight: number) => {
-            // Todo: Add logic
+            const deltaW = oldWidth - width;
+            const deltaH = oldHeight - height;
+
+            this.renderer.camera.move(
+                deltaW/2,
+                deltaH/2
+            );
         };
     }
 
     private setupLoop (): void {
         this.loop.update = (delta: number) => {
-            this.world.update(delta);
+            if (this.renderer.titleScreen.hidden) {
+                this.world.update(delta);
+            }
+
+            if (this._mouseDown) {
+                if ((Date.now() - this._lastClickAt) > 250) {
+                    const worldPos = this.renderer.camera.worldPosFromScreen(this.renderer.mousePos);
+                    this.world.onTileClicked(worldPos.floor());
+    
+                    this._lastClickAt = Date.now();
+                }
+            }
         };
 
         this.loop.render = (interpolation: number) => {
             this.renderer.render(this.world);
 
-            this.browser.renderStats(this.world);
-
-            if (this.browser.getParameter('debug')) {
-                this.browser.renderDebug(this.renderer.camera, this.renderer, this.world);
+            if (this.renderer.titleScreen.hidden) {
+                if (this.browser.getParameter('debug')) {
+                    this.browser.renderDebug(this.renderer.camera, this.renderer, this.world);
+                } else {
+                    this.browser.renderStats(this.world);
+                }
             }
         };
 

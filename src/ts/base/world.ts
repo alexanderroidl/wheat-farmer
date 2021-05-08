@@ -5,10 +5,11 @@ import EntityInterface from '../interfaces/entity-interface';
 import RobotEntity from '../entities/enemies/robot';
 import Vector from '../core/vector';
 import Easings from "../core/easings";
-import Tile from 'tiles/tile';
+import Tile from '../tiles/tile';
+import BitMath from '../core/bit-math';
 
 export default class World {
-    public readonly SIZE: number = 12; // 20x20 world siz
+    public readonly SIZE: number = 20   ; // 20x20 world siz
     public readonly CENTER: Vector = new Vector(this.SIZE/2, this.SIZE/2).floor();
 
     private _tiles: Tile[][];
@@ -44,8 +45,7 @@ export default class World {
 
     constructor () {
         this._tiles = Array(this.SIZE).fill([]).map(() => {
-            const emptyTile = new EmptyTile();
-            return Array(this.SIZE).fill(emptyTile);
+            return Array(this.SIZE).fill([]).map(() => new EmptyTile());
         });
     }
 
@@ -78,19 +78,26 @@ export default class World {
         if (tile instanceof WheatTile) {
             // Wheat is fully grown
             if (tile.growthState >= 1) {
-                const seedDrops = tile.dropSeeds();
+                let seedDrops: number | null = null;
+
+                // If player has no seeds left, always drop
+                while (seedDrops === null || this._player.items.wheatSeeds + seedDrops === 0) {
+                    seedDrops = tile.dropSeeds()
+                }
                 
                 this._player.items.wheatSeeds += seedDrops;
                 this._player.items.opium += 1;
 
                 // Replace with empty tile
                 newTile = new EmptyTile();
-                newTile.damage = tile.damage;
             }
         }
 
         // New tile was created
         if (newTile !== null) {
+            // Set damage of new tile to damage of old tile
+            newTile.damage = tile.damage;
+
             // Update world
             this._tiles[pos.y][pos.x] = newTile;
 
@@ -125,7 +132,7 @@ export default class World {
 
     public getRandomOutsidePos (): Vector {
         // Make spawn radius twice the game area's diameter
-        const spawnRadius = this.CENTER.length * 2;
+        const spawnRadius = this.CENTER.length * 3;
 
         // Set position randomly around the game area
         return new Vector(spawnRadius, 0)
@@ -173,6 +180,14 @@ export default class World {
             return (Date.now() - timeCreated) < 60 * 1000;
         });
 
+        // Iterate through world
+        for (let y = 0; y < this._tiles.length; y++) {
+            for (let x = 0; x < this._tiles[y].length; x++) {
+                // Reduce tile damage based off total heal time
+                this._tiles[y][x].damage -= delta / Tile.DAMAGE_HEAL_TIME;
+            }
+        }
+
         // Start spawning enemies at more than 50 planted tiles/min
         // Add an extra enemy for every additional 25 planted tiles/min
         const enemieGroups = Math.ceil((this.tilesPlantedPerMin - 40) / 10);
@@ -184,7 +199,7 @@ export default class World {
                 // Create each spawnable enemie group
                 for (let groupIndex = 0; groupIndex < spawnableGroupCount; groupIndex++) {
                     // Determine random group size
-                    const groupSize = Math.floor(Math.random() * 3) + 1;
+                    const groupSize = BitMath.floor(Math.random() * 3) + 1;
                     const spawnPos = this.getRandomOutsidePos();
 
                     // Create each enemy for set group size
@@ -204,29 +219,50 @@ export default class World {
         // Iterate existing entities
         for (const entity of this.entities) {
             if (entity instanceof RobotEntity) {
-                // Robot has exploded
+                // Robot is exploding
                 if (entity.hasExploded) {
                     // Remove this entity from list
                     this._entities = this._entities.filter((v) => v != entity);
 
-                    const MAX_EXPLOSION_RADIUS = 3;
+                    const MAX_EXPLOSION_RADIUS = 2;
 
-                    const entityPos = entity.position.floor();
+                    const entityWorldPos = entity.position.floor();
 
                     // Get coordinates for surrounding tiles
+                    const radius = BitMath.floor(Math.random() * (MAX_EXPLOSION_RADIUS + 1))
                     const surroundingTileCoords = this.getSurroundingTileCoords(
-                        entityPos, 
-                        Math.floor(MAX_EXPLOSION_RADIUS - 1) + 1
+                        entityWorldPos, 
+                        radius
                     );
 
                     // Iterate through surrounding tile coordinates
                     for (const tilePos of surroundingTileCoords) {
-                        const distance = tilePos.add(0.5, 0.5).add(-entityPos.x, -entityPos.y).length;
-                        const damage = 1 - (distance / MAX_EXPLOSION_RADIUS);
+                        // Calculate distance to surrounding tile
+                        const distance = 
+                            tilePos
+                                .add(0.5, 0.5)
+                                .add(
+                                    -(entityWorldPos.x + 0.5), 
+                                    -(entityWorldPos.y + 0.5)
+                                ).length;
 
-                        const emptyTile = new EmptyTile();
-                        emptyTile.damage = damage > 1 ? 1 : damage < 0 ? 0 : damage;
-                        this._tiles[tilePos.y][tilePos.x] = emptyTile;
+                        // Calculate damage and restrict to values between 0-1
+                        const damage = 1 - (distance / (MAX_EXPLOSION_RADIUS + 1));
+
+                        const tileDestroyed = Math.random() * MAX_EXPLOSION_RADIUS/(distance + 1) > 0.5;
+                        const existingTile = this._tiles[tilePos.y][tilePos.x];
+
+                        if (tileDestroyed) {
+                            const emptyTile = new EmptyTile();
+
+                            // Add existing damage to new tile
+                            emptyTile.damage = existingTile.damage + damage;
+    
+                            // Update world for tile
+                            this._tiles[tilePos.y][tilePos.x] = emptyTile;
+                        } else {
+                            existingTile.damage = existingTile.damage + damage;
+                        }
                     }
                 }
             }

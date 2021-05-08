@@ -3,6 +3,8 @@ import Camera from "../base/camera";
 import EmptyTile from "../tiles/empty";
 import Util from "./util";
 import Vector from "./vector";
+import TitleScreen from "../title-screen/title-screen";
+import BitMath from "./bit-math";
 
 export default class Renderer {
     public readonly FONT_SIZE = 12;
@@ -10,7 +12,8 @@ export default class Renderer {
     public readonly SQUARE_SIZE = 32;
 
     private _canvas: HTMLCanvasElement = document.createElement('canvas');
-    public readonly camera: Camera;
+    public readonly camera: Camera = new Camera(this.SQUARE_SIZE);
+    public readonly titleScreen: TitleScreen = new TitleScreen();
 
     public mousePos: Vector = new Vector(0, 0);
 
@@ -28,7 +31,6 @@ export default class Renderer {
 
     constructor () {
         this.setupCanvas();
-        this.camera = new Camera(this.SQUARE_SIZE);
     }
 
     private setupCanvas (): void {
@@ -55,7 +57,7 @@ export default class Renderer {
             ctx.shadowColor = "white";
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
-            ctx.shadowBlur = Math.floor(5 * this.z);
+            ctx.shadowBlur = BitMath.floor(5 * this.z);
         }
 
         let fontSize = this.FONT_SIZE;
@@ -72,13 +74,13 @@ export default class Renderer {
             (this.SQUARE_SIZE * y + this.SQUARE_SIZE / 2) * this.z - this.camera.position.y
         );
 
-        const fontDrawSize = Math.floor(fontSize * this.z);
+        const fontDrawSize = BitMath.floor(fontSize * this.z);
 
         ctx.fillStyle = charColor;
         ctx.textAlign = "center";
         ctx.textBaseline = 'middle';
         ctx.font = `${fontDrawSize}px "${fontFamily}"`;
-        ctx.fillText(char, Math.floor(textDrawPos.x), Math.floor(textDrawPos.y)); 
+        ctx.fillText(char, BitMath.floor(textDrawPos.x), BitMath.floor(textDrawPos.y)); 
 
         ctx.shadowBlur = 0;
     }
@@ -112,7 +114,7 @@ export default class Renderer {
         );
     }
 
-    public paintProgressBar (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, progress: number): void {
+    public paintProgressBar (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, progress: number, color: string = 'green'): void {
         ctx.globalAlpha = 0.65;
 
         ctx.fillStyle = 'white';
@@ -123,7 +125,7 @@ export default class Renderer {
             this.SQUARE_SIZE * height * this.z
         );
 
-        ctx.fillStyle = 'green';
+        ctx.fillStyle = color;
         ctx.fillRect(
             (this.SQUARE_SIZE * x + 1) * this.z - this.camera.position.x, 
             (this.SQUARE_SIZE * y + 1) * this.z - this.camera.position.y, 
@@ -161,7 +163,7 @@ export default class Renderer {
             for (let x = 0; x < world.tiles[y].length; x++) {
                 ctx.globalAlpha = 1;
 
-                const isHover = Math.floor(mouseWorldPos.x) === x && Math.floor(mouseWorldPos.y)  === y;
+                const isHover = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y)  === y;
 
                 const tile = world.tiles[y][x];
                 tile.render(this, ctx, x, y, isHover);
@@ -178,5 +180,8 @@ export default class Renderer {
         for (const entity of world.entities) {
             this.paintChar(ctx, entity.getChar(), 'white', entity.position.x, entity.position.y, false);
         }
+
+        // Draw title screen
+        this.titleScreen.render(this, ctx);
     }
 }
