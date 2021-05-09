@@ -74,6 +74,7 @@ export default class Game {
     }
 
     private setupLoop (): void {
+        this.loop.fps = 30;
         this.loop.update = (delta: number) => {
             if (this.renderer.titleScreen.hidden) {
                 this.world.update(delta);

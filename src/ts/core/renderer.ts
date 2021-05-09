@@ -1,6 +1,6 @@
 import World from "../base/world";
 import Camera from "../base/camera";
-import EmptyTile from "../tiles/empty";
+import EmptyTile from "../tiles/empty-tile";
 import Util from "./util";
 import Vector from "./vector";
 import TitleScreen from "../title-screen/title-screen";

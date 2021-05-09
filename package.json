@@ -52,6 +52,7 @@
     "gulp-strip-debug": "^4.0.0",
     "gulp-typescript": "^6.0.0-alpha.1",
     "gulp-uglify": "^3.0.2",
+    "pathfinding": "^0.4.18",
     "tsify": "^5.0.2",
     "typescript": "^4.2.4",
     "vinyl-buffer": "^1.0.1",

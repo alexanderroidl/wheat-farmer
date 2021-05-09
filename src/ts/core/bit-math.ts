@@ -10,4 +10,9 @@ export default class BitMath {
     public static abs (n: number): number {
       return (n ^ (n >> 31)) - (n >> 31)
     }
+
+    public static isInt (value: unknown): boolean {
+      const x = parseFloat(value);
+      return !isNaN(value) && (x | 0) === x;
+    }
 }

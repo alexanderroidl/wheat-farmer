@@ -3,6 +3,7 @@ import Camera from "./camera";
 import Renderer from "../core/renderer";
 import Vector from "../core/vector";
 import BitMath from "../core/bit-math";
+import Inventory from "./inventory";
 
 export default class Browser {
     private _statsDisplay: HTMLDivElement = document.createElement('div');
@@ -43,6 +44,46 @@ export default class Browser {
 
         // Add everything to DOM
         document.body.append(this._statsDisplay);
+    }
+
+    public setupShop (inventory: Inventory): void {
+        const shopContent = document.createElement('div');
+        shopContent.classList.add('shop-content');
+        shopContent.innerHTML = '';
+
+        for (const inventoryItem of inventory.items) {
+            const shopInventoryItemLink = document.createElement('a');
+            shopInventoryItemLink.innerHTML = `${inventoryItem.type.name} (${inventoryItem.amount})`;
+            shopInventoryItemLink.setAttribute('href', 'javascript:void(0)');
+            shopInventoryItemLink.addEventListener('click', function (e) {
+                let amount: string | null = '';
+
+                while (!BitMath.isInt(amount) || amount === null) {
+                    amount = window.prompt('How many?');
+                }
+
+                inventory.purchaseItem(
+                    inventoryItem.type.name, 
+                    parseFloat(amount)
+                );
+            });
+
+            shopContent.append(shopInventoryItemLink);
+        }
+
+        const shopTitle = document.createElement('div');
+        shopTitle.classList.add('shop-title');
+        shopTitle.innerHTML = 'Wheat Farmer Shop';
+
+        const shop = document.createElement('div');
+        shop.classList.add('shop');
+        shop.append(shopTitle, shopContent);
+
+        const shopWrap = document.createElement('div');
+        shopWrap.classList.add('shop-wrap');
+        shopWrap.append(shop);
+
+        document.body.append(shopWrap);
     }
 
     private setupEvents (): void {
@@ -99,6 +140,14 @@ export default class Browser {
             this._oldWindowWidth = window.innerWidth;
             this._oldWindowHeight = window.innerHeight;
         });
+
+        document.addEventListener('keydown', (e) => {
+            console.log('KEYDOWN', e);
+        });
+
+        document.addEventListener('keyup', (e) => {
+            console.log('KEYUP', e);
+        });
     }
 
     public getParameter (name: string): string | null {
@@ -127,6 +176,7 @@ export default class Browser {
             <strong>Seeds:</strong>: ${world.player.items.wheatSeeds}<br>
             <strong>Wheat:</strong> ${world.player.items.opium}<br>
             <strong>Money:</strong> ${world.player.items.money} €<br>
+            <strong>Wall:</strong> ${world.player.items.getItemAmount('Wall')}
         `;
     }
 

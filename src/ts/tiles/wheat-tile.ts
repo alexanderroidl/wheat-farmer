@@ -1,5 +1,5 @@
 import Util from '../core/util';
-import EmptyTile from './empty';
+import EmptyTile from './empty-tile';
 import Renderer from '../core/renderer';
 import Tile from './tile';
 import Easings from '../core/easings';

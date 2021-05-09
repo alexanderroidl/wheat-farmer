@@ -1,5 +1,5 @@
-import EmptyTile from '../tiles/empty';
-import WheatTile from '../tiles/wheat';
+import EmptyTile from '../tiles/empty-tile';
+import WheatTile from '../tiles/wheat-tile';
 import Player from "./player";
 import EntityInterface from '../interfaces/entity-interface';
 import RobotEntity from '../entities/enemies/robot';

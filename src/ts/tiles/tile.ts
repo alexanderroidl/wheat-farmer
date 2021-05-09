@@ -18,6 +18,10 @@ export default class Tile implements TileInterface {
     set damage (amount: number) {
         this._damage = amount > 1 ? 1 : amount < 0 ? 0 : amount;
     }
+
+    public hasCollision (): boolean {
+        return false;
+    }
     
     public getChar (): string | null {
         return 'x';
