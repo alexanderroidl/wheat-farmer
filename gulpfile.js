@@ -160,7 +160,7 @@ function watch () {
     gulp.watch('**/*.pug', { cwd: 'src/pug' }, html);
     gulp.watch('**/*.scss', { cwd: 'src/scss' }, styles);
     gulp.watch('**/*.ts', { cwd: 'src/ts' }, scripts);
-    gulp.watch('**/*', { cwd: 'src/static', static});
+    gulp.watch('**/*', { cwd: 'src/static' }, static);
 
     gulp.watch('**/*', { cwd: 'src', delay: 1000 }, (cb) => {
         initWebServer();
