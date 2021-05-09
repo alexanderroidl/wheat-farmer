@@ -134,7 +134,27 @@ export default class Browser {
         });
     }
 
-    public getParameter (name: string): string | null {
+    public static isMobile (): boolean {
+        const toMatch = [
+            /Android/i,
+            /webOS/i,
+            /iPhone/i,
+            /iPad/i,
+            /iPod/i,
+            /BlackBerry/i,
+            /Windows Phone/i
+        ];
+    
+        return toMatch.some((toMatchItem) => {
+            return navigator.userAgent.match(toMatchItem);
+        });
+    }
+
+    public static alert (text: string): void {
+        window.alert(text);
+    }
+
+    public static getParameter (name: string): string | null {
         // Source: https://stackoverflow.com/a/5448595/11379072
 
         let result: string | null = null;

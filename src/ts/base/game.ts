@@ -131,7 +131,7 @@ export default class Game {
             if (this.renderer.titleScreen.hidden) {
                 this.browser.renderWorldStatsHTML(this.world);
 
-                if (this.browser.getParameter('debug')) {
+                if (Browser.getParameter('debug')) {
                     this.browser.renderDebug(this.renderer.camera, this.renderer, this.world);
                 }
             }
