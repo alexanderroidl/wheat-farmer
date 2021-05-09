@@ -11,7 +11,7 @@ export default class BitMath {
       return (n ^ (n >> 31)) - (n >> 31)
     }
 
-    public static isInt (value: unknown): boolean {
+    public static isInt (value: any): boolean {
       const x = parseFloat(value);
       return !isNaN(value) && (x | 0) === x;
     }
