@@ -1,7 +1,9 @@
 import TradeableInterface from "../interfaces/tradeable-interface";
 import WallTile from "../tiles/wall-tile";
+import WheatTile from "../tiles/wheat-tile";
+import Tile from "tiles/tile";
 
-class InventoryItem {
+export class InventoryItem {
     public amount: number = 0;
     public type: TradeableInterface;
 
@@ -10,11 +12,13 @@ class InventoryItem {
     }
 }
 
-export default class Inventory {
-    public wheatSeeds: number = 0;
-    public opium: number = 0;
+export class Inventory {
+    public static readonly MONEY_PER_OPIUM: number = 3;
+
+    public wheat: number = 0;
     public money: number = 0;
     public items: InventoryItem[] = [
+        new InventoryItem(new WheatTile()),
         new InventoryItem(new WallTile())
     ]
 
@@ -28,20 +32,58 @@ export default class Inventory {
         return 0;
     }
 
-    public purchaseItem (name: string, amount: number): boolean {
+    public setItemAmount (name: string, amount: number): void {
+        const item = this.getItem(name);
+        if (item === null) {
+            return;
+        }
+
+        item.amount = amount;
+    }
+
+    public increaseItemAmount (name: string): void {
+        this.setItemAmount(name, this.getItemAmount(name) + 1);
+    }
+
+    public decreaseItemAmount (name: string): void {
+        const amountLeft = this.getItemAmount(name) - 1;
+        this.setItemAmount(name, amountLeft < 0 ? 0 : amountLeft);
+    }
+
+    public getItem (name: string): InventoryItem | null {
         for (const item of this.items) {
             if (name === item.type.name) {
-                const totalCost = item.type.buyPrice * amount;
-                if (this.money - totalCost < 0) {
-                    return false;
-                }
-    
-                this.money -= totalCost;
-                item.amount += amount;
-                return true;
+                return item;
             }
         }
 
-        return false;
+        return null;
+    }
+
+    public purchaseItem (name: string, amount: number): boolean {
+        const item = this.getItem(name);
+        if (item === null) {
+            return false;
+        }
+
+        const totalCost = item.type.buyPrice * amount;
+        if (this.money - totalCost < 0) {
+            return false;
+        }
+
+        this.money -= totalCost;
+        item.amount += amount;
+        return true;
+    }
+
+    sellWheat (amount: number): boolean {
+        if (this.wheat - amount < 0) {
+            return false;
+        }
+
+        this.wheat -= amount;
+        this.money += amount * Inventory.MONEY_PER_OPIUM;
+        
+        return true;
     }
 }

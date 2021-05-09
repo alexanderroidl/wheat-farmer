@@ -3,6 +3,7 @@ import Browser from "./browser";
 import World from "./world";
 import Renderer from "../core/renderer";
 import Vector from "../core/vector";
+import TitleScreen from "../title-screen/title-screen";
 
 export default class Game {
     private static readonly MOUSE_MOVE_TRESHOLD = 10;
@@ -15,6 +16,8 @@ export default class Game {
 
     private _mouseDown: boolean = false;
     private _lastClickAt: number = Date.now();
+    private _paused: boolean = false;
+    private _titleScreenHidden: boolean = false;
 
     public static get instance (): Game {
         if (!Game._instance) {
@@ -59,6 +62,30 @@ export default class Game {
             const worldPos = this.renderer.camera.worldPosFromScreen(pos);
             this.world.onTileClicked(worldPos.floor());
         };
+
+        this.browser.onKeyUp = (keyCode: number, code: string) => {
+            if (this.renderer.titleScreen.hidden) {
+                if (code === 'Escape') {
+                    this._paused = true;
+                    this.renderer.titleScreen.hidden = false;
+                    return;
+                }
+
+                if (code === 'KeyS') {
+                    this._paused = true;
+                    this.browser.openShop(this.world.player.items, () => {
+                        this._paused = false;
+                    });
+                }
+
+                if (code === 'KeyE') {
+                    this._paused = true;
+                    this.browser.openInventory(this.world.player, this.world.player.items, () => {
+                        this._paused = false;
+                    });
+                }
+            }
+        };
     }
 
     private setupWindow (): void {
@@ -76,9 +103,14 @@ export default class Game {
     private setupLoop (): void {
         this.loop.fps = 30;
         this.loop.update = (delta: number) => {
-            if (this.renderer.titleScreen.hidden) {
-                this.world.update(delta);
+            document.body.classList.toggle('titlescreen', !this.renderer.titleScreen.hidden)
+
+            if (this._paused || this.renderer.titleScreen.hidden) {
+                return;
             }
+
+
+            this.world.update(delta);
 
             if (this._mouseDown) {
                 if ((Date.now() - this._lastClickAt) > 250) {
@@ -91,13 +123,16 @@ export default class Game {
         };
 
         this.loop.render = (interpolation: number) => {
-            this.renderer.render(this.world);
+            if (this._paused) {
+                return;
+            }
 
+            this.renderer.render(this.world);
             if (this.renderer.titleScreen.hidden) {
+                this.browser.renderWorldStatsHTML(this.world);
+
                 if (this.browser.getParameter('debug')) {
                     this.browser.renderDebug(this.renderer.camera, this.renderer, this.world);
-                } else {
-                    this.browser.renderStats(this.world);
                 }
             }
         };

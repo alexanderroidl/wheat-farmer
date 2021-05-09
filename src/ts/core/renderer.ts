@@ -5,6 +5,8 @@ import Util from "./util";
 import Vector from "./vector";
 import TitleScreen from "../title-screen/title-screen";
 import BitMath from "./bit-math";
+import { InventoryItem } from "../base/inventory";
+import Tile from "../tiles/tile";
 
 export default class Renderer {
     public readonly FONT_SIZE = 12;
@@ -16,6 +18,7 @@ export default class Renderer {
     public readonly titleScreen: TitleScreen = new TitleScreen();
 
     public mousePos: Vector = new Vector(0, 0);
+    public equippedItem: InventoryItem | null = null;
 
     get width (): number {
         return this._canvas.width;
@@ -85,10 +88,14 @@ export default class Renderer {
         ctx.shadowBlur = 0;
     }
 
-    public paintSquare (ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, fillStyle: string, opacity: number = 1, char?: string | null, charColor?: string | null): void {
+    public paintSquare (ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, fillStyle: string, opacity: number | null = null, char?: string | null, charColor?: string | null): void {
         const zoom = this.camera.zoomAmount;
+        const oldAlpha = ctx.globalAlpha;
 
-        ctx.globalAlpha = opacity;
+        if (opacity !== null) {
+            ctx.globalAlpha = opacity;
+        }
+
         ctx.fillStyle = fillStyle;
         ctx.fillRect(
             this.SQUARE_SIZE * x * zoom - this.camera.position.x, 
@@ -101,6 +108,8 @@ export default class Renderer {
             const charFillStyle = charColor ? charColor : 'white';
             this.paintChar(ctx, char, charFillStyle, x, y, isHover);
         }
+
+        ctx.globalAlpha = oldAlpha;
     }
 
     public outlineSquare (ctx: CanvasRenderingContext2D, x: number, y: number, borderWidth: number = 1): void {
@@ -115,6 +124,7 @@ export default class Renderer {
     }
 
     public paintProgressBar (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, progress: number, color: string = 'green'): void {
+        const oldAlpha = ctx.globalAlpha;
         ctx.globalAlpha = 0.65;
 
         ctx.fillStyle = 'white';
@@ -133,7 +143,7 @@ export default class Renderer {
             (this.SQUARE_SIZE * height - 2) * this.z
         );
 
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = oldAlpha;
     }
 
     public render (world: World): void {
@@ -169,6 +179,17 @@ export default class Renderer {
                 tile.render(this, ctx, x, y, isHover);
 
                 if (isHover) {
+                    /*
+                    // If hovered tile is empty and equipped item is tile
+                    if (tile instanceof EmptyTile &&
+                        world.player.equipped &&
+                        world.player.equipped.type instanceof Tile) { // Preview
+                        // Reset created time
+                        world.player.equipped.type.timeCreated = Date.now();
+                        world.player.equipped.type.render(this, ctx, x, y, isHover, 0.25);
+                    }
+                    */
+
                     this.outlineSquare(ctx, x, y);
                 }
 

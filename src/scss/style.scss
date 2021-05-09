@@ -8,6 +8,15 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: '212 Keyboard';
+    src: url('../fonts/212Keyboard.woff2') format('woff2'),
+        url('../fonts/212Keyboard.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 html, body {
     height: 100%;
 }
@@ -26,16 +35,124 @@ canvas {
     left: 0;
 }
 
+body.titlescreen *:not(canvas) {
+    display: none;
+}
+
 .gui {
     position: absolute;
     top: 0;
     right: 0;
     display: inline-block;
     border: 1px solid #111;
-    background: rgba(#fff, 0.25);
+    background: #fff;
     user-select: none;
 
     .gui-item {
         padding: 0.7em;
+    }
+}
+
+.dialog-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(#111, 0.75);
+
+    .dialog {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        .dialog-title {
+            background: #111;
+            color: #fff;
+
+            padding: 1em;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px rgba(#fff, 0.5);
+
+            a {
+                color: inherit;
+                text-decoration: none;
+                font-weight: bold;
+            }
+        }
+
+        .dialog-content {
+            background: #fff;
+            border: 1px solid #111;
+
+            div {
+                display: block;
+                padding: 1em;
+                cursor: pointer;
+                border-bottom: 1px solid #111;
+
+                &.disabled {
+                    background: #ccc;
+                    color: #666;
+                    cursor: not-allowed;
+               }
+
+               &:last-child {
+                   border-bottom: 0;
+               }
+            }
+        }
+    }
+}
+
+.world-stats {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    padding: 1em;
+
+    display: flex;
+
+    .row {
+        position: relative;
+        white-space: nowrap;
+
+        .left {
+            font-family: 'OpenMoji';
+            font-size: 300%;
+        }
+
+        .right {
+            position: absolute;
+            top: 0;
+            left: 50%;
+
+            transform: translate(-50%, -100%);
+
+            font-weight: bold;
+            color: #000;
+        }
+
+        &.emoji {
+            .right {
+                font-family: 'OpenMoji';
+                font-size: 200%;
+            }
+        }
+    }
+}
+
+.keyboard-info {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    padding: 1em;
+
+    span {
+        font-family: '212 Keyboard';
+        font-size: 300%;
+        vertical-align: middle;
     }
 }

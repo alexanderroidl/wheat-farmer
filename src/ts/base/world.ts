@@ -7,6 +7,7 @@ import Vector from '../core/vector';
 import Easings from "../core/easings";
 import Tile from '../tiles/tile';
 import BitMath from '../core/bit-math';
+import WallTile from '../tiles/wall-tile';
 
 export default class World {
     public readonly SIZE: number = 20   ; // 20x20 world siz
@@ -61,36 +62,61 @@ export default class World {
         let newTile: Tile | null = null;
         const tile = this._tiles[pos.y][pos.x];
 
+        const playerWheatTiles = this._player.items.getItemAmount('Wheat');
+        const playerWallTiles = this._player.items.getItemAmount('Wall');
+
         tile.onClicked();
 
-        // Clicked tile is empty
-        if (tile instanceof EmptyTile) {
-            // Player has remaining seeds
-            if (this._player.items.wheatSeeds > 0) {
-                this._player.items.wheatSeeds--;
+        // Tile is equipped and clicked tile is empty
+        if (this._player.equipped &&
+            this._player.equipped.type instanceof Tile &&
+            tile instanceof EmptyTile) {
 
-                // Replace with wheat tile
-                newTile = new WheatTile();
+            if (this._player.equipped.type instanceof WheatTile) {
+                // Player has remaining seeds
+                if (playerWheatTiles > 0) {
+                    this._player.items.decreaseItemAmount('Wheat');
+                    newTile = new WheatTile();
+                }
+            }
+
+            if (this._player.equipped.type instanceof WallTile) {
+                if (playerWallTiles > 0) {
+                    this._player.items.decreaseItemAmount('Wall');
+                    if (playerWallTiles - 1 === 0) {
+                        this._player.equipped = this._player.items.getItem('Wheat');
+                    }
+
+                    newTile = new WallTile();
+                }
             }
         }
 
-        // Clicked tile is wheat
+        // Clicked tile is wheat tile
         if (tile instanceof WheatTile) {
             // Wheat is fully grown
             if (tile.growthState >= 1) {
                 let seedDrops: number | null = null;
 
                 // If player has no seeds left, always drop
-                while (seedDrops === null || this._player.items.wheatSeeds + seedDrops === 0) {
+                while (seedDrops === null || playerWheatTiles + seedDrops === 0) {
                     seedDrops = tile.dropSeeds()
                 }
                 
-                this._player.items.wheatSeeds += seedDrops;
-                this._player.items.opium += 1;
+                this._player.items.setItemAmount('Wheat', playerWheatTiles + seedDrops);
+                this._player.items.wheat += 1;
 
                 // Replace with empty tile
                 newTile = new EmptyTile();
             }
+        }
+
+        // Clicked tile is wall tile
+        if (tile instanceof WallTile) {
+            this._player.items.increaseItemAmount('Wall');
+
+            // Replace with empty tile
+            newTile = new EmptyTile();
         }
 
         // New tile was created
@@ -183,8 +209,7 @@ export default class World {
         // Iterate through world
         for (let y = 0; y < this._tiles.length; y++) {
             for (let x = 0; x < this._tiles[y].length; x++) {
-                // Reduce tile damage based off total heal time
-                this._tiles[y][x].damage -= delta / Tile.DAMAGE_HEAL_TIME;
+                this._tiles[y][x].update(delta);
             }
         }
 

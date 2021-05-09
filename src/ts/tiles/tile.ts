@@ -23,7 +23,7 @@ export default class Tile implements TileInterface {
         return false;
     }
     
-    public getChar (): string | null {
+    public getChar (preview: boolean = false): string | null {
         return 'x';
     }
 
@@ -44,17 +44,17 @@ export default class Tile implements TileInterface {
         // TODO: Implement logic
     }
 
-    private paintSquare(renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean) {
+    private paintSquare(renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null) {
         const hexColor = this.getHexColor();
         if (!hexColor) {
             return;
         }
 
-        renderer.paintSquare(ctx, x, y, isHover, hexColor, 1, this.getChar(), this.getCharColor());
+        renderer.paintSquare(ctx, x, y, isHover, hexColor, opacity, this.getChar(), this.getCharColor());
     }
 
-    public render (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-        this.paintSquare(renderer, ctx, x, y, isHover);
+    public render (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null): void {
+        this.paintSquare(renderer, ctx, x, y, isHover, opacity);
     }
 
     public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
@@ -64,6 +64,6 @@ export default class Tile implements TileInterface {
     }
 
     public update (delta: number): void {
-        // TODO: Implement logic
+        this.damage -= delta / Tile.DAMAGE_HEAL_TIME;
     }
 }

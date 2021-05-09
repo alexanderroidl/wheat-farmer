@@ -12,7 +12,10 @@ export default class WallTile extends Tile implements TradeableInterface {
         return true;
     }
     
-    public getChar (): string | null {
+    public getChar (preview: boolean = false): string | null {
+        if (preview) {
+            return '🚫';
+        }
         return null;
     }
 

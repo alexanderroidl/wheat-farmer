@@ -3,10 +3,16 @@ import Camera from "./camera";
 import Renderer from "../core/renderer";
 import Vector from "../core/vector";
 import BitMath from "../core/bit-math";
-import Inventory from "./inventory";
+import {Inventory, InventoryItem} from "./inventory";
+import Tile from "../tiles/tile";
+import Util from "../core/util";
+import Player from "./player";
 
 export default class Browser {
     private _statsDisplay: HTMLDivElement = document.createElement('div');
+    private _worldStats: HTMLDivElement = document.createElement('div');
+    private _shop: HTMLDivElement | null = null;
+    private _inventory: HTMLDivElement | null = null;
 
     private _mouseDown: boolean = false;
     private _mousePos: Vector = new Vector(0, 0);
@@ -30,6 +36,8 @@ export default class Browser {
     public onMouseDrag = (pos: Vector): void => {};
     public onMouseClick = (pos: Vector): void => {};
     public onResize = (width: number, height: number, oldWidth: number, oldHeight: number): void => {};
+    public onKeyDown = (keyCode: number, code: string): void => {};
+    public onKeyUp = (keyCode: number, code: string): void => {};
     /* eslint-enable @typescript-eslint/no-empty-function */
 
     constructor () {
@@ -42,48 +50,24 @@ export default class Browser {
         this._statsDisplay.classList.add('gui');
         this._statsDisplay.classList.add('stats-display');
 
+        // World stats
+        this._worldStats.classList.add('world-stats');
+
+        // Keyboard info
+        const keyboardInfo = document.createElement('div');
+        keyboardInfo.classList.add('keyboard-info');
+        keyboardInfo.innerHTML = `
+            <div class="keyboard-info-row">
+                <span>S</span> Open shop
+            </div>
+
+            <div class="keyboard-info-row">
+                <span>E</span> Open inventory
+            </div>
+        `;
+
         // Add everything to DOM
-        document.body.append(this._statsDisplay);
-    }
-
-    public setupShop (inventory: Inventory): void {
-        const shopContent = document.createElement('div');
-        shopContent.classList.add('shop-content');
-        shopContent.innerHTML = '';
-
-        for (const inventoryItem of inventory.items) {
-            const shopInventoryItemLink = document.createElement('a');
-            shopInventoryItemLink.innerHTML = `${inventoryItem.type.name} (${inventoryItem.amount})`;
-            shopInventoryItemLink.setAttribute('href', 'javascript:void(0)');
-            shopInventoryItemLink.addEventListener('click', function (e) {
-                let amount: string | null = '';
-
-                while (!BitMath.isInt(amount) || amount === null) {
-                    amount = window.prompt('How many?');
-                }
-
-                inventory.purchaseItem(
-                    inventoryItem.type.name, 
-                    parseFloat(amount)
-                );
-            });
-
-            shopContent.append(shopInventoryItemLink);
-        }
-
-        const shopTitle = document.createElement('div');
-        shopTitle.classList.add('shop-title');
-        shopTitle.innerHTML = 'Wheat Farmer Shop';
-
-        const shop = document.createElement('div');
-        shop.classList.add('shop');
-        shop.append(shopTitle, shopContent);
-
-        const shopWrap = document.createElement('div');
-        shopWrap.classList.add('shop-wrap');
-        shopWrap.append(shop);
-
-        document.body.append(shopWrap);
+        document.body.append(this._statsDisplay, this._worldStats, keyboardInfo);
     }
 
     private setupEvents (): void {
@@ -141,12 +125,12 @@ export default class Browser {
             this._oldWindowHeight = window.innerHeight;
         });
 
-        document.addEventListener('keydown', (e) => {
-            console.log('KEYDOWN', e);
+        document.addEventListener('keydown', (e: KeyboardEvent) => {
+            this.onKeyDown(e.keyCode, e.code);
         });
 
-        document.addEventListener('keyup', (e) => {
-            console.log('KEYUP', e);
+        document.addEventListener('keyup', (e: KeyboardEvent) => {
+            this.onKeyUp(e.keyCode, e.code);
         });
     }
 
@@ -170,14 +154,66 @@ export default class Browser {
         return result;
     }
 
-    private getWorldStatsHTML (world: World): string {
-        return `
-            <strong>Time:</strong> ${BitMath.floor((Date.now() - world.createdAt) / 1000)}s<br>
-            <strong>Seeds:</strong>: ${world.player.items.wheatSeeds}<br>
-            <strong>Wheat:</strong> ${world.player.items.opium}<br>
-            <strong>Money:</strong> ${world.player.items.money} €<br>
-            <strong>Wall:</strong> ${world.player.items.getItemAmount('Wall')}
-        `;
+    private getWorldStatsRowHTML (icon: string, text?: string) {
+        if (typeof text === 'undefined') {
+            text = "";
+        }
+
+        const leftColumn = document.createElement('div');
+        leftColumn.classList.add('left');
+        leftColumn.innerHTML = icon;
+
+        const rightColumn = document.createElement('div');
+        rightColumn.classList.add('right');
+        rightColumn.innerHTML = text;
+
+        const statsRow = document.createElement('div');
+        statsRow.classList.add('row');
+        statsRow.append(leftColumn, rightColumn);
+
+        if (text.length === 2 && !Util.isAlphaNumeric(text)) {
+            statsRow.classList.add('emoji');
+        }
+
+        return statsRow;
+    }
+
+    public renderWorldStatsHTML (world: World): void {
+        this._worldStats.innerHTML = '';
+
+        let equippedChar = "";
+        if (world.player.equipped &&
+            world.player.equipped.type instanceof Tile) {
+            const char = world.player.equipped.type.getChar(true);
+
+            if (char) {
+                equippedChar = char;
+            }
+        }
+
+        const equippedRow = this.getWorldStatsRowHTML("✋", equippedChar)
+        this._worldStats.append(equippedRow);
+
+        const stats = [
+            {
+                icon: "⌛️",
+                text: Math.floor((Date.now() - world.createdAt) / 1000) + 's',
+            }, {
+                icon: "🌱",
+                text: world.player.items.getItemAmount('Wheat'),
+            }, {
+                icon: "🌾",
+                text: world.player.items.wheat,
+            }, {
+                icon: "💰",
+                text: world.player.items.money + ' $',
+            }
+        ];
+
+        for (const stat of stats) {
+            const statsRow = this.getWorldStatsRowHTML(stat.icon, String(stat.text))
+            this._worldStats.append(statsRow);
+        }
     }
 
     private getCameraDebugHTML (camera: Camera): string {
@@ -186,7 +222,6 @@ export default class Browser {
             <strong>X:</strong> ${camera.position.x.toFixed(3)}<br>
             <strong>Y:</strong> ${camera.position.y.toFixed(3)}<br>
             <strong>Zoom:</strong> ${camera.zoomAmount.toFixed(3)}
-
         `;
     }
 
@@ -225,13 +260,8 @@ export default class Browser {
         `;
     }
 
-    public renderStats (world: World): void {
-        this._statsDisplay.innerHTML = `<div class="gui-item">${this.getWorldStatsHTML(world)}</div>`;
-    }
-
     public renderDebug (camera: Camera, renderer: Renderer, world: World): void {
         const debugHTMLParts = [
-            this.getWorldStatsHTML(world),
             this.getCameraDebugHTML(camera),
             this.getMouseDebugHTML(camera),
             this.getRendererDebugHTML(renderer),
@@ -243,5 +273,183 @@ export default class Browser {
                 debugHTMLParts.join('</div><hr><div class="gui-item">') +
             '</div>'
         );
+    }
+
+    public createDialog (titleText: string, body: HTMLElement, onClose?: () => void): HTMLDivElement {
+        body.classList.add('dialog-content');
+        
+        const close = document.createElement('a');
+        close.href = 'javascript:void(0)';
+        close.innerHTML = ' - (close)';
+        close.addEventListener('click', (e) => {
+            if (typeof onClose === 'function') {
+                onClose();
+            }
+            wrap.remove();
+        });
+
+        const title = document.createElement('div');
+        title.classList.add('dialog-title');
+        title.innerHTML = titleText;
+        title.append(close);
+
+        const main = document.createElement('div');
+        main.classList.add('dialog');
+        main.append(title, body);
+
+        const wrap = document.createElement('div');
+        wrap.classList.add('dialog-wrap');
+        wrap.addEventListener('click', (e) => {
+            if (e.target !== wrap) {
+                return;
+            }
+
+            if (typeof onClose === 'function') {
+                onClose();
+            }
+            wrap.remove();
+        });
+
+        wrap.append(main);
+        return wrap;
+    }
+
+    public sellDialog (value: number, onSuccess: (amount: number) => void): void {
+        const amount = window.prompt('How many?', String(value));
+        if (amount === null || !BitMath.isInt(amount)) {
+            window.alert('Aborted.');
+            return;
+        }
+
+        onSuccess(parseFloat(amount));
+    }
+
+    public onShopSellWheat (inventory: Inventory, cb?: () => void): void {
+        this.sellDialog(inventory.wheat, (amount: number) => {
+            const sellResult = inventory.sellWheat(amount);
+
+            this.closeShop();
+            this.openShop(inventory, cb);
+
+            if (sellResult) {
+                alert(`Successfully sold ${amount} wheat for ${amount * Inventory.MONEY_PER_OPIUM} $.`);
+            } else {
+                alert(`Failed to sell ${amount} wheat.`);
+            }
+        });
+    }
+
+    public onShopItemBuy (inventory: Inventory, item: InventoryItem, cb?: () => void): void {
+        const maxBuyAmount = Math.floor(inventory.money / item.type.buyPrice);
+        this.sellDialog(maxBuyAmount, (amount: number) => {
+            const purchaseResult = inventory.purchaseItem(
+                item.type.name, 
+                amount
+            );
+
+            this.closeShop();
+            this.openShop(inventory, cb);
+
+            if (purchaseResult) {
+                alert(`Successfully purchased ${amount} ${item.type.name}.`);
+            } else {
+                alert(`Failed to purchase ${amount} ${item.type.name}.`);
+            }
+        });
+    }
+
+    public openShop (inventory: Inventory, cb?: () => void): void {
+        if (this._shop) {
+            this.closeShop();
+        }
+
+        const dialogBody = document.createElement('div');
+
+        // Sell wheat option
+        const sellWheatLink = document.createElement('div');
+        sellWheatLink.innerHTML = `- Wheat (+${Inventory.MONEY_PER_OPIUM}$) - ${inventory.wheat} owned`;
+        if (inventory.wheat > 0) {
+            // On sell wheat click
+            sellWheatLink.addEventListener('click', (e) => {
+                this.onShopSellWheat(inventory, cb);
+            });
+        } else {
+            sellWheatLink.classList.add('disabled');
+        }
+        dialogBody.append(sellWheatLink);
+
+        // List inventory item buy options
+        for (const inventoryItem of inventory.items) {
+            // If neither buy, nor sell price is given, we skip item
+            if (inventoryItem.type.buyPrice === 0 && inventoryItem.type.sellPrice === 0) {
+                continue;
+            }
+
+            const shopInventoryItemLink = document.createElement('div');
+            shopInventoryItemLink.innerHTML = `+ ${inventoryItem.type.name} (-${inventoryItem.type.buyPrice}$) - ${inventoryItem.amount} owned`;
+
+            // At least one buyable
+            if (inventory.money >= inventoryItem.type.buyPrice) {
+                // On item click
+                shopInventoryItemLink.addEventListener('click', (e) => {
+                    this.onShopItemBuy(inventory, inventoryItem, cb);
+                });
+            } else {
+                shopInventoryItemLink.classList.add('disabled')
+            }
+
+            dialogBody.append(shopInventoryItemLink);
+        }
+
+        this._shop = this.createDialog('Wheat Farmer Shop', dialogBody, () => {
+            if (typeof cb === 'function') {
+                cb();
+            }
+        });
+        document.body.append(this._shop);
+    }
+
+    public closeShop (): void {
+        if (this._shop === null) {
+            return;
+        }
+
+        this._shop.remove();
+        this._shop = null;
+    }
+
+    public openInventory (player: Player, inventory: Inventory, cb?: () => void): void {
+        if (this._inventory !== null) {
+            this._inventory.remove();
+        }
+
+        const inventoryBody = document.createElement('div');
+
+        for (const item of inventory.items) {
+            const itemRow = document.createElement('div');
+            itemRow.innerHTML = item.type.name;
+
+            if (player.equipped && player.equipped.type.name === item.type.name) {
+                itemRow.innerHTML += ' (equipped)';
+            }
+
+            if (item.amount < 1) {
+                itemRow.classList.add('disabled');
+            } else {
+                itemRow.addEventListener('click', (e) => {
+                    player.equipped = item;
+                    this.openInventory(player, inventory, cb);
+                });
+            }
+
+            inventoryBody.append(itemRow);
+        }
+
+        this._inventory = this.createDialog('Wheat Farmer Inventory', inventoryBody, () => {
+            if (typeof cb === 'function') {
+                cb();
+            }
+        });
+        document.body.append(this._inventory);
     }
 }

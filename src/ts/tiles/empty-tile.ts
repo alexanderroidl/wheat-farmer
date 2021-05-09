@@ -6,7 +6,7 @@ export default class EmptyTile extends Tile {
     public name: string = "Empty";
     public timeCreated: number = Date.now();
     
-    public getChar (): string | null {
+    public getChar (preview: boolean = false): string | null {
         return 'x';
     }
 

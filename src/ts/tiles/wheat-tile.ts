@@ -4,8 +4,12 @@ import Renderer from '../core/renderer';
 import Tile from './tile';
 import Easings from '../core/easings';
 import BitMath from '../core/bit-math';
+import TradeableInterface from '../interfaces/tradeable-interface';
 
-export default class WheatTile extends Tile {
+export default class WheatTile extends Tile implements TradeableInterface {
+    public readonly buyPrice: number = 0;
+    public readonly sellPrice: number = 0;
+
     public readonly GROWTH_TIME = 7.5 * 1000;
     public readonly MIN_SEED_DROP = 0;
     public readonly MAX_SEED_DROP = 3;
@@ -15,24 +19,23 @@ export default class WheatTile extends Tile {
 
     get growthState (): number {
         const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME;
+
         if (growth < 1) {
             return growth * (1 - this.damage)
         }
         return growth > 1 ? 1 : growth;
     }
 
-    public getChar (): string | null {
-        let char = '🌿';
-
-        if (this.growthState < 0.4) {
-            char = '🌱';
+    public getChar (preview: boolean = false): string | null {
+        if (preview || this.growthState < 0.4) {
+            return '🌱';
         }
 
         if (this.growthState >= 1) {
-            char = '🌾';
+            return '🌾';
         }
 
-        return char;
+        return '🌿';
     }
 
     public getCharColor (): string | null {
@@ -53,8 +56,8 @@ export default class WheatTile extends Tile {
         return BitMath.floor(Math.random() * (this.MAX_SEED_DROP - this.MIN_SEED_DROP + 1)) + this.MIN_SEED_DROP;
     }
 
-    public render (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-        super.render(renderer, ctx, x, y, isHover);
+    public render (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null): void {
+        super.render(renderer, ctx, x, y, isHover, opacity);
     }
 
     public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {

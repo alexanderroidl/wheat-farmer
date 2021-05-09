@@ -7,7 +7,7 @@ export default interface TileInterface {
     damage: number;
 
     hasCollision: () => boolean;
-    getChar: () => string | null;
+    getChar: (preview: boolean) => string | null;
     getHexColor: () => string | null;
     getCharColor: () => string | null;
     onClicked: () => void;
