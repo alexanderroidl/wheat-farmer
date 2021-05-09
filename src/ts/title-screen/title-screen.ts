@@ -17,6 +17,10 @@ export default class TitleScreen {
         return this._hidden;
     }
 
+    set hidden (hidden: boolean) {
+        this._hidden = hidden;
+    }
+
     public onClick (pos: Vector): void {
         if (this._clickedAt === null) {
             this._clickedAt = Date.now();

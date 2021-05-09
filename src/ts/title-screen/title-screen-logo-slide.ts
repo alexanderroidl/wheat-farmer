@@ -19,6 +19,11 @@ export default class TitleScreenLogoSlide implements SlideInterface {
         "Avoid robot attacks at all costs."
     ]
 
+    private _credits: string [] = [
+        "Programming by Alexander Roidl and Julian Arnold",
+        "Music by Julian Arnold"
+    ];
+
     render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
         const longestLineWidth = this._logo.reduce((a: string, b: string) => {
             return a.length > b.length ? a : b;
@@ -54,6 +59,17 @@ export default class TitleScreenLogoSlide implements SlideInterface {
         for (let dLine = 0; dLine < this._description.length; dLine++) {
             const descriptionOffset = 1.5 * fontSize * (dLine + 3);
             ctx.fillText(this._description[dLine], renderer.width/2, renderer.height/2 + descriptionOffset)
+        }
+
+        fontSize = 15;
+
+        ctx.textBaseline = 'bottom';
+        ctx.font = `${fontSize}px "Courier New"`;
+        ctx.shadowBlur = 5;
+        
+        for (let cLine = 0; cLine < this._credits.length; cLine++) {
+            const descriptionOffset = 1.5 * fontSize * (cLine);
+            ctx.fillText(this._credits[cLine], renderer.width/2, renderer.height - (1.5 * 3 * fontSize) + descriptionOffset)
         }
 
         ctx.shadowBlur = 0;

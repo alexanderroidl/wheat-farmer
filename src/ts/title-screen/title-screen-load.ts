@@ -25,7 +25,7 @@ export default class TitleScreenLoadSlide implements SlideInterface {
         ctx.shadowOffsetY = 0;
         ctx.shadowBlur = 7;
         
-        ctx.fillText("Load".toUpperCase().split('').join(' '), renderer.width/2, renderer.height/2);
+        ctx.fillText("Click to load".toUpperCase().split('').join(' '), renderer.width/2, renderer.height/2);
 
         ctx.shadowBlur = 0;
     }
