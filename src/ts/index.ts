@@ -1,5 +1,5 @@
 import Game from "./base/game";
-import Browser from "base/browser";
+import Browser from "./base/browser";
 
 Game.instance;
 
