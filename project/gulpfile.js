@@ -1,6 +1,7 @@
 /**
  * Dependencies
  */
+const dotenv = require('dotenv').config();
 const spawn = require('child_process').spawn;
 const del = require('del');
 // Gulp general 
@@ -9,6 +10,7 @@ const sourceMaps = require('gulp-sourcemaps');
 const prettyError = require('gulp-prettyerror');
 const gulpif = require('gulp-if');
 const browserSync = require('browser-sync').create();
+const changed = require('gulp-changed');
 // Gulp scripts
 const browserify = require("browserify");
 const source = require("vinyl-source-stream");
@@ -29,7 +31,6 @@ const htmlmin = require('gulp-htmlmin');
  * Variables/Constants
  */
 let webServerProcess = null;
-let webServerTimeout = null;
 let browserSyncRunning = false;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -58,6 +59,8 @@ function scripts () {
       })
       .pipe(source("index.js"))
       .pipe(buffer())
+      .pipe(prettyError())
+      .pipe(gulpif(!IS_PRODUCTION, changed('build/js')))
       .pipe(gulpif(!IS_PRODUCTION, sourceMaps.init({ loadMaps: true })))
       .pipe(gulpif(IS_PRODUCTION, uglify()))
       .pipe(gulpif(IS_PRODUCTION, stripDebug()))
@@ -74,6 +77,7 @@ function html () {
         cwd: 'src/pug'
     })
     .pipe(prettyError())
+    .pipe(gulpif(!IS_PRODUCTION, changed('build')))
     .pipe(pug())
     .pipe(gulpif(IS_PRODUCTION, htmlmin({ collapseWhitespace: true })))
     .pipe(gulp.dest('.', {
@@ -90,6 +94,7 @@ function styles () {
         cwd: 'src/scss'
     })
     .pipe(prettyError())
+    .pipe(gulpif(!IS_PRODUCTION, changed('build/css')))
     .pipe(gulpif(!IS_PRODUCTION, sourceMaps.init()))
     .pipe(sass())
     .pipe(gulpif(IS_PRODUCTION, csso()))
@@ -109,6 +114,8 @@ function static () {
         cwd: 'src/static',
         dot: true
     })
+    .pipe(prettyError())
+    .pipe(gulpif(!IS_PRODUCTION, changed('build')))
     .pipe(gulp.dest('.', {
         cwd: 'build'
     }))
@@ -121,7 +128,7 @@ function static () {
 async function clearBuild (cb) {
     await del('**/*', {
         cwd: 'build'
-    }, )
+    });
 }
 
 
@@ -129,17 +136,29 @@ async function clearBuild (cb) {
  * Start or restart server
  */
 function initWebServer () {
+    // If web server process exists, kill it
     if (webServerProcess) {
         webServerProcess.stdin.pause();
         webServerProcess.kill();
     }
 
-    webServerProcess = spawn('node', ['index.js']);
+    // Reverse express and browserSync port
+    // We do this so it ends up always being the same outside port being used, both while developing and in production
+    process.env.EXPRESS_PORT = 9000;
+    process.env.BROWSERSYNC_PORT = 3000;
+
+    // Spawn child process of express server using modified environmental variables
+    webServerProcess = spawn('node', ['index.js'], { 
+        env: {...process.env} 
+    });
+
+    // BrowserSync is currently not running
     if (!browserSyncRunning) {
         browserSync.init(null, {
-            proxy: "http://localhost:3000/?debug",
+            proxy: `http://localhost:${process.env.EXPRESS_PORT}/?debug`,
             files: ["build/**/*.*"],
-            port: 7000,
+            port: process.env.BROWSERSYNC_PORT,
+            open: false
         });
 
         browserSyncRunning = true;
@@ -147,6 +166,7 @@ function initWebServer () {
         browserSync.reload();
     }
 
+    // Pipe all outputs to this process
     webServerProcess.stdout.on('data', (data) => console.log(data.toString()));
     webServerProcess.stderr.on('data', (data) => console.log(data.toString()));
     webServerProcess.stdin.on('data', (data) => console.log(data.toString()));

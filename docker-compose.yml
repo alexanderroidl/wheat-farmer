@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  webserver:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: $BUILD_ENVIRONMENT
+    ports:
+      - 3000:3000
+      - 3001:3001
+      - 7000:7000
+    volumes:
+      - ./project:/usr/src/app

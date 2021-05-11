@@ -1,20 +1,16 @@
-FROM node:14 AS development
-ENV NODE_ENV=development
+FROM node:14 AS base
 WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm i -g yarn
-RUN yarn install
-COPY . .
-EXPOSE 7000
-CMD [ "yarn", "dev"]
 
-FROM node:14 AS production
+FROM base AS development
+ENV NODE_ENV=development
+RUN yarn install
+EXPOSE 7000
+EXPOSE 3000
+EXPOSE 3001
+CMD [ "yarn", "develop"]
+
+FROM base AS production
 ENV NODE_ENV=production
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm i -g yarn
 RUN yarn install --frozen-lockfile
-COPY build .
-COPY index.js .
 EXPOSE 3000
 CMD [ "yarn", "start"]

@@ -27,6 +27,7 @@
   "homepage": "https://github.com/alexanderroidl/wheat-farmer",
   "dependencies": {
     "cross-env": "^7.0.3",
+    "dotenv": "^9.0.2",
     "express": "^4.17.1"
   },
   "devDependencies": {
@@ -42,6 +43,7 @@
     "eslint": "^7.25.0",
     "gulp": "^4.0.2",
     "gulp-autoprefixer": "^7.0.1",
+    "gulp-changed": "^4.0.2",
     "gulp-csso": "^4.0.1",
     "gulp-htmlmin": "^5.0.1",
     "gulp-if": "^3.0.0",
