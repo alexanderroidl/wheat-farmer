@@ -4,6 +4,8 @@ import Util from "../core/util";
 import Vector from "../core/vector";
 
 export default class TitleScreenLogoSlide implements SlideInterface {
+    // Generated with "Text To ASCII Art Generator (TAAG)" by patorjk.com
+    // https://patorjk.com/software/taag/#p=display&f=Sub-Zero&t=Wheat%20Farmer%0A
     private readonly LOGO: string[] = [
         ' __     __     __  __     ______     ______     ______      ______   ______     ______     __    __     ______     ______    ',
         '/\\ \\  _ \\ \\   /\\ \\_\\ \\   /\\  ___\\   /\\  __ \\   /\\__  _\\    /\\  ___\\ /\\  __ \\   /\\  == \\   /\\ "-./  \\   /\\  ___\\   /\\  == \\   ',
