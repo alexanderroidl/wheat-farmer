@@ -294,9 +294,9 @@ export default class Browser {
     private getRendererDebugHTML (renderer: Renderer): string {
         const camera = renderer.camera;
 
-        const xStart = BitMath.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const xStart = Math.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
         const xEnd = Math.ceil((camera.position.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
-        const yStart = BitMath.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
+        const yStart = Math.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
         const yEnd = Math.ceil((camera.position.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
 
         return `

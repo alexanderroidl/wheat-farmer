@@ -5,6 +5,15 @@ import Vector from "../core/vector";
 import Sound from "../base/sound";
 
 export default class TitleScreenLoadSlide implements SlideInterface {
+    private readonly TEXT = "Click to load";
+
+    private readonly _transformedText: string;
+
+    constructor () {
+        const upperCaseText = this.TEXT.toUpperCase();
+        this._transformedText = upperCaseText.split('').join(' ');
+    }
+
     render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = '#111111';
         ctx.fillRect(0, 0, renderer.width, renderer.height);
@@ -19,7 +28,7 @@ export default class TitleScreenLoadSlide implements SlideInterface {
         ctx.shadowOffsetY = 0;
         ctx.shadowBlur = 7;
         
-        ctx.fillText("Click to load".toUpperCase().split('').join(' '), renderer.width/2, renderer.height/2);
+        ctx.fillText(this._transformedText, renderer.width/2, renderer.height/2);
 
         ctx.shadowBlur = 0;
     }

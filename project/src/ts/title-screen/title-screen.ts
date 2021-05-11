@@ -14,7 +14,6 @@ export default class TitleScreen {
         new TitleScreenLogoSlide()
     ];
 
-
     get hidden (): boolean {
         return this._hidden;
     }
@@ -22,7 +21,6 @@ export default class TitleScreen {
     set hidden (hidden: boolean) {
         this._hidden = hidden;
     }
-
 
     /**
      * On clicked
@@ -57,13 +55,11 @@ export default class TitleScreen {
         this._slideId++;
     }
 
-
     public update (delta: number): void {
         if (this._slides[this._slideId]) {
             this._slides[this._slideId].update(delta);
         }
     }
-    
     
     public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
         if (this._hidden) {
