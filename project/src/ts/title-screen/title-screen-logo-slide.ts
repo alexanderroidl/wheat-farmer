@@ -45,7 +45,7 @@ export default class TitleScreenLogoSlide implements SlideInterface {
         ctx.shadowOffsetY = 0;
         ctx.shadowBlur = 7;
         
-        const yShift = Math.sin((Date.now() / 1000) % 4) * 20;
+        const yShift = Math.sin(Date.now() / 1000) * 10;
         for (let line = 0; line < this._logo.length; line++) {
             const lineOffset = 20 * fontSize * (line - this._logo.length);
             ctx.fillText(this._logo[line], renderer.width/2, renderer.height/2 + lineOffset + yShift)

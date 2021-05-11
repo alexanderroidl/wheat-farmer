@@ -10,7 +10,6 @@ const sourceMaps = require('gulp-sourcemaps');
 const prettyError = require('gulp-prettyerror');
 const gulpif = require('gulp-if');
 const browserSync = require('browser-sync').create();
-const changed = require('gulp-changed');
 // Gulp scripts
 const browserify = require("browserify");
 const source = require("vinyl-source-stream");
@@ -33,6 +32,8 @@ const htmlmin = require('gulp-htmlmin');
 let webServerProcess = null;
 let browserSyncRunning = false;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+console.log(IS_PRODUCTION)
 
 
 
@@ -60,7 +61,6 @@ function scripts () {
       .pipe(source("index.js"))
       .pipe(buffer())
       .pipe(prettyError())
-      .pipe(gulpif(!IS_PRODUCTION, changed('build/js')))
       .pipe(gulpif(!IS_PRODUCTION, sourceMaps.init({ loadMaps: true })))
       .pipe(gulpif(IS_PRODUCTION, uglify()))
       .pipe(gulpif(IS_PRODUCTION, stripDebug()))
@@ -77,7 +77,6 @@ function html () {
         cwd: 'src/pug'
     })
     .pipe(prettyError())
-    .pipe(gulpif(!IS_PRODUCTION, changed('build')))
     .pipe(pug())
     .pipe(gulpif(IS_PRODUCTION, htmlmin({ collapseWhitespace: true })))
     .pipe(gulp.dest('.', {
@@ -94,7 +93,6 @@ function styles () {
         cwd: 'src/scss'
     })
     .pipe(prettyError())
-    .pipe(gulpif(!IS_PRODUCTION, changed('build/css')))
     .pipe(gulpif(!IS_PRODUCTION, sourceMaps.init()))
     .pipe(sass())
     .pipe(gulpif(IS_PRODUCTION, csso()))
@@ -115,7 +113,6 @@ function static () {
         dot: true
     })
     .pipe(prettyError())
-    .pipe(gulpif(!IS_PRODUCTION, changed('build')))
     .pipe(gulp.dest('.', {
         cwd: 'build'
     }))
