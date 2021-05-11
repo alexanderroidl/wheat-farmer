@@ -2,9 +2,14 @@ Wheat Farmer
 ===
 
 
-Farming/Tower Defense web-based game, written in TypeScript. Rendering on HTML Canvas.
+Farming/Tower Defense web-based game. **[Live demo (desktop-only)](https://360-noscope.de/wheat-farmer)**
 
-**[Live demo (desktop-only)](https://360-noscope.de/wheat-farmer)**
+* 🌾 Entirely made from scratch ([Exceptions](5-third-party-contents))
+* 🌾 Written in **TypeScript**
+* 🌾 Linted with **ESLint**
+* 🌾 Built using **Node**/**Gulp** (**Browserify** + **TSify** + **Babelify**)
+* 🌾 Deployed with **Docker** multi-stage build
+* 🌾 Rendering on HTMLCanvas
 
 ![](preview.gif)
 
@@ -25,10 +30,11 @@ Farming/Tower Defense web-based game, written in TypeScript. Rendering on HTML C
 **The game is currently at early alpha developing stage**, meaning it is neither complete, nor bug-free.
 
 **Implemented mechanics:**
-- Gather wheat by planting seeds and waiting on your crops to grow, harvesting them upon completion ✅ 
+- Gather wheat by planting seeds and waiting for your crops to grow, harvesting them upon completion ✅ 
 - Avoid hostile robot attacks while farming ✅
 - Purchase and build up walls for defense ✅
-- Inventory and shop system ✅
+- Manage your inventory ✅
+- Purchase items in the shop ✅
 
 **Road map:**
 * Automate farming by upgrading technology ❌
