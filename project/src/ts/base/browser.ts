@@ -13,12 +13,9 @@ export default class Browser {
     private _worldStats: HTMLDivElement = document.createElement('div');
     private _shop: HTMLDivElement | null = null;
     private _inventory: HTMLDivElement | null = null;
-
     private _mouseDown: boolean = false;
     private _mousePos: Vector = new Vector(0, 0);
-
-    private _oldWindowWidth: number = window.innerWidth;
-    private _oldWindowHeight: number = window.innerHeight;
+    private _oldWindowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
 
     get mouseDown (): boolean {
         return this._mouseDown;
@@ -28,16 +25,35 @@ export default class Browser {
         return this._mousePos;
     }
 
+    public static get isMobile (): boolean {
+        const toMatch = [
+            /Android/i,
+            /webOS/i,
+            /iPhone/i,
+            /iPad/i,
+            /iPod/i,
+            /BlackBerry/i,
+            /Windows Phone/i
+        ];
+    
+        return toMatch.some((toMatchItem) => {
+            return navigator.userAgent.match(toMatchItem);
+        });
+    }
+
     /* eslint-disable @typescript-eslint/no-empty-function */
     public onScroll = (delta: number): void => {};
     public onMouseDown = (pos: Vector): void => {};
     public onMouseUp = (pos: Vector): void => {};
     public onMouseMove = (pos: Vector): void => {};
-    public onMouseDrag = (pos: Vector): void => {};
     public onMouseClick = (pos: Vector): void => {};
-    public onResize = (width: number, height: number, oldWidth: number, oldHeight: number): void => {};
+    public onResize = (size: Vector, oldSize: Vector): void => {};
     public onKeyDown = (keyCode: number, code: string): void => {};
     public onKeyUp = (keyCode: number, code: string): void => {};
+    public onTouchStart = (pos: Vector): void => {};
+    public onTouchMove = (pos: Vector): void => {};
+    public onTouchCancel = (pos: Vector): void => {};
+    public onTouchEnd = (pos: Vector): void => {};
     /* eslint-enable @typescript-eslint/no-empty-function */
 
     constructor () {
@@ -89,66 +105,84 @@ export default class Browser {
         document.addEventListener('wheel', wheelHandler);
         document.addEventListener('mousewheel', wheelHandler);
         document.addEventListener('DOMMouseScroll', wheelHandler);
+
+        // On mouse down
         document.addEventListener('mousedown', (e) => {
             this._mouseDown = true;
             this.onMouseDown(new Vector(e.screenX, e.screenY));
         });
 
+        // On mouse up
         document.addEventListener('mouseup', (e) => {
             this._mouseDown = false;
             this.onMouseUp(new Vector(e.screenX, e.screenY));
         });
 
+        // On mouse move
         document.addEventListener('mousemove', (e) => {
             this._mousePos.x = e.clientX;
             this._mousePos.y = e.clientY;
 
             this.onMouseMove(new Vector(e.clientX, e.clientY));
-
-            if (this._mouseDown) {
-                this.onMouseDrag(new Vector(e.clientX, e.clientY));
-            }
         });
 
+        // On click
         document.addEventListener('click', (e) => {
             this.onMouseClick(this._mousePos);
         });
 
+        // On window load
         window.addEventListener('load', () => {
-            this._oldWindowWidth = window.innerWidth;
+            this._oldWindowSize = new Vector(window.innerWidth, window.innerHeight);
         });
 
+        // On window resize
         window.addEventListener('resize', () => {
-            this.onResize(window.innerWidth, window.innerHeight, this._oldWindowWidth, this._oldWindowHeight);
+            const currentWindowSize = new Vector(window.innerWidth, window.innerHeight);
+            this.onResize(currentWindowSize, this._oldWindowSize);
 
-            this._oldWindowWidth = window.innerWidth;
-            this._oldWindowHeight = window.innerHeight;
+            this._oldWindowSize = new Vector(window.innerWidth, window.innerHeight);
         });
 
+        // On key down
         document.addEventListener('keydown', (e: KeyboardEvent) => {
             this.onKeyDown(e.keyCode, e.code);
         });
 
+        // On key up
         document.addEventListener('keyup', (e: KeyboardEvent) => {
             this.onKeyUp(e.keyCode, e.code);
         });
+
+        // Mobile-only events
+        if (Browser.isMobile) {
+            // On touch start
+            document.body.addEventListener('touchstart', (e: TouchEvent) => {
+                // TODO: Implement screen coordinates
+                this.onTouchStart(new Vector(0, 0));
+            });
+    
+            // On touch end
+            document.body.addEventListener('touchend', (e: TouchEvent) => {
+                // TODO: Implement screen coordinates
+                this.onTouchEnd(new Vector(0, 0));
+            });
+    
+            // On touch move
+            document.body.addEventListener('touchmove', (e: TouchEvent) => {
+                // TODO: Implement screen coordinates
+                this.onTouchMove(new Vector(0, 0));
+            });
+    
+            // On touch cancel
+            document.body.addEventListener('touchcancel', (e: TouchEvent) => {
+                // TODO: Implement screen coordinates
+                this.onTouchCancel(new Vector(0, 0));
+            });
+        }
     }
 
-    public static isMobile (): boolean {
-        const toMatch = [
-            /Android/i,
-            /webOS/i,
-            /iPhone/i,
-            /iPad/i,
-            /iPod/i,
-            /BlackBerry/i,
-            /Windows Phone/i
-        ];
-    
-        return toMatch.some((toMatchItem) => {
-            return navigator.userAgent.match(toMatchItem);
-        });
-    }
+
 
     public static alert (text: string): void {
         window.alert(text);
