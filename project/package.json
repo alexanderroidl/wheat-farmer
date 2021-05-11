@@ -3,18 +3,9 @@
   "version": "0.0.1",
   "description": "Farming/Tower Defense web-based game",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "gulp",
-    "develop": "gulp default watch --series",
-    "production": "cross-env NODE_ENV=production gulp clearBuild default --series",
-    "lint": "eslint . --ext .ts",
-    "start": "node index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com:alexanderroidl/wheat-farmer.git"
-  },
+  "repository": "git@github.com:alexanderroidl/wheat-farmer.git",
+  "author": "Alexander Roidl <alexanderroidl@gmail.com>",
+  "homepage": "https://github.com/alexanderroidl/wheat-farmer",
   "keywords": [
     "typescript",
     "farming",
@@ -22,9 +13,7 @@
     "browsergame",
     "canvas"
   ],
-  "author": "Alexander Roidl",
-  "license": "ISC",
-  "homepage": "https://github.com/alexanderroidl/wheat-farmer",
+  "license": "MIT",
   "dependencies": {
     "cross-env": "^7.0.3",
     "dotenv": "^9.0.2",
@@ -59,6 +48,14 @@
     "typescript": "^4.2.4",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp",
+    "develop": "gulp default watch --series",
+    "production": "cross-env NODE_ENV=production gulp clearBuild default --series",
+    "lint": "eslint . --ext .ts",
+    "start": "node index.js"
   },
   "browserslist": [
     "defaults"
