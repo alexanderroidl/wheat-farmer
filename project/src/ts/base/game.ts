@@ -87,7 +87,6 @@ export default class Game {
         };
 
         this.browser.onTouchStart = () => {
-            console.log('unlock')
             Sound.unlockAll();
         };
     }
