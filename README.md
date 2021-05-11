@@ -4,7 +4,7 @@ Wheat Farmer
 
 Farming/Tower Defense web-based game. **[Live demo (desktop-only)](https://360-noscope.de/wheat-farmer)**
 
-* 🌾 Entirely made from scratch ([Exceptions](5-third-party-contents))
+* 🌾 Entirely made from scratch ([Exceptions](https://github.com/alexanderroidl/wheat-farmer#5-third-party-contents))
 * 🌾 Written in **TypeScript**
 * 🌾 Linted with **ESLint**
 * 🌾 Built using **Node**/**Gulp** (**Browserify** + **TSify** + **Babelify**)
