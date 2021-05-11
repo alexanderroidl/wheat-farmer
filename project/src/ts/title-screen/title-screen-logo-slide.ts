@@ -90,9 +90,9 @@ export default class TitleScreenLogoSlide implements SlideInterface {
         ctx.shadowBlur = 5; // TODO: Make responsive
         
         // Iterate and output credit lines
-        for (let cLine = 0; cLine < this.DESCRIPTION.length; cLine++) {
-            const descriptionOffset = lineHeight * fontSize * (cLine);
-            ctx.fillText(this.DESCRIPTION[cLine], renderer.width/2, renderer.height - (1.5 * 3 * fontSize) + descriptionOffset)
+        for (let cLine = 0; cLine < this.CREDITS.length; cLine++) {
+            const creditsOffset = lineHeight * fontSize * (cLine);
+            ctx.fillText(this.CREDITS[cLine], renderer.width/2, renderer.height - (1.5 * 3 * fontSize) + creditsOffset)
         }
 
         // Reset shadow
