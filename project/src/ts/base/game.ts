@@ -4,9 +4,9 @@ import World from "./world";
 import Renderer from "../core/renderer";
 import Vector from "../core/vector";
 import TitleScreen from "../title-screen/title-screen";
+import Sound from "./sound";
 
 export default class Game {
-    private static readonly MOUSE_MOVE_TRESHOLD = 10;
     private static _instance: Game;
 
     private loop: GameLoop = new GameLoop();
@@ -17,7 +17,6 @@ export default class Game {
     private _mouseDown: boolean = false;
     private _lastClickAt: number = Date.now();
     private _paused: boolean = false;
-    private _titleScreenHidden: boolean = false;
 
     public static get instance (): Game {
         if (!Game._instance) {
@@ -86,16 +85,21 @@ export default class Game {
                 }
             }
         };
+
+        this.browser.onTouchStart = () => {
+            console.log('unlock')
+            Sound.unlockAll();
+        };
     }
 
     private setupWindow (): void {
-        this.browser.onResize = (width: number, height: number, oldWidth: number, oldHeight: number) => {
-            const deltaW = oldWidth - width;
-            const deltaH = oldHeight - height;
+        this.browser.onResize = (size: Vector, oldSize: Vector) => {
+            const deltaWidth = oldSize.x - size.x;
+            const deltaHeight = oldSize.y - size.y;
 
             this.renderer.camera.move(
-                deltaW/2,
-                deltaH/2
+                deltaWidth / 2,
+                deltaHeight / 2
             );
         };
     }
@@ -108,7 +112,6 @@ export default class Game {
             if (this._paused || !this.renderer.titleScreen.hidden) {
                 return;
             }
-
 
             this.world.update(delta);
 

@@ -1,16 +1,10 @@
 import SlideInterface from "../interfaces/slide-interface";
 import Renderer from "../core/renderer";
 import Util from "../core/util";
-import Vector from "core/vector";
+import Vector from "../core/vector";
+import Sound from "../base/sound";
 
 export default class TitleScreenLoadSlide implements SlideInterface {
-    music: HTMLAudioElement;
-
-    constructor () {
-        this.music = new Audio('audio/210107blunt164.ogg');
-        this.music.loop = true;
-    }
-
     render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = '#111111';
         ctx.fillRect(0, 0, renderer.width, renderer.height);
@@ -35,8 +29,9 @@ export default class TitleScreenLoadSlide implements SlideInterface {
     }
 
     onClick (pos: Vector): void {
-        if (this.music.paused) {
-            this.music.play();
+        if (Sound.mainMusic.paused) {
+            Sound.mainMusic.volume = 0.75;
+            Sound.mainMusic.play();
         }
     }
 }
