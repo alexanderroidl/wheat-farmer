@@ -1,4 +1,5 @@
+version: '3.8'
 services:
   webserver:
     volumes:
-      - ./project:/usr/src/app
+      - ./project/src:/usr/src/app/src

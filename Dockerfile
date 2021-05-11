@@ -3,7 +3,10 @@ WORKDIR /usr/src/app
 
 FROM base AS development
 ENV NODE_ENV=development
+COPY ./package.json ./
+COPY ./yarn.lock ./
 RUN yarn install
+COPY ./ ./
 EXPOSE 7000
 EXPOSE 3000
 EXPOSE 3001
@@ -14,7 +17,7 @@ ENV NODE_ENV=production
 COPY ./package.json ./
 COPY ./yarn.lock ./
 RUN yarn install --frozen-lockfile
-COPY ./build ./
+COPY ./build ./build
 COPY ./.env ./
 COPY ./index.js ./
 EXPOSE 3000
