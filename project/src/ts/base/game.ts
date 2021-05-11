@@ -105,7 +105,7 @@ export default class Game {
         this.loop.update = (delta: number) => {
             document.body.classList.toggle('titlescreen', !this.renderer.titleScreen.hidden)
 
-            if (this._paused || this.renderer.titleScreen.hidden) {
+            if (this._paused || !this.renderer.titleScreen.hidden) {
                 return;
             }
 

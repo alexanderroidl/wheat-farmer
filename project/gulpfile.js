@@ -33,8 +33,6 @@ let webServerProcess = null;
 let browserSyncRunning = false;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
-console.log(IS_PRODUCTION)
-
 
 
 /**
