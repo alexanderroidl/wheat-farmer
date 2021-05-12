@@ -1,13 +1,15 @@
 {
-    "name": "wheat-farmer",
-    "version": "0.0.1",
-    "repository": "git@github.com:alexanderroidl/wheat-farmer.git",
-    "author": "Alexander Roidl <alexanderroidl@gmail.com>",
-    "homepage": "https://github.com/alexanderroidl/wheat-farmer",
-    "license": "MIT",
-    "scripts": {
-      "docker:development": "cross-env DOCKER_BUILD_ENV=development docker-compose -f docker-compose.yml -f docker-compose.dev.yml up",
-      "docker:production": "bash ./scripts/pre-build_production.sh && DOCKER_BUILD_ENV=production docker-compose up"
-    }
+  "name": "wheat-farmer",
+  "version": "0.0.1",
+  "repository": "git@github.com:alexanderroidl/wheat-farmer.git",
+  "author": "Alexander Roidl <alexanderroidl@gmail.com>",
+  "homepage": "https://github.com/alexanderroidl/wheat-farmer",
+  "license": "MIT",
+  "scripts": {
+    "docker:development": "cross-env DOCKER_BUILD_ENV=development docker-compose -f docker-compose.yml -f docker-compose.dev.yml up",
+    "docker:production": "bash ./scripts/pre-build_production.sh && DOCKER_BUILD_ENV=production docker-compose up"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
-  
+}
