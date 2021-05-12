@@ -3,24 +3,15 @@ import SlideInterface from "../interfaces/slide-interface";
 import TitleScreenLogoSlide from "./title-screen-logo-slide";
 import Vector from "../core/vector";
 import TitleScreenLoadSlide from "./title-screen-load";
-import Sound from "../base/sound";
 
 export default class TitleScreen {
-    private _hidden: boolean = false;
-    private _slideId: number = 0;
+    public hidden: boolean = false;
+    public slideId: number = 0;
     private _clickedAt: number | null = null;
     private _slides: SlideInterface[] = [
         new TitleScreenLoadSlide(),
         new TitleScreenLogoSlide()
     ];
-
-    get hidden (): boolean {
-        return this._hidden;
-    }
-
-    set hidden (hidden: boolean) {
-        this._hidden = hidden;
-    }
 
     /**
      * On clicked
@@ -33,41 +24,31 @@ export default class TitleScreen {
         }
 
         // Call onClick for current slide
-        this._slides[this._slideId].onClick(pos);
+        this._slides[this.slideId].onClick(pos);
 
         // No next slide left
-        if (this._slideId + 1 > this._slides.length - 1) {
-            // Iterate through all slides
-            for (const slide of this._slides) {
-                // Slide is loading slide
-                if (slide instanceof TitleScreenLoadSlide) {
-                    // Decrease main music volume for game start
-                    Sound.mainMusic.volume = 0.25;
-                    break;
-                }
-            }
-            
+        if (this.slideId + 1 >= this._slides.length) {
             // Hide title screen
-            this._hidden = true;
+            this.hidden = true;
             return;
         }
         
-        this._slideId++;
+        this.slideId++;
     }
 
     public update (delta: number): void {
-        if (this._slides[this._slideId]) {
-            this._slides[this._slideId].update(delta);
+        if (this._slides[this.slideId]) {
+            this._slides[this.slideId].update(delta);
         }
     }
     
     public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
-        if (this._hidden) {
+        if (this.hidden) {
             return;
         }
 
-        if (this._slides[this._slideId]) {
-            this._slides[this._slideId].render(renderer, ctx);
+        if (this._slides[this.slideId]) {
+            this._slides[this.slideId].render(renderer, ctx);
         }
     }
 }

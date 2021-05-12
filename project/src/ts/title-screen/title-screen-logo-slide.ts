@@ -2,6 +2,7 @@ import SlideInterface from "../interfaces/slide-interface";
 import Renderer from "../core/renderer";
 import Util from "../core/util";
 import Vector from "../core/vector";
+import Sound from "../base/sound";
 
 export default class TitleScreenLogoSlide implements SlideInterface {
     // Generated with "Text To ASCII Art Generator (TAAG)" by patorjk.com
@@ -21,8 +22,8 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     ]
 
     private readonly CREDITS: string [] = [
-        "Programming by Alexander Roidl and Julian Arnold",
-        "Music by Julian Arnold"
+        "Programming by ALEXANDER ROIDL and JULIAN ARNOLD",
+        "Soundtrack by JULIAN ARNOLD"
     ];
 
     private readonly _longestLineWidth: number;
@@ -68,7 +69,6 @@ export default class TitleScreenLogoSlide implements SlideInterface {
         }
 
         // Set static font size for description text
-        // TODO: Make responsive
         fontSize = 20; // TODO: Make responsive
         lineHeight = 1.5;
 
@@ -100,10 +100,13 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     }
 
     update (delta: number): void {
-        // TODO: Implement logic
+        if (Sound.mainMusic.paused) {
+            Sound.mainMusic.volume = 0.6;
+            Sound.mainMusic.play();
+        }
     }
 
     onClick (pos: Vector): void {
-        // TODO: Implement logic
+        Sound.mainMusic.volume = 0.2;
     }
 }
