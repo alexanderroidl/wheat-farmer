@@ -1,7 +1,8 @@
 /**
  * Dependencies
  */
-const dotenv = require('dotenv').config();
+require('dotenv').config();
+
 const spawn = require('child_process').spawn;
 const del = require('del');
 // Gulp general 

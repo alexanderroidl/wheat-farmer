@@ -3,7 +3,7 @@ import Vector from "../core/vector";
 export default class Sound {
   public static all: Sound[] = [];
 
-  public static mainMusic = new Sound('audio/210107blunt164.ogg', true);
+  public static mainMusic = new Sound("audio/210107blunt164.ogg", true);
 
   public position: Vector | null = null;
   private _isMusic: boolean = false;
@@ -33,7 +33,7 @@ export default class Sound {
 
   /**
    * Constructor
-   * 
+   *
    * @param src - Source path for audio file
    * @param isMusic - Indicates whether sound is music
    */
@@ -74,7 +74,7 @@ export default class Sound {
   /**
    * Unlock all sounds to be played anytime by browser
    */
-  public static unlockAll(): void {
+  public static unlockAll (): void {
     for (const sound of Sound.all) {
       sound.unlock();
     }
