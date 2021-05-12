@@ -40,6 +40,8 @@ export default class Sound {
   constructor (src: string, isMusic: boolean = false) {
     this._audio = new Audio(src);
     this.isMusic = isMusic;
+
+    Sound.all.push(this);
   }
 
 

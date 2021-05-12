@@ -15,7 +15,6 @@ export default class Renderer {
 
     private _canvas: HTMLCanvasElement = document.createElement('canvas');
     public readonly camera: Camera = new Camera(this.SQUARE_SIZE);
-    public readonly titleScreen: TitleScreen = new TitleScreen();
 
     public mousePos: Vector = new Vector(0, 0);
     public equippedItem: InventoryItem | null = null;
@@ -30,6 +29,10 @@ export default class Renderer {
 
     get z (): number {
         return this.camera.zoomAmount;
+    }
+
+    get ctx (): CanvasRenderingContext2D | null {
+        return this._canvas.getContext('2d');
     }
 
     constructor () {
@@ -201,8 +204,5 @@ export default class Renderer {
         for (const entity of world.entities) {
             this.paintChar(ctx, entity.getChar(), 'white', entity.position.x, entity.position.y, false);
         }
-
-        // Draw title screen
-        this.titleScreen.render(this, ctx);
     }
 }

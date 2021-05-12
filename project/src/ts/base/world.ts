@@ -10,8 +10,8 @@ import BitMath from '../core/bit-math';
 import WallTile from '../tiles/wall-tile';
 
 export default class World {
-    public readonly SIZE: number = 20   ; // 20x20 world siz
-    public readonly CENTER: Vector = new Vector(this.SIZE/2, this.SIZE/2).floor();
+    public readonly SIZE: number = 20; // 20x20 world size
+    public readonly CENTER: Vector = new Vector(this.SIZE / 2, this.SIZE / 2).floor();
 
     private _tiles: Tile[][];
     private _createdAt: number = Date.now();

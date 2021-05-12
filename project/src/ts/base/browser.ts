@@ -70,17 +70,30 @@ export default class Browser {
         this._worldStats.classList.add('world-stats');
 
         // Keyboard info
+        const menuInfo = document.createElement('div');
+        menuInfo.classList.add('keyboard-info-row');
+        menuInfo.innerHTML = '<span>m</span> Open menu';
+        menuInfo.addEventListener('click', (e) => {
+            // TODO: Implement logic
+        });
+
+        const shopInfo = document.createElement('div');
+        shopInfo.classList.add('keyboard-info-row');
+        shopInfo.innerHTML = '<span>S</span> Open shop';
+        shopInfo.addEventListener('click', (e) => {
+            // TODO: Implement logic
+        });
+
+        const inventoryInfo = document.createElement('div');
+        inventoryInfo.classList.add('keyboard-info-row');
+        inventoryInfo.innerHTML = '<span>E</span> Open inventory';
+        inventoryInfo.addEventListener('click', (e) => {
+            // TODO: Implement logic
+        });
+
         const keyboardInfo = document.createElement('div');
         keyboardInfo.classList.add('keyboard-info');
-        keyboardInfo.innerHTML = `
-            <div class="keyboard-info-row">
-                <span>S</span> Open shop
-            </div>
-
-            <div class="keyboard-info-row">
-                <span>E</span> Open inventory
-            </div>
-        `;
+        keyboardInfo.append(menuInfo, shopInfo, inventoryInfo);
 
         // Add everything to DOM
         document.body.append(this._statsDisplay, this._worldStats, keyboardInfo);
@@ -386,7 +399,7 @@ export default class Browser {
             this.openShop(inventory, cb);
 
             if (sellResult) {
-                alert(`Successfully sold ${amount} wheat for ${amount * Inventory.MONEY_PER_OPIUM} $.`);
+                alert(`Successfully sold ${amount} wheat for ${amount * Inventory.MONEY_PER_WHEAT} $.`);
             } else {
                 alert(`Failed to sell ${amount} wheat.`);
             }
@@ -421,7 +434,7 @@ export default class Browser {
 
         // Sell wheat option
         const sellWheatLink = document.createElement('div');
-        sellWheatLink.innerHTML = `- Wheat (+${Inventory.MONEY_PER_OPIUM}$) - ${inventory.wheat} owned`;
+        sellWheatLink.innerHTML = `- Wheat (+${Inventory.MONEY_PER_WHEAT}$) - ${inventory.wheat} owned`;
         if (inventory.wheat > 0) {
             // On sell wheat click
             sellWheatLink.addEventListener('click', (e) => {
@@ -460,6 +473,7 @@ export default class Browser {
                 cb();
             }
         });
+
         document.body.append(this._shop);
     }
 
@@ -481,7 +495,7 @@ export default class Browser {
 
         for (const item of inventory.items) {
             const itemRow = document.createElement('div');
-            itemRow.innerHTML = item.type.name;
+            itemRow.innerHTML = `${item.type.name} x${item.amount}`;
 
             if (player.equipped && player.equipped.type.name === item.type.name) {
                 itemRow.innerHTML += ' (equipped)';
@@ -504,6 +518,7 @@ export default class Browser {
                 cb();
             }
         });
+
         document.body.append(this._inventory);
     }
 }

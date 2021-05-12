@@ -13,14 +13,14 @@ export class InventoryItem {
 }
 
 export class Inventory {
-    public static readonly MONEY_PER_OPIUM: number = 3;
+    public static readonly MONEY_PER_WHEAT: number = 3;
 
     public wheat: number = 0;
     public money: number = 0;
     public items: InventoryItem[] = [
         new InventoryItem(new WheatTile()),
         new InventoryItem(new WallTile())
-    ]
+    ];
 
     public getItemAmount (name: string): number {
         for (const item of this.items) {
@@ -82,7 +82,7 @@ export class Inventory {
         }
 
         this.wheat -= amount;
-        this.money += amount * Inventory.MONEY_PER_OPIUM;
+        this.money += amount * Inventory.MONEY_PER_WHEAT;
         
         return true;
     }

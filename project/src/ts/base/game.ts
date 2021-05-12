@@ -9,136 +9,196 @@ import Sound from "./sound";
 export default class Game {
     private static _instance: Game;
 
-    private loop: GameLoop = new GameLoop();
-    private renderer: Renderer = new Renderer();
-    private world: World = new World();
-    private browser: Browser = new Browser();
-
+    private _loop: GameLoop = new GameLoop();
+    private _renderer: Renderer = new Renderer();
+    private _world: World = new World();
+    private _browser: Browser = new Browser();
+    private _titleScreen: TitleScreen = new TitleScreen();
     private _mouseDown: boolean = false;
     private _lastClickAt: number = Date.now();
     private _paused: boolean = false;
+    private _titleScreenHiddenBefore: boolean | null = null;
 
-    public static get instance (): Game {
+    public static get instance(): Game {
         if (!Game._instance) {
             Game._instance = new Game();
         }
-    
+
         return Game._instance;
     }
 
-    constructor () {
+    constructor() {
         this.setupLoop();
         this.setupMouse();
+        this.setupKeyboard();
+        this.setupTouchScreen();
         this.setupWindow();
 
-        this.renderer.camera.setup(this.world.SIZE);
+        this._renderer.camera.setup(this._world.SIZE);
     }
 
-    private setupMouse (): void {
-        this.browser.onScroll = (delta: number) => {
-            this.renderer.camera.zoom(-delta / 5)
+    private setupMouse(): void {
+        // On browser scroll
+        this._browser.onScroll = (delta: number) => {
+            this._renderer.camera.zoom(-delta / 5)
         }
 
-        this.browser.onMouseDown = (pos: Vector) => {
+        // On browser mouse down
+        this._browser.onMouseDown = (pos: Vector) => {
             this._mouseDown = true;
         }
 
-        this.browser.onMouseUp = (pos: Vector) => {
+        // On browser mouse up
+        this._browser.onMouseUp = (pos: Vector) => {
             this._mouseDown = false;
         }
 
-        this.browser.onMouseMove = (pos: Vector) => {
-            this.renderer.mousePos = new Vector(pos.x, pos.y);
+        // On browser mouse move
+        this._browser.onMouseMove = (pos: Vector) => {
+            this._renderer.mousePos = new Vector(pos.x, pos.y);
         }
 
-        this.browser.onMouseClick = (pos: Vector) => {
-            if (!this.renderer.titleScreen.hidden) {
-                this.renderer.titleScreen.onClick(pos);
+        // On browser mouse click
+        this._browser.onMouseClick = (pos: Vector) => {
+            // Title screen was clicked
+            if (!this._titleScreen.hidden) {
+                this._titleScreen.onClick(pos);
                 this._lastClickAt = Date.now();
                 return;
             }
 
-            const worldPos = this.renderer.camera.worldPosFromScreen(pos);
-            this.world.onTileClicked(worldPos.floor());
+            // World tile was clicked
+            const worldPos = this._renderer.camera.worldPosFromScreen(pos);
+            this._world.onTileClicked(worldPos.floor());
         };
+    }
 
-        this.browser.onKeyUp = (keyCode: number, code: string) => {
-            if (this.renderer.titleScreen.hidden) {
+    private setupKeyboard (): void {
+        // On browser key up
+        this._browser.onKeyUp = (keyCode: number, code: string) => {
+            if (this._titleScreen.hidden) {
+                // "Escape" pressed
                 if (code === 'Escape') {
-                    this._paused = true;
-                    this.renderer.titleScreen.hidden = false;
+                    this._titleScreen.hidden = false;
                     return;
                 }
 
+                // "S" pressed
                 if (code === 'KeyS') {
                     this._paused = true;
-                    this.browser.openShop(this.world.player.items, () => {
+
+                    // Open shop
+                    this._browser.openShop(this._world.player.items, () => {
                         this._paused = false;
                     });
                 }
 
+                // "E" pressed
                 if (code === 'KeyE') {
                     this._paused = true;
-                    this.browser.openInventory(this.world.player, this.world.player.items, () => {
+
+                    // Open inventory
+                    this._browser.openInventory(this._world.player, this._world.player.items, () => {
                         this._paused = false;
                     });
                 }
             }
         };
+    }
 
-        this.browser.onTouchStart = () => {
+    private setupTouchScreen (): void {
+        // On browser touch start
+        this._browser.onTouchStart = () => {
             Sound.unlockAll();
         };
     }
 
-    private setupWindow (): void {
-        this.browser.onResize = (size: Vector, oldSize: Vector) => {
+    private setupWindow(): void {
+        // On browser window resize
+        this._browser.onResize = (size: Vector, oldSize: Vector) => {
             const deltaWidth = oldSize.x - size.x;
             const deltaHeight = oldSize.y - size.y;
 
-            this.renderer.camera.move(
+            // Move camera to be centered again
+            this._renderer.camera.move(
                 deltaWidth / 2,
                 deltaHeight / 2
             );
         };
     }
 
-    private setupLoop (): void {
-        this.loop.fps = 30;
-        this.loop.update = (delta: number) => {
-            document.body.classList.toggle('titlescreen', !this.renderer.titleScreen.hidden)
+    /**
+     * Setup and start game update and render loops
+     */
+    private setupLoop(): void {
+        // Update loop
+        this._loop.update = (delta: number) => {
+            // TODO: Move to Browser class
+            document.body.classList.toggle('titlescreen', !this._titleScreen.hidden)
 
-            if (this._paused || !this.renderer.titleScreen.hidden) {
+            if (this._titleScreenHiddenBefore !== this._titleScreen.hidden) {
+                if (this._titleScreen.hidden) {
+                    this._paused = false;
+                } else {
+                    this._paused = true;
+                }
+
+                this._titleScreenHiddenBefore = this._titleScreen.hidden;
+            }
+
+            // Update title screen if it's not hidden
+            if (!this._titleScreen.hidden) {
+                this._titleScreen.update(delta);
                 return;
             }
 
-            this.world.update(delta);
+            // Stop here if game is currently paused
+            if (this._paused) {
+                return;
+            }
 
+            // Update world
+            this._world.update(delta);
+
+            // Trigger click on tile if mouse is down
             if (this._mouseDown) {
+                // 250ms have passed since last click
                 if ((Date.now() - this._lastClickAt) > 250) {
-                    const worldPos = this.renderer.camera.worldPosFromScreen(this.renderer.mousePos);
-                    this.world.onTileClicked(worldPos.floor());
-    
+                    const worldPos = this._renderer.camera.worldPosFromScreen(this._renderer.mousePos);
+                    this._world.onTileClicked(worldPos.floor());
+
                     this._lastClickAt = Date.now();
                 }
             }
         };
 
-        this.loop.render = (interpolation: number) => {
+        // Render loop
+        this._loop.render = (interpolation: number) => {
+            // Render title screen if it's not hidden and canvas context is given
+            if (!this._titleScreen.hidden && this._renderer.ctx !== null) {
+                this._titleScreen.render(this._renderer, this._renderer.ctx);
+                return;
+            }
+
+            // Stop here if game is currently paused
             if (this._paused) {
                 return;
             }
 
-            this.renderer.render(this.world);
-            if (this.renderer.titleScreen.hidden) {
-                this.browser.renderWorldStatsHTML(this.world);
+            // Render world
+            this._renderer.render(this._world);
 
-                if (Browser.getParameter('debug')) {
-                    this.browser.renderDebug(this.renderer.camera, this.renderer, this.world);
-                }
+            // Render stats
+            this._browser.renderWorldStatsHTML(this._world);
+
+            // Debug GET parameter provided
+            if (Browser.getParameter('debug')) {
+                // Render debug info
+                this._browser.renderDebug(this._renderer.camera, this._renderer, this._world);
             }
         };
 
-        this.loop.start();
+        // Start game update and render loops
+        this._loop.start();
     }
 }
