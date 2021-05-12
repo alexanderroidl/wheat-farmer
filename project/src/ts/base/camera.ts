@@ -2,6 +2,7 @@ import Vector from "../core/vector";
 
 export default class Camera {
     public readonly DEFAULT_ZOOM = 1;
+    public readonly MIN_ZOOM = 0.25;
 
     private _position: Vector = new Vector(0, 0);
     private _zoomAmount: number = this.DEFAULT_ZOOM;
@@ -37,18 +38,25 @@ export default class Camera {
     }
 
     public zoom (zoom: number): void {
-        if (this._zoomAmount + zoom < 0.2) {
-            this._zoomAmount = 0.2;
+        // Never let zoom go below minimum
+        if (this._zoomAmount + zoom < this.MIN_ZOOM) {
+            this._zoomAmount = this.MIN_ZOOM;
             return;
         }
 
+        // Get window center coordinates
         const halfWindowSize = new Vector(window.innerWidth / 2, window.innerHeight / 2);
 
         const oldPos = this.worldPosFromScreen(halfWindowSize);
         this._zoomAmount += zoom;
 
         const newPos = this.worldPosFromScreen(halfWindowSize);
-        this.move(-(newPos.x - oldPos.x) *  this.worldSquareSize * this.zoomAmount, -(newPos.y - oldPos.y) *  this.worldSquareSize * this.zoomAmount);
+
+        // Calculate delta for same center position as before
+        const camerDeltaX = -(newPos.x - oldPos.x) *  this.worldSquareSize * this.zoomAmount;
+        const cameraDeltaY = -(newPos.y - oldPos.y) *  this.worldSquareSize * this.zoomAmount;
+
+        this.move(camerDeltaX, cameraDeltaY);
     }
 
     public worldPosFromScreen (screenPos: Vector): Vector {
