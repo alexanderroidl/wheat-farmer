@@ -5,7 +5,7 @@ export default class TruckEntity implements EntityInterface {
     public readonly WAITING_TIME = 3 * 1000;
 
     public readonly name: string = "Truck";
-    public readonly speed: number = 1;
+    public readonly speed: number = 10;
 
     public position: Vector;
     public initialPosition: Vector | null = null;
@@ -20,7 +20,6 @@ export default class TruckEntity implements EntityInterface {
       if (this._arrivedAt === null) {
         return 0;
       }
-        
       const progress = (Date.now() - this._arrivedAt) / this.WAITING_TIME;
       return progress > 1 ? 1 : progress;
     }
@@ -35,5 +34,9 @@ export default class TruckEntity implements EntityInterface {
 
     public getChar (): string {
       return "🚚";
+    }
+
+    public wait (): void {
+      this._arrivedAt = Date.now();
     }
 }

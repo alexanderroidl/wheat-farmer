@@ -20,6 +20,7 @@ export default class World {
     private _entities: EntityInterface[] = [];
     private _plantedTilesPerMin: number[] = [];
     private _enemyGroupsPerMin: number[] = [];
+    private _truckCount: number = 0;
 
     get tiles (): Tile[][] {
       return this._tiles;
@@ -43,6 +44,10 @@ export default class World {
 
     get enemyGroupsPerMin (): number {
       return this._enemyGroupsPerMin.length;
+    }
+
+    get truckCount (): number {
+      return this._truckCount;
     }
 
     constructor () {
@@ -200,6 +205,7 @@ export default class World {
 
       const truck = new TruckEntity(pos.x, pos.y);
       this._entities.push(truck);
+      this._truckCount += 1;
         
       return truck;
     }
@@ -249,9 +255,9 @@ export default class World {
           }
         }
       }
-
+      
       // Spawn trucks every 2 minutes
-      if (Math.floor((Date.now() - this.createdAt) / 1000) % 12 === 0) {
+      if (Math.floor((Date.now() - this.createdAt) / 1000) % 1 === 0 && this._truckCount < 1) {
         // Spawn truck at right side of the screen
         const spawnPos = new Vector(38,20);
         const truck = this.spawnTruck(spawnPos);
@@ -317,16 +323,15 @@ export default class World {
         }
 
         if (entity instanceof TruckEntity) {
-          // Truck is waiting
-          if (entity.pickupProgress < 1 && entity.pickupProgress > 0) {
-            entity.target = null;
-          } else if (entity.pickupProgress === 1) {
+          if (entity.hasWaited) {
             entity.target = new Vector(-18, 20);
+          } else if (entity.pickupProgress > 0) {
+            entity.target = null;
           } else {
             entity.target = new Vector(10, 20);
           }
         }
-
+        
         // Move entity to target
         if (entity.target !== null) {
           if (!entity.isMoving) {
@@ -363,8 +368,16 @@ export default class World {
           if (entity.position.x === entity.target.x && entity.position.y === entity.target.y) {
             if (entity instanceof RobotEntity) {
               entity.explode();
+            } else if (entity instanceof TruckEntity) {
+              if (entity.hasWaited) {
+                this._entities = this._entities.filter((v) => v !== entity);
+                this._truckCount -= 1;
+              } else {
+                entity.wait();
+                entity.target = null;
+              }
             }
-    
+
             entity.target = null;
             entity.isMoving = false;
             entity.initialPosition = null;
