@@ -25,6 +25,7 @@ Farming/Tower Defense web-based game. **[Live demo (desktop-only)](https://360-n
     1. [Installation](#41-installation)
     2. [Usage](#42-usage)
 5. [Third-party contents](#5-third-party-contents)
+6. [Collaborators](#6-collaborators)
 
 
 # 1. The Game
