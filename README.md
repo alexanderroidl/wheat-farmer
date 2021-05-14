@@ -10,6 +10,7 @@ Farming/Tower Defense web-based game. **[Live demo (desktop-only)](https://360-n
 * 🌾 Built using **Node**/**Gulp** (**Browserify** + **TSify** + **Babelify**)
 * 🌾 Deployed with **Docker** multi-stage build
 * 🌾 Rendering on HTMLCanvas
+* 🌾 Soundtrack by collaborator [@julianarnold96](https://github.com/julianarnold96)
 
 ![](preview.gif)
 
@@ -24,6 +25,7 @@ Farming/Tower Defense web-based game. **[Live demo (desktop-only)](https://360-n
     1. [Installation](#41-installation)
     2. [Usage](#42-usage)
 5. [Third-party contents](#5-third-party-contents)
+6. [Collaborators](#6-collaborators)
 
 
 # 1. The Game
@@ -107,3 +109,7 @@ $ yarn docker:production # Build/start production environment
 * [GameLoop.js](https://gist.github.com/niklaskorz/2ef312693977e02d3fb4751b28f7d435) by [Niklas Korz](https://gist.github.com/niklaskorz)
 * [OpenMoji font](https://openmoji.org/)
 * ["212 Keyboard" font](https://www.dafont.com/212-keyboard.font) by [212 fonts](https://www.dafont.com/elizabeth.d7791)
+
+# 6. Collaborators
+* [@alexanderroidl](https://github.com/alexanderroidl) (maintainer)
+* [@julianarnold96](https://github.com/julianarnold96)
