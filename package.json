@@ -7,9 +7,17 @@
   "license": "MIT",
   "scripts": {
     "docker:development": "cross-env DOCKER_BUILD_ENV=development docker-compose -f docker-compose.yml -f docker-compose.dev.yml up",
-    "docker:production": "bash ./scripts/pre-build_production.sh && DOCKER_BUILD_ENV=production docker-compose up"
+    "docker:production": "bash ./scripts/pre-build_production.sh && DOCKER_BUILD_ENV=production docker-compose up",
+    "pre-commit": "node scripts/git-pre-commit-hook.js"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
-  }
+    "chalk": "^4.1.1",
+    "cross-env": "^7.0.3",
+    "cross-spawn": "^7.0.3",
+    "pre-commit": "^1.2.2"
+  },
+  "dependencies": {
+    "signale": "^1.4.0"
+  },
+  "pre-commit": "pre-commit"
 }
