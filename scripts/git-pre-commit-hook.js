@@ -1,3 +1,6 @@
+/**
+ * This script is used by package.json as pre-commit hook for Git
+ */
 const childProcess = require("child_process");
 const path = require("path");
 const spawn = require('cross-spawn');
