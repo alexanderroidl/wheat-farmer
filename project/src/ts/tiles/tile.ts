@@ -1,69 +1,72 @@
-import TileInterface from '../interfaces/tile-interface';
-import Renderer from '../core/renderer';
-import Util from '../core/util';
+import TileInterface from "../interfaces/tile-interface";
+import Renderer from "../core/renderer";
+import Util from "../core/util";
 
 export default class Tile implements TileInterface {
     public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
-    public static readonly COLOR: string = '';
+    public static readonly COLOR: string = "";
 
     public name: string = "";
     public timeCreated: number = Date.now();
 
     private _damage: number = 0;
 
-    get damage (): number {
-        return this._damage;
+    public get damage (): number {
+      return this._damage;
     }
 
-    set damage (amount: number) {
-        this._damage = amount > 1 ? 1 : amount < 0 ? 0 : amount;
+    public set damage (amount: number) {
+      this._damage = amount > 1 ? 1 : amount < 0 ? 0 : amount;
     }
 
     public hasCollision (): boolean {
-        return false;
+      return false;
     }
     
     public getChar (preview: boolean = false): string | null {
-        return 'x';
+      return "x";
     }
 
     public getDamagedHexColor (color: string): string {
-        const lightenDarkenFactor = -(this.damage) * 50;
-        return Util.lightenDarkenColor(color, lightenDarkenFactor);
+      const lightenDarkenFactor = -(this.damage) * 50;
+      return Util.lightenDarkenColor(color, lightenDarkenFactor);
     }
 
     public getHexColor (): string | null {
-        return '#000000';
+      return "#000000";
     }
 
     public getCharColor (): string | null {
-        return '#000000';
+      return "#000000";
     }
 
     public onClicked (): void {
-        // TODO: Implement logic
+      // TODO: Implement logic
     }
 
-    private paintSquare(renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null) {
-        const hexColor = this.getHexColor();
-        if (!hexColor) {
-            return;
-        }
+    /* eslint-disable-next-line max-params */
+    private paintSquare (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null) {
+      const hexColor = this.getHexColor();
+      if (!hexColor) {
+        return;
+      }
 
-        renderer.paintSquare(ctx, x, y, isHover, hexColor, opacity, this.getChar(), this.getCharColor());
+      renderer.paintSquare(ctx, x, y, isHover, hexColor, opacity, this.getChar(), this.getCharColor());
     }
 
+    /* eslint-disable-next-line max-params */
     public render (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null): void {
-        this.paintSquare(renderer, ctx, x, y, isHover, opacity);
+      this.paintSquare(renderer, ctx, x, y, isHover, opacity);
     }
 
+    /* eslint-disable-next-line max-params */
     public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-        if (isHover && this.damage > 0) {
-            renderer.paintProgressBar(ctx, x + 0.25/2, y + 0.15, 0.75, 0.15, this.damage, 'red');
-        }
+      if (isHover && this.damage > 0) {
+        renderer.paintProgressBar(ctx, x + 0.25 / 2, y + 0.15, 0.75, 0.15, this.damage, "red");
+      }
     }
 
     public update (delta: number): void {
-        this.damage -= delta / Tile.DAMAGE_HEAL_TIME;
+      this.damage -= delta / Tile.DAMAGE_HEAL_TIME;
     }
 }

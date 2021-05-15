@@ -75,7 +75,7 @@ export class Inventory {
     return true;
   }
 
-  sellWheat (amount: number): boolean {
+  public sellWheat (amount: number): boolean {
     if (this.wheat - amount < 0) {
       return false;
     }

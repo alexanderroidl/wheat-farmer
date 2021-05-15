@@ -1,6 +1,6 @@
-import Tile from './tile';
-import Renderer from '../core/renderer';
-import TradeableInterface from '../interfaces/tradeable-interface';
+import Tile from "./tile";
+import Renderer from "../core/renderer";
+import TradeableInterface from "../interfaces/tradeable-interface";
 
 export default class WallTile extends Tile implements TradeableInterface {
     public readonly buyPrice: number = 10;
@@ -9,29 +9,30 @@ export default class WallTile extends Tile implements TradeableInterface {
     public name: string = "Wall";
 
     public hasCollision (): boolean {
-        return true;
+      return true;
     }
     
     public getChar (preview: boolean = false): string | null {
-        if (preview) {
-            return '🚫';
-        }
-        return null;
+      if (preview) {
+        return "🚫";
+      }
+      return null;
     }
 
     public getHexColor (): string | null {
-        return '#111111';
+      return "#111111";
     }
 
     public getCharColor (): string | null {
-        return null;
+      return null;
     }
 
     public onClicked (): void {
-        // TODO: Implement logic
+      // TODO: Implement logic
     }
 
+    /* eslint-disable-next-line max-params */
     public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-        super.renderLatest(renderer, ctx, x, y, isHover);
+      super.renderLatest(renderer, ctx, x, y, isHover);
     }
 }

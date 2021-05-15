@@ -5,15 +5,14 @@ import Vector from "../core/vector";
 
 export default class TitleScreenLoadSlide implements SlideInterface {
   private readonly TEXT = "Click to load";
-
-  private readonly _transformedText: string;
+  private readonly TRANSFORMED_TEXT: string;
 
   constructor () {
     const upperCaseText = this.TEXT.toUpperCase();
-    this._transformedText = upperCaseText.split("").join(" ");
+    this.TRANSFORMED_TEXT = upperCaseText.split("").join(" ");
   }
 
-  render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
     // Paint black background
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, renderer.width, renderer.height);
@@ -31,17 +30,17 @@ export default class TitleScreenLoadSlide implements SlideInterface {
     ctx.shadowBlur = 7; // TODO: Make responsive
 
     // Fill actual text
-    ctx.fillText(this._transformedText, renderer.width / 2, renderer.height / 2);
+    ctx.fillText(this.TRANSFORMED_TEXT, renderer.width / 2, renderer.height / 2);
 
     // Reset glowing text effect
     ctx.shadowBlur = 0;
   }
 
-  update (delta: number): void {
+  public update (_delta: number): void {
     // TODO: Implement logic
   }
 
-  onClick (pos: Vector): void {
+  public onClick (_pos: Vector): void {
     // TODO: Implement logic
   }
 }

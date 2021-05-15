@@ -20,27 +20,27 @@ export default class World {
   private _plantedTilesPerMin: number[] = [];
   private _enemyGroupsPerMin: number[] = [];
 
-  get tiles (): Tile[][] {
+  public get tiles (): Tile[][] {
     return this._tiles;
   }
 
-  get createdAt (): number {
+  public get createdAt (): number {
     return this._createdAt;
   }
 
-  get player (): Player {
+  public get player (): Player {
     return this._player;
   }
 
-  get entities (): EntityInterface[] {
+  public get entities (): EntityInterface[] {
     return this._entities;
   }
 
-  get tilesPlantedPerMin (): number {
+  public get tilesPlantedPerMin (): number {
     return this._plantedTilesPerMin.length;
   }
 
-  get enemyGroupsPerMin (): number {
+  public get enemyGroupsPerMin (): number {
     return this._enemyGroupsPerMin.length;
   }
 

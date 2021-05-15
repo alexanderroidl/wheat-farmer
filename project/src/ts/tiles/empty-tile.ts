@@ -1,28 +1,29 @@
-import Tile from './tile';
-import Renderer from '../core/renderer';
+import Tile from "./tile";
+import Renderer from "../core/renderer";
 
 export default class EmptyTile extends Tile {
-    public static readonly COLOR = '#ebb434';
+    public static readonly COLOR = "#ebb434";
     public name: string = "Empty";
     public timeCreated: number = Date.now();
     
     public getChar (preview: boolean = false): string | null {
-        return 'x';
+      return "x";
     }
 
     public getHexColor (): string | null {
-        return this.getDamagedHexColor(EmptyTile.COLOR);
+      return this.getDamagedHexColor(EmptyTile.COLOR);
     }
 
     public getCharColor (): string | null {
-        return '#666666';
+      return "#666666";
     }
 
     public onClicked (): void {
-        // TODO: Implement logic
+      // TODO: Implement logic
     }
 
+    /* eslint-disable-next-line max-params */
     public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-        super.renderLatest(renderer, ctx, x, y, isHover);
+      super.renderLatest(renderer, ctx, x, y, isHover);
     }
 }

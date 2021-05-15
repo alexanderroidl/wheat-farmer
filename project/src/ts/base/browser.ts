@@ -17,11 +17,11 @@ export default class Browser {
   private _mousePos: Vector = new Vector(0, 0);
   private _oldWindowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
 
-  get mouseDown (): boolean {
+  public get mouseDown (): boolean {
     return this._mouseDown;
   }
 
-  get mousePos (): Vector {
+  public get mousePos (): Vector {
     return this._mousePos;
   }
 
@@ -42,7 +42,6 @@ export default class Browser {
   }
 
   /* eslint-disable @typescript-eslint/no-empty-function */
-  /* eslint-disable no-empty-function */
   public onScroll = (delta: number): void => {};
   public onMouseDown = (pos: Vector): void => {};
   public onMouseUp = (pos: Vector): void => {};
@@ -55,7 +54,6 @@ export default class Browser {
   public onTouchMove = (pos: Vector): void => {};
   public onTouchCancel = (pos: Vector): void => {};
   public onTouchEnd = (pos: Vector): void => {};
-  /* eslint-enable no-empty-function */
   /* eslint-enable @typescript-eslint/no-empty-function */
 
   constructor () {
@@ -265,13 +263,13 @@ export default class Browser {
         text: Math.floor((Date.now() - world.createdAt) / 1000) + "s"
       }, {
         icon: "🌱",
-        text: world.player.items.getItemAmount("Wheat"),
+        text: world.player.items.getItemAmount("Wheat")
       }, {
         icon: "🌾",
-        text: world.player.items.wheat,
+        text: world.player.items.wheat
       }, {
         icon: "💰",
-        text: world.player.items.money + " $",
+        text: world.player.items.money + " $"
       }
     ];
 

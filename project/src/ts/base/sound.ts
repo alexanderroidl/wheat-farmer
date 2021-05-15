@@ -9,23 +9,23 @@ export default class Sound {
   private _isMusic: boolean = false;
   private _audio: HTMLAudioElement;
 
-  get volume (): number {
+  public get volume (): number {
     return this._audio.volume;
   }
 
-  set volume (volume: number) {
+  public set volume (volume: number) {
     this._audio.volume = volume;
   }
 
-  get paused (): boolean {
+  public get paused (): boolean {
     return this._audio.paused;
   }
 
-  get isMusic (): boolean {
+  public get isMusic (): boolean {
     return this._isMusic;
   }
 
-  set isMusic (isMusic: boolean) {
+  public set isMusic (isMusic: boolean) {
     this._isMusic = !!isMusic;
     this._audio.loop = !!isMusic;
   }

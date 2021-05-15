@@ -17,19 +17,19 @@ export default class Renderer {
   public mousePos: Vector = new Vector(0, 0);
   public equippedItem: InventoryItem | null = null;
 
-  get width (): number {
+  public get width (): number {
     return this._canvas.width;
   }
 
-  get height (): number {
+  public get height (): number {
     return this._canvas.height;
   }
 
-  get z (): number {
+  public get z (): number {
     return this.camera.zoomAmount;
   }
 
-  get ctx (): CanvasRenderingContext2D | null {
+  public get ctx (): CanvasRenderingContext2D | null {
     return this._canvas.getContext("2d");
   }
 
@@ -59,7 +59,7 @@ export default class Renderer {
   }
 
   // TODO: Remove eslint-disable, replace with alternative parameters
-  // eslint-disable-next-line max-params
+  /* eslint-disable-next-line max-params */
   public paintChar (ctx: CanvasRenderingContext2D, char: string, charColor: string, x: number, y: number, isHover: boolean): void {
     if (isHover) {
       ctx.shadowColor = "white";
@@ -94,7 +94,7 @@ export default class Renderer {
   }
 
   // TODO: Remove eslint-disable, replace with alternative parameters
-  // eslint-disable-next-line max-params
+  /* eslint-disable-next-line max-params */
   public paintSquare (ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, fillStyle: string, opacity: number | null = null, char?: string | null, charColor?: string | null): void {
     const zoom = this.camera.zoomAmount;
     const oldAlpha = ctx.globalAlpha;
@@ -131,7 +131,7 @@ export default class Renderer {
   }
 
   // TODO: Remove eslint-disable, replace with alternative parameters
-  // eslint-disable-next-line max-params
+  /* eslint-disable-next-line max-params */
   public paintProgressBar (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, progress: number, color: string = "green"): void {
     const oldAlpha = ctx.globalAlpha;
     ctx.globalAlpha = 0.65;

@@ -19,27 +19,27 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     "Plant wheat seeds, harvest crops and sell them.",
     "",
     "Avoid robot attacks at all costs."
-  ]
+  ];
 
   private readonly CREDITS: string[] = [
     "Programming by ALEXANDER ROIDL and JULIAN ARNOLD",
     "Soundtrack by JULIAN ARNOLD"
   ];
 
-  private readonly _longestLineWidth: number;
+  private readonly LONGEST_LINE_WIDTH: number;
 
   constructor () {
     // Determine length of longest logo line
-    this._longestLineWidth = this.LOGO.reduce((a: string, b: string) => {
+    this.LONGEST_LINE_WIDTH = this.LOGO.reduce((a: string, b: string) => {
       return a.length > b.length ? a : b;
     }).length;
   }
 
-  render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
     const targetLogoWidth = 0.75; // 75 % screen width
 
     // Calculate font size based off target logo screen size
-    let fontSize = (renderer.width / (20 * this._longestLineWidth) * 1.65) * targetLogoWidth;
+    let fontSize = (renderer.width / (20 * this.LONGEST_LINE_WIDTH) * 1.65) * targetLogoWidth;
     let lineHeight = 1;
 
     // Paint black background
@@ -99,7 +99,7 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     ctx.shadowBlur = 0;
   }
 
-  update (delta: number): void {
+  public update (delta: number): void {
     // Start playing main music immediately
     if (Sound.mainMusic.paused) {
       Sound.mainMusic.volume = 0.6;
@@ -107,7 +107,7 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     }
   }
 
-  onClick (pos: Vector): void {
+  public onClick (pos: Vector): void {
     // Decrease volume upon slide change
     Sound.mainMusic.volume = 0.2;
   }

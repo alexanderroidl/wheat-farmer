@@ -8,15 +8,15 @@ export default class Camera {
   private _zoomAmount: number = this.DEFAULT_ZOOM;
   private _worldSquareSize: number;
 
-  get position (): Vector {
+  public get position (): Vector {
     return this._position;
   }
 
-  get zoomAmount (): number {
+  public get zoomAmount (): number {
     return this._zoomAmount;
   }
 
-  get worldSquareSize (): number {
+  public get worldSquareSize (): number {
     return this._worldSquareSize;
   }
 
