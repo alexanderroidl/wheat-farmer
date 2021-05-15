@@ -56,7 +56,7 @@
     "develop": "gulp default watch --series",
     "production": "cross-env NODE_ENV=production gulp clearBuild default --series",
     "lint": "eslint . --ext .ts,.js",
-    "start": "node express.js"
+    "serve": "node express.js"
   },
   "browserslist": [
     "defaults"

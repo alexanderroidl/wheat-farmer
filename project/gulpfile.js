@@ -35,6 +35,8 @@ const htmlmin = require("gulp-htmlmin");
 let webServerProcess = null;
 let browserSyncRunning = false;
 let linterErrorCount = 0;
+let restartServerTimeout = null;
+
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 
@@ -186,6 +188,8 @@ async function clearBuild (cb) {
  * Start or restart server
  */
 function startExpressServer (cb) {
+  restartServerTimeout = null;
+
   // If web server process exists, kill it
   if (webServerProcess) {
     webServerProcess.stdin.pause();
@@ -228,26 +232,29 @@ function startExpressServer (cb) {
 }
 
 
+function restartExpressServer (cb) {
+  if (restartServerTimeout !== null) {
+    clearTimeout(restartServerTimeout);
+  }
+
+  restartServerTimeout = setTimeout(() => startExpressServer(cb), 1500);
+}
+
+
 /**
  * Watch task
  */
 function watch () {
   // Launch pug, styles and static tasks upon file changes
-  gulp.watch("**/*.pug", { cwd: "src/pug" }, html);
-  gulp.watch("**/*.scss", { cwd: "src/scss" }, styles);
-  gulp.watch("**/*", { cwd: "src/static" }, static);
+  gulp.watch("**/*.pug", { cwd: "src/pug" }, gulp.series(html, restartExpressServer));
+  gulp.watch("**/*.scss", { cwd: "src/scss" }, gulp.series(styles, restartExpressServer));
+  gulp.watch("**/*", { cwd: "src/static" }, gulp.series(static, restartExpressServer));
 
   // When TS source files or ESLint rules change, lint and compile afterwards (if successful)
   gulp.watch([
     ".eslintrc.js",
     "src/ts/**/*.ts"
-  ], gulp.series(lint, scripts));
-
-  // Restart express server when any source files change
-  gulp.watch("**/*", {
-    cwd: "src",
-    delay: 1000
-  }, startExpressServer);
+  ], gulp.series(lint, scripts, restartExpressServer));
 
   // Start express server initially
   startExpressServer();

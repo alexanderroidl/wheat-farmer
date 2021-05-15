@@ -73,8 +73,8 @@ $ cd project
 $ yarn build # Build once
 $ yarn develop # Build once and watch afterwards - (Re-)starts webserver and BrowserSync
 $ yarn production # Build in production mode (Compress everything, strip debug)
-$ yarn start # Start Express webserver to serve files
-$ yarn lint # Run ESLint on TypeScript code
+$ yarn serve # Start Express webserver to serve files
+$ yarn lint # Run ESLint for project JS/TS files
 ```
 
 
