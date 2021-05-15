@@ -5,6 +5,8 @@ require("dotenv").config();
 
 const spawn = require("child_process").spawn;
 const del = require("del");
+const chalk = require("chalk");
+const ESLint = require("eslint").ESLint;
 // Gulp general
 const gulp = require("gulp");
 const sourceMaps = require("gulp-sourcemaps");
@@ -32,13 +34,66 @@ const htmlmin = require("gulp-htmlmin");
  */
 let webServerProcess = null;
 let browserSyncRunning = false;
+let linterErrorCount = 0;
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+
+/**
+ * Lint task
+ */
+async function lint (cb) {
+  try {
+    // Initiate Linter
+    const eslint = new ESLint();
+    const results = await eslint.lintFiles(["src/ts/**/*.ts"]);
+  
+    // Compute total amount of errors and warnings combined
+    const errorsWarningsCount = results.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.errorCount + currentValue.warningCount;
+    }, 0);
+
+    // Compute and save total amount of errors (Later checked in TypeScript task)
+    linterErrorCount = results.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.errorCount;
+    }, 0);
+
+    // Total amount of errors and warnings is greater than zero
+    if (errorsWarningsCount > 0) {
+      // Load formatter, generate result text
+      const formatter = await eslint.loadFormatter("stylish");
+      const resultText = formatter.format(results);
+
+      console.error(resultText);
+    }
+
+    cb();
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 
 /**
  * Scripts task
  */
-function scripts () {
+function scripts (cb) {
+  // Count of total errors produced by previous ESLint execution was greater than zero
+  if (linterErrorCount > 0) {
+    // Inform about abortion of current task
+    console.error(
+      chalk.red("[TYPESCRIPT]"),
+      `Aborting compilation because of ${chalk.red(linterErrorCount)} ESLint errors.`
+    );
+
+    // Stop current task
+    cb();
+    return;
+  }
+
+  // Reset count of total ESLint errors
+  linterErrorCount = 0;
+  
+  // Load TypeScript project file
   const tsConfig = require("./tsconfig.json");
   
   return browserify("./src/ts/index.ts", {
@@ -130,7 +185,7 @@ async function clearBuild (cb) {
 /**
  * Start or restart server
  */
-function initWebServer () {
+function startExpressServer (cb) {
   // If web server process exists, kill it
   if (webServerProcess) {
     webServerProcess.stdin.pause();
@@ -150,7 +205,7 @@ function initWebServer () {
   // BrowserSync is currently not running
   if (!browserSyncRunning) {
     browserSync.init(null, {
-      proxy: `http://localhost:${process.env.EXPRESS_PORT}/?debug`,
+      proxy: `http://${process.env.HOST_ADDRESS}:${process.env.EXPRESS_PORT}/?debug`,
       files: ["build/**/*.*"],
       port: process.env.BROWSERSYNC_PORT,
       open: false
@@ -165,6 +220,11 @@ function initWebServer () {
   webServerProcess.stdout.on("data", (data) => console.log(data.toString()));
   webServerProcess.stderr.on("data", (data) => console.log(data.toString()));
   webServerProcess.stdin.on("data", (data) => console.log(data.toString()));
+
+  // Invoke callback if provided
+  if (typeof cb === "function") {
+    cb();
+  }
 }
 
 
@@ -172,17 +232,25 @@ function initWebServer () {
  * Watch task
  */
 function watch () {
+  // Launch pug, styles and static tasks upon file changes
   gulp.watch("**/*.pug", { cwd: "src/pug" }, html);
   gulp.watch("**/*.scss", { cwd: "src/scss" }, styles);
-  gulp.watch("**/*.ts", { cwd: "src/ts" }, scripts);
   gulp.watch("**/*", { cwd: "src/static" }, static);
 
-  gulp.watch("**/*", { cwd: "src", delay: 1000 }, (cb) => {
-    initWebServer();
-    cb();
-  });
+  // When TS source files or ESLint rules change, lint and compile afterwards (if successful)
+  gulp.watch([
+    ".eslintrc.js",
+    "src/ts/**/*.ts"
+  ], gulp.series(lint, scripts));
 
-  initWebServer();
+  // Restart express server when any source files change
+  gulp.watch("**/*", {
+    cwd: "src",
+    delay: 1000
+  }, startExpressServer);
+
+  // Start express server initially
+  startExpressServer();
 }
 
 
@@ -190,7 +258,7 @@ function watch () {
  * Export tasks
  */
 module.exports = {
-  default: gulp.parallel(scripts, html, styles, static),
+  default: gulp.parallel(gulp.series(lint, scripts), html, styles, static),
   clearBuild,
   watch
 };
