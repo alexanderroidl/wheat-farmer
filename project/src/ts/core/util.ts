@@ -1,8 +1,8 @@
 export default class Util {
-  private static alphaNumericRegExp = new RegExp("[\\w ]+");
+  private static readonly REGEXP_ALPHA_NUMERIC = new RegExp(/[\w ]+/);
 
   public static isAlphaNumeric (text: string): boolean {
-    return Util.alphaNumericRegExp.test(text);
+    return Util.REGEXP_ALPHA_NUMERIC.test(text);
   }
 
   public static leadZeros (value: number | string, size: number): number | string {
