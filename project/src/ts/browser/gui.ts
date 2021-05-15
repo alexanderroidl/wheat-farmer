@@ -1,64 +1,26 @@
-import World from "./world";
-import Camera from "./camera";
-import Renderer from "../core/renderer";
-import Vector from "../core/vector";
+
 import BitMath from "../core/bit-math";
-import { Inventory, InventoryItem } from "./inventory";
+import { Inventory, InventoryItem } from "../base/inventory";
 import Tile from "../tiles/tile";
 import Util from "../core/util";
-import Player from "./player";
+import Player from "../base/player";
+import World from "../base/world";
+import Camera from "../base/camera";
+import Renderer from "../core/renderer";
+import Mouse from "./mouse";
 
-export default class Browser {
+export default class Gui {
+  private _mouse: Mouse;
+
   private _statsDisplay: HTMLDivElement = document.createElement("div");
   private _worldStats: HTMLDivElement = document.createElement("div");
   private _shop: HTMLDivElement | null = null;
   private _inventory: HTMLDivElement | null = null;
-  private _mouseDown: boolean = false;
-  private _mousePos: Vector = new Vector(0, 0);
-  private _oldWindowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
 
-  public get mouseDown (): boolean {
-    return this._mouseDown;
-  }
+  constructor (mouse: Mouse) {
+    this._mouse = mouse;
 
-  public get mousePos (): Vector {
-    return this._mousePos;
-  }
-
-  public static get isMobile (): boolean {
-    const toMatch = [
-      /Android/i,
-      /webOS/i,
-      /iPhone/i,
-      /iPad/i,
-      /iPod/i,
-      /BlackBerry/i,
-      /Windows Phone/i
-    ];
-
-    return toMatch.some((toMatchItem) => {
-      return navigator.userAgent.match(toMatchItem);
-    });
-  }
-
-  /* eslint-disable @typescript-eslint/no-empty-function */
-  public onScroll = (delta: number): void => {};
-  public onMouseDown = (pos: Vector): void => {};
-  public onMouseUp = (pos: Vector): void => {};
-  public onMouseMove = (pos: Vector): void => {};
-  public onMouseClick = (pos: Vector): void => {};
-  public onResize = (size: Vector, oldSize: Vector): void => {};
-  public onKeyDown = (keyCode: number, code: string): void => {};
-  public onKeyUp = (keyCode: number, code: string): void => {};
-  public onTouchStart = (pos: Vector): void => {};
-  public onTouchMove = (pos: Vector): void => {};
-  public onTouchCancel = (pos: Vector): void => {};
-  public onTouchEnd = (pos: Vector): void => {};
-  /* eslint-enable @typescript-eslint/no-empty-function */
-
-  constructor () {
     this.setupDOM();
-    this.setupEvents();
   }
 
   private setupDOM (): void {
@@ -97,124 +59,6 @@ export default class Browser {
 
     // Add everything to DOM
     document.body.append(this._statsDisplay, this._worldStats, keyboardInfo);
-  }
-
-  private setupEvents (): void {
-    // The flag that determines whether the wheel event is supported
-    let supportsWheel = false;
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    // The function that will run when the events are triggered
-    const wheelHandler = (e: any) => {
-      if (e.type === "wheel") supportsWheel = true;
-      else if (supportsWheel) return;
-
-      const delta = ((e.deltaY || -e.wheelDelta || e.detail) >> 10) || 1;
-      this.onScroll(delta);
-    };
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-
-    // Add the event listeners for each event.
-    document.addEventListener("wheel", wheelHandler);
-    document.addEventListener("mousewheel", wheelHandler);
-    document.addEventListener("DOMMouseScroll", wheelHandler);
-
-    // On mouse down
-    document.addEventListener("mousedown", (e) => {
-      this._mouseDown = true;
-      this.onMouseDown(new Vector(e.screenX, e.screenY));
-    });
-
-    // On mouse up
-    document.addEventListener("mouseup", (e) => {
-      this._mouseDown = false;
-      this.onMouseUp(new Vector(e.screenX, e.screenY));
-    });
-
-    // On mouse move
-    document.addEventListener("mousemove", (e) => {
-      this._mousePos.x = e.clientX;
-      this._mousePos.y = e.clientY;
-
-      this.onMouseMove(new Vector(e.clientX, e.clientY));
-    });
-
-    // On click
-    document.addEventListener("click", (e) => {
-      this.onMouseClick(this._mousePos);
-    });
-
-    // On window load
-    window.addEventListener("load", () => {
-      this._oldWindowSize = new Vector(window.innerWidth, window.innerHeight);
-    });
-
-    // On window resize
-    window.addEventListener("resize", () => {
-      const currentWindowSize = new Vector(window.innerWidth, window.innerHeight);
-      this.onResize(currentWindowSize, this._oldWindowSize);
-
-      this._oldWindowSize = new Vector(window.innerWidth, window.innerHeight);
-    });
-
-    // On key down
-    document.addEventListener("keydown", (e: KeyboardEvent) => {
-      this.onKeyDown(e.keyCode, e.code);
-    });
-
-    // On key up
-    document.addEventListener("keyup", (e: KeyboardEvent) => {
-      this.onKeyUp(e.keyCode, e.code);
-    });
-
-    // Mobile-only events
-    if (Browser.isMobile) {
-      // On touch start
-      document.body.addEventListener("touchstart", (e: TouchEvent) => {
-        // TODO: Implement screen coordinates
-        this.onTouchStart(new Vector(0, 0));
-      });
-
-      // On touch end
-      document.body.addEventListener("touchend", (e: TouchEvent) => {
-        // TODO: Implement screen coordinates
-        this.onTouchEnd(new Vector(0, 0));
-      });
-
-      // On touch move
-      document.body.addEventListener("touchmove", (e: TouchEvent) => {
-        // TODO: Implement screen coordinates
-        this.onTouchMove(new Vector(0, 0));
-      });
-
-      // On touch cancel
-      document.body.addEventListener("touchcancel", (e: TouchEvent) => {
-        // TODO: Implement screen coordinates
-        this.onTouchCancel(new Vector(0, 0));
-      });
-    }
-  }
-
-  public static alert (text: string): void {
-    window.alert(text);
-  }
-
-  public static getParameter (name: string): string | null {
-    // Source: https://stackoverflow.com/a/5448595/11379072
-
-    let result: string | null = null;
-    let tmp = [];
-
-    const parameters = location.search.substr(1).split("&");
-    for (const parameter of parameters) {
-      tmp = parameter.split("=");
-
-      if (tmp[0] === name) {
-        result = decodeURIComponent(tmp[1]);
-      }
-    }
-
-    return result;
   }
 
   private getWorldStatsRowHTML (icon: string, text?: string) {
@@ -281,23 +125,21 @@ export default class Browser {
 
   private getCameraDebugHTML (camera: Camera): string {
     return `
-            <strong>Camera:</strong><br>
-            <strong>X:</strong> ${camera.position.x.toFixed(3)}<br>
-            <strong>Y:</strong> ${camera.position.y.toFixed(3)}<br>
-            <strong>Zoom:</strong> ${camera.zoomAmount.toFixed(3)}
-        `;
+      <strong>Camera:</strong><br>
+      <strong>X:</strong> ${camera.position.x.toFixed(3)}<br>
+      <strong>Y:</strong> ${camera.position.y.toFixed(3)}<br>
+      <strong>Zoom:</strong> ${camera.zoomAmount.toFixed(3)}
+    `;
   }
 
   private getMouseDebugHTML (camera: Camera): string {
-    const worldPos = camera.worldPosFromScreen(this._mousePos);
+    const worldPos = camera.worldPosFromScreen(this._mouse.position);
 
     return `
-            <strong>Mouse${(this._mouseDown ? " (down)" : "")}:</strong><br>
-            <strong>X:</strong> ${this._mousePos.x}<br>
-            <strong>Y:</strong> ${this._mousePos.y}<br>
-            <strong>World X:</strong> ${worldPos.x.toFixed(3)}<br>
-            <strong>World Y:</strong> ${worldPos.y.toFixed(3)}
-        `;
+      <strong>Mouse${(this._mouse.pressed ? " (down)" : "")}:</strong><br>
+      <strong>Screen:</strong> ${this._mouse.position}<br>
+      <strong>World:</strong> ${worldPos}
+    `;
   }
 
   private getRendererDebugHTML (renderer: Renderer): string {
@@ -309,12 +151,12 @@ export default class Browser {
     const yEnd = Math.ceil((camera.position.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
 
     return `
-            <strong>Renderer:</strong><br>
-            <strong>X-start:</strong> ${xStart}<br> 
-            <strong>X-end:</strong> ${xEnd}<br>
-            <strong>Y-start:</strong> ${yStart}<br>
-            <strong>Y-end:</strong> ${yEnd}
-        `;
+      <strong>Renderer:</strong><br>
+      <strong>X-start:</strong> ${xStart}<br> 
+      <strong>X-end:</strong> ${xEnd}<br>
+      <strong>Y-start:</strong> ${yStart}<br>
+      <strong>Y-end:</strong> ${yEnd}
+    `;
   }
 
   private getMiscDebugHTML (world: World): string {

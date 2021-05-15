@@ -63,6 +63,6 @@ export default class Vector {
     }
 
     public toString (): string {
-      return `Vector (${this.x}, ${this.y})`;
+      return `(${this.x.toFixed(3)}, ${this.y.toFixed(3)})`;
     }
 }

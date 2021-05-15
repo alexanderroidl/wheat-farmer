@@ -1,10 +1,10 @@
-import GameLoop from "../core/game-loop";
-import Browser from "./browser";
-import World from "./world";
-import Renderer from "../core/renderer";
-import Vector from "../core/vector";
-import TitleScreen from "../title-screen/title-screen";
-import Sound from "./sound";
+import GameLoop from "./core/game-loop";
+import Browser from "./browser/browser";
+import World from "./base/world";
+import Renderer from "./core/renderer";
+import Vector from "./core/vector";
+import TitleScreen from "./title-screen/title-screen";
+import Sound from "./base/sound";
 
 export default class Game {
   private static _instance: Game;
@@ -88,7 +88,7 @@ export default class Game {
           this._paused = true;
 
           // Open shop
-          this._browser.openShop(this._world.player.items, () => {
+          this._browser.gui.openShop(this._world.player.items, () => {
             this._paused = false;
           });
         }
@@ -98,7 +98,7 @@ export default class Game {
           this._paused = true;
 
           // Open inventory
-          this._browser.openInventory(this._world.player, this._world.player.items, () => {
+          this._browser.gui.openInventory(this._world.player, this._world.player.items, () => {
             this._paused = false;
           });
         }
@@ -189,12 +189,12 @@ export default class Game {
       this._renderer.render(this._world);
 
       // Render stats
-      this._browser.renderWorldStatsHTML(this._world);
+      this._browser.gui.renderWorldStatsHTML(this._world);
 
       // Debug GET parameter provided
       if (Browser.getParameter("debug")) {
         // Render debug info
-        this._browser.renderDebug(this._renderer.camera, this._renderer, this._world);
+        this._browser.gui.renderDebug(this._renderer.camera, this._renderer, this._world);
       }
     };
 
