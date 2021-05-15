@@ -2,6 +2,7 @@ module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
   extends: ["eslint:recommended"],
+  ignorePatterns: ["./project/build/**/*.js"],
   rules: {
     "brace-style": ["error", "1tbs"],
     "callback-return": 0,
@@ -55,8 +56,7 @@ module.exports = {
   overrides: [
     // Typescript
     {
-      files: ["*.ts", "*.tsx"],
-      excludedFiles: ["*.test.js", "gatsby-node.js", "gatsby-config.js"],
+      files: ["*.ts"],
       plugins: ["@typescript-eslint"],
       extends: [
         "plugin:@typescript-eslint/eslint-recommended",
@@ -76,18 +76,14 @@ module.exports = {
         "@typescript-eslint/naming-convention": [
           "error",
           {
-            "selector": "memberLike",
+            "selector": "property",
             "modifiers": ["private"],
             "format": ["camelCase"],
-            "leadingUnderscore": "require",
-            "filter": {
-              "regex": "^[A-Z0-9]$",
-              "match": true
-            }
+            "leadingUnderscore": "require"
           },
 
           {
-            "selector": "memberLike",
+            "selector": "property",
             "modifiers": ["private", "readonly"],
             "format": ["UPPER_CASE"]
           },
@@ -118,7 +114,7 @@ module.exports = {
       files: [
         ".eslintrc.js",
         "./gulpfile.js",
-        "./index.js"
+        "./express.js"
       ],
       rules: {
         "no-unused-vars": ["error", {

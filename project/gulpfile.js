@@ -143,7 +143,7 @@ function initWebServer () {
   process.env.BROWSERSYNC_PORT = 3000;
 
   // Spawn child process of express server using modified environmental variables
-  webServerProcess = spawn("node", ["index.js"], {
+  webServerProcess = spawn("node", ["express.js"], {
     env: {...process.env}
   });
 

@@ -8,5 +8,5 @@ app.use("/", express.static("build"));
 app.listen(process.env.EXPRESS_PORT, {
   etag: false
 }, () => {
-  console.log(`Game server listening at http://localhost:${process.env.EXPRESS_PORT}`);
+  console.log(`Game server listening at http://${process.env.HOST_ADDRESS}:${process.env.EXPRESS_PORT}`);
 });
