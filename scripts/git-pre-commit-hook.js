@@ -140,6 +140,7 @@ function main () {
   // Source has not changed -> Stop here
   if (!buildChangesCommited) {
     console.log(`No commited changes for ${chalk.yellow("project/build")} were found.`);
+    return;
   }
   
   console.log();
@@ -163,3 +164,11 @@ function main () {
 if (require.main === module) {
   main();
 }
+
+
+/**
+ * Exports
+ */
+module.exports = {
+  checkCommitedFiles
+};

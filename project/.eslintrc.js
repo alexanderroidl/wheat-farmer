@@ -50,7 +50,8 @@ module.exports = {
         }],
         "@typescript-eslint/no-inferrable-types": 0,
         "semi": "off",
-        "@typescript-eslint/semi": ["error"]
+        "@typescript-eslint/semi": ["error"],
+        "@typescript-eslint/type-annotation-spacing": ["error"]
       },
       env: {
         browser: true

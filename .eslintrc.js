@@ -14,6 +14,7 @@ module.exports = {
     "keyword-spacing": ["error", { "before": true }],
     "lines-around-comment": ["error", {
       "allowObjectStart": true,
+      "allowClassStart": true,
       "beforeBlockComment": true
     }],
     "max-params": ["error", 4],
@@ -32,9 +33,9 @@ module.exports = {
       "argsIgnorePattern": "^_",
       "ignoreRestSiblings": false
     }],
-    //"@typescript-eslint/no-unused-vars": 0,
+    // "@typescript-eslint/no-unused-vars": 0,
     "no-inferrable-types": "off",
-    //"@typescript-eslint/no-inferrable-types": 0,
+    // "@typescript-eslint/no-inferrable-types": 0,
     "one-var": ["error", "never"],
     "one-var-declaration-per-line": ["error", "always"],
     "padded-blocks": ["error", "never"],
@@ -50,6 +51,7 @@ module.exports = {
     "space-before-function-paren": ["error", "always"],
     "space-infix-ops": ["error"],
     "space-unary-ops": ["error"],
+    "spaced-comment": ["error", "always"],
     "switch-colon-spacing": ["error", { "before": false, "after": true }],
     "template-tag-spacing": ["error", "always"]
   },
@@ -59,5 +61,13 @@ module.exports = {
   env: {
     node: true,
     es6: true
-  }
+  },
+  overrides: [
+    {
+      files: "**/*.spec.js",
+      env: {
+        mocha: true
+      }
+    }
+  ]
 };

@@ -71,10 +71,12 @@ $ yarn
 $ cd project
 
 $ yarn build # Build once
-$ yarn develop # Build once and watch afterwards - (Re-)starts webserver and BrowserSync
+$ yarn develop # Build once and watch/serve afterwards - (Re-)starts webserver and BrowserSync
 $ yarn production # Build in production mode (Compress everything, strip debug)
+
 $ yarn serve # Start Express webserver to serve files
-$ yarn lint # Run ESLint for project JS/TS files
+$ yarn test # Run unit tests
+$ yarn lint # Lint source TS/JS + unit tests
 ```
 
 
@@ -97,6 +99,9 @@ Run ```yarn docker:development``` or ```yarn docker:production``` to build/start
 ```bash
 $ yarn docker:development # Build/start development environment
 $ yarn docker:production # Build/start production environment
+
+$ yarn test # Run tests in /scripts
+$ yarn lint # Lint /scripts and unit tests
 ```
 
 # 4.3. Development
