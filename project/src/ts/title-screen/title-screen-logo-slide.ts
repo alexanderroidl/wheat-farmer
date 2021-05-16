@@ -1,8 +1,9 @@
-import SlideInterface from "../interfaces/slide-interface";
-import Renderer from "../core/renderer";
-import Util from "../core/util";
-import Vector from "../core/vector";
-import Sound from "../base/sound";
+import SlideInterface from "interfaces/slide-interface";
+import Renderer from "core/renderer";
+import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
+import Vector from "core/vector";
+import Sound from "../base/sound"; // TODO: Resolve issue for importing from base URL
+import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
 
 export default class TitleScreenLogoSlide implements SlideInterface {
   // Generated with "Text To ASCII Art Generator (TAAG)" by patorjk.com
@@ -26,6 +27,9 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     "Soundtrack by JULIAN ARNOLD"
   ];
 
+  private readonly COLOR_BACKGROUND: string = "#111111";
+  private readonly COLOR_TEXT: string = "#f3bc3c";
+  private readonly COLOR_TEXT_SHADOW: string = Util.lightenDarkenColor(this.COLOR_TEXT, 20);
   private readonly LONGEST_LINE_WIDTH: number;
 
   constructor () {
@@ -43,17 +47,17 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     let lineHeight = 1;
 
     // Paint black background
-    ctx.fillStyle = "#111111";
+    ctx.fillStyle = this.COLOR_BACKGROUND;
     ctx.fillRect(0, 0, renderer.width, renderer.height);
 
     // Setup basic text effects
-    ctx.fillStyle = "#f3bc3c";
+    ctx.fillStyle = this.COLOR_TEXT;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `${20 * fontSize}px "Courier New"`;
 
     // Setup glowing text effect
-    ctx.shadowColor = Util.lightenDarkenColor("#f3bc3c", 20);
+    ctx.shadowColor = this.COLOR_TEXT_SHADOW;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
     ctx.shadowBlur = 7; // TODO: Make responsive
@@ -63,9 +67,13 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     const yShift = Math.sin(Date.now() / 1000) * 10;
 
     // Iterate and output logo lines
-    for (let line = 0; line < this.LOGO.length; line++) {
-      const lineOffset = 20 * lineHeight * fontSize * (line - this.LOGO.length);
-      ctx.fillText(this.LOGO[line], renderer.width / 2, renderer.height / 2 + lineOffset + yShift);
+    for (let logoLineIndex = 0; logoLineIndex < this.LOGO.length; logoLineIndex++) {
+      const logoLineOffset = 20 * lineHeight * fontSize * (logoLineIndex - this.LOGO.length);
+
+      const logoTextX = BitMath.floor(renderer.width / 2);
+      const logoTextY = BitMath.floor(renderer.height / 2 + logoLineOffset + yShift);
+
+      ctx.fillText(this.LOGO[logoLineIndex], logoTextX, logoTextY);
     }
 
     // Set static font size for description text
@@ -75,10 +83,16 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     ctx.textBaseline = "top";
     ctx.font = `${fontSize}px "Courier New"`;
 
+    const DESCRIPTION_MARGIN_LINES = 3; // 3 empty lines before description
+
     // Iterate and output description lines
-    for (let dLine = 0; dLine < this.DESCRIPTION.length; dLine++) {
-      const descriptionOffset = lineHeight * fontSize * (dLine + 3);
-      ctx.fillText(this.DESCRIPTION[dLine], renderer.width / 2, renderer.height / 2 + descriptionOffset);
+    for (let descriptionLineIndex = 0; descriptionLineIndex < this.DESCRIPTION.length; descriptionLineIndex++) {
+      const descriptionLineOffset = lineHeight * fontSize * (descriptionLineIndex + DESCRIPTION_MARGIN_LINES);
+
+      const descriptionTextX = BitMath.floor(renderer.width / 2);
+      const descriptionTextY = BitMath.floor(renderer.height / 2 + descriptionLineOffset);
+
+      ctx.fillText(this.DESCRIPTION[descriptionLineIndex], descriptionTextX, descriptionTextY);
     }
 
     // Set static font size for credits text

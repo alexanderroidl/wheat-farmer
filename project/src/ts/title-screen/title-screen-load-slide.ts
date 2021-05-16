@@ -1,11 +1,14 @@
-import SlideInterface from "../interfaces/slide-interface";
-import Renderer from "../core/renderer";
-import Util from "../core/util";
-import Vector from "../core/vector";
+import SlideInterface from "interfaces/slide-interface";
+import Renderer from "core/renderer";
+import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
+import Vector from "core/vector";
 
 export default class TitleScreenLoadSlide implements SlideInterface {
   private readonly TEXT = "Click to load";
   private readonly TRANSFORMED_TEXT: string;
+  private readonly COLOR_BACKGROUND: string = "#111111";
+  private readonly COLOR_TEXT: string = "#f3bc3c";
+  private readonly COLOR_TEXT_SHADOW: string = Util.lightenDarkenColor(this.COLOR_TEXT, 20);
 
   constructor () {
     const upperCaseText = this.TEXT.toUpperCase();
@@ -14,17 +17,17 @@ export default class TitleScreenLoadSlide implements SlideInterface {
 
   public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
     // Paint black background
-    ctx.fillStyle = "#111111";
+    ctx.fillStyle = this.COLOR_BACKGROUND;
     ctx.fillRect(0, 0, renderer.width, renderer.height);
 
     // Setup basic text effects
-    ctx.fillStyle = "#f3bc3c";
+    ctx.fillStyle = this.COLOR_TEXT;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `${20}px "Courier New"`; // TODO: Make responsive
 
     // Setup glowing text effect
-    ctx.shadowColor = Util.lightenDarkenColor("#f3bc3c", 20);
+    ctx.shadowColor = this.COLOR_TEXT_SHADOW;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
     ctx.shadowBlur = 7; // TODO: Make responsive

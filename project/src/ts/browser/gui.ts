@@ -126,8 +126,7 @@ export default class Gui {
   private getCameraDebugHTML (camera: Camera): string {
     return `
       <strong>Camera:</strong><br>
-      <strong>X:</strong> ${camera.position.x.toFixed(3)}<br>
-      <strong>Y:</strong> ${camera.position.y.toFixed(3)}<br>
+      <strong>Position:</strong> ${camera.position}<br>
       <strong>Zoom:</strong> ${camera.zoomAmount.toFixed(3)}
     `;
   }
@@ -152,10 +151,8 @@ export default class Gui {
 
     return `
       <strong>Renderer:</strong><br>
-      <strong>X-start:</strong> ${xStart}<br> 
-      <strong>X-end:</strong> ${xEnd}<br>
-      <strong>Y-start:</strong> ${yStart}<br>
-      <strong>Y-end:</strong> ${yEnd}
+      <strong>X:</strong> (${xStart}, ${xEnd})<br> 
+      <strong>Y:</strong> (${yStart}, ${yEnd})<br> 
     `;
   }
 

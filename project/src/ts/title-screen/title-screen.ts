@@ -1,8 +1,8 @@
-import Renderer from "../core/renderer";
-import SlideInterface from "../interfaces/slide-interface";
+import Renderer from "core/renderer";
+import SlideInterface from "interfaces/slide-interface";
+import Vector from "core/vector";
 import TitleScreenLogoSlide from "./title-screen-logo-slide";
-import Vector from "../core/vector";
-import TitleScreenLoadSlide from "./title-screen-load";
+import TitleScreenLoadSlide from "./title-screen-load-slide";
 
 export default class TitleScreen {
   public hidden: boolean = false;

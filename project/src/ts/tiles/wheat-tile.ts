@@ -1,10 +1,11 @@
-import Util from "../core/util";
-import EmptyTile from "./empty-tile";
-import Renderer from "../core/renderer";
+import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
+import Renderer from "core/renderer";
+import Easings from "../core/easings"; // TODO: Resolve issue for importing from base URL
+import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
+import TradeableInterface from "interfaces/tradeable-interface";
+import Vector from "../core/vector";
 import Tile from "./tile";
-import Easings from "../core/easings";
-import BitMath from "../core/bit-math";
-import TradeableInterface from "../interfaces/tradeable-interface";
+import EmptyTile from "./empty-tile";
 
 export default class WheatTile extends Tile implements TradeableInterface {
     public readonly buyPrice: number = 0;
@@ -38,11 +39,11 @@ export default class WheatTile extends Tile implements TradeableInterface {
       return "🌿";
     }
 
-    public getCharColor (): string | null {
+    public getTextColor (): string | null {
       return "#ffffff";
     }
 
-    public getHexColor (): string | null {
+    public getBackgroundColor (): string | null {
       const mixAmount = Easings.easeInCubic(this.growthState);
       const growthColor = Util.mixColors(EmptyTile.COLOR, this.COLOR_GROWN, mixAmount);
       return this.getDamagedHexColor(growthColor);
@@ -56,17 +57,34 @@ export default class WheatTile extends Tile implements TradeableInterface {
       return BitMath.floor(Math.random() * (this.MAX_SEED_DROP - this.MIN_SEED_DROP + 1)) + this.MIN_SEED_DROP;
     }
 
-    /* eslint-disable-next-line max-params */
-    public render (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null): void {
-      super.render(renderer, ctx, x, y, isHover, opacity);
+    public render (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D;
+      worldPosition: Vector;
+      isHovered?: boolean;
+      opacity?: number | null;
+    }): void {
+      super.render(renderer, params);
     }
 
-    /* eslint-disable-next-line max-params */
-    public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-      super.renderLatest(renderer, ctx, x, y, isHover);
+    public renderLatest (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D;
+      worldPosition: Vector;
+      isHovered?: boolean;
+    }): void {
+      super.renderLatest(renderer, params);
 
-      if (isHover && this.growthState < 1) {
-        renderer.paintProgressBar(ctx, x + 0.25 / 2, y + 0.7, 0.75, 0.15, this.growthState);
+      // Is hovered and has not fully grown yet
+      if (params.isHovered && this.growthState < 1) {
+        // Calculate world position for progress bar
+        const growthProgressWorldPos = new Vector(
+          params.worldPosition.x + 0.25 / 2,
+          params.worldPosition.y + 0.7
+        );
+        
+        renderer.paintProgressBar(params.ctx, {
+          worldPosition: growthProgressWorldPos,
+          progress: this.growthState
+        });
       }
     }
 }

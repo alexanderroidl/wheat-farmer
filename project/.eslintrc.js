@@ -15,7 +15,10 @@ module.exports = {
     "indent": ["error", 2],
     "key-spacing": ["error", { "beforeColon": false }],
     "keyword-spacing": ["error", { "before": true }],
-    "lines-around-comment": ["error", { "beforeBlockComment": true }],
+    "lines-around-comment": ["error", {
+      "allowObjectStart": true,
+      "beforeBlockComment": true
+    }],
     "max-params": ["error", 4],
     "no-empty": ["error"],
     "no-empty-character-class": 0,

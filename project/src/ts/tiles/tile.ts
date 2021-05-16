@@ -1,6 +1,7 @@
-import TileInterface from "../interfaces/tile-interface";
-import Renderer from "../core/renderer";
-import Util from "../core/util";
+import TileInterface from "interfaces/tile-interface";
+import Renderer from "core/renderer";
+import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
+import Vector from "../core/vector"; // TODO: Resolve issue for importing from base URL
 
 export default class Tile implements TileInterface {
     public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
@@ -32,11 +33,11 @@ export default class Tile implements TileInterface {
       return Util.lightenDarkenColor(color, lightenDarkenFactor);
     }
 
-    public getHexColor (): string | null {
-      return "#000000";
+    public getBackgroundColor (): string | null {
+      return null;
     }
 
-    public getCharColor (): string | null {
+    public getTextColor (): string | null {
       return "#000000";
     }
 
@@ -44,25 +45,63 @@ export default class Tile implements TileInterface {
       // TODO: Implement logic
     }
 
-    /* eslint-disable-next-line max-params */
-    private paintSquare (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null) {
-      const hexColor = this.getHexColor();
-      if (!hexColor) {
+    private paintSquare (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D;
+      worldPosition: Vector;
+      isHovered?: boolean;
+      opacity?: number | null;
+    }) {
+      const backgroundColor = this.getBackgroundColor();
+      if (!backgroundColor) {
         return;
       }
 
-      renderer.paintSquare(ctx, x, y, isHover, hexColor, opacity, this.getChar(), this.getCharColor());
+      renderer.paintSquare(params.ctx, {
+        worldPosition: params.worldPosition,
+        backgroundColor: backgroundColor,
+        char: this.getChar(),
+        textColor: this.getTextColor(),
+        isHovered: params.isHovered
+      });
     }
 
-    /* eslint-disable-next-line max-params */
-    public render (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, opacity: number | null = null): void {
-      this.paintSquare(renderer, ctx, x, y, isHover, opacity);
+    public render (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D;
+      worldPosition: Vector;
+      isHovered?: boolean;
+      opacity?: number | null;
+    }): void {
+      this.paintSquare(renderer, {
+        ctx: params.ctx,
+        worldPosition: params.worldPosition,
+        isHovered: params.isHovered,
+        opacity: params.opacity
+      });
     }
 
-    /* eslint-disable-next-line max-params */
-    public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-      if (isHover && this.damage > 0) {
-        renderer.paintProgressBar(ctx, x + 0.25 / 2, y + 0.15, 0.75, 0.15, this.damage, "red");
+    public renderLatest (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D;
+      worldPosition: Vector;
+      isHovered?: boolean;
+    }): void {
+      // Is hovered and has damage
+      if (params.isHovered && this.damage > 0) {
+        // Calculate world position for progress bar
+        const damageProgressWorldPos = new Vector(
+          params.worldPosition.x + 0.25 / 2,
+          params.worldPosition.y + 0.15
+        );
+
+        // Calculate world dimensions for progress bar
+        const damageProgressWorldSize = new Vector(0.75, 0.15);
+
+        // Render damage progress bar
+        renderer.paintProgressBar(params.ctx, {
+          worldPosition: damageProgressWorldPos,
+          worldSize: damageProgressWorldSize,
+          progress: this.damage,
+          color: "red"
+        });
       }
     }
 

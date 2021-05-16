@@ -1,5 +1,6 @@
+import Renderer from "core/renderer";
 import Tile from "./tile";
-import Renderer from "../core/renderer";
+import Vector from "../core/vector";
 
 export default class EmptyTile extends Tile {
     public static readonly COLOR = "#ebb434";
@@ -10,11 +11,11 @@ export default class EmptyTile extends Tile {
       return "x";
     }
 
-    public getHexColor (): string | null {
+    public getBackgroundColor (): string | null {
       return this.getDamagedHexColor(EmptyTile.COLOR);
     }
 
-    public getCharColor (): string | null {
+    public getTextColor (): string | null {
       return "#666666";
     }
 
@@ -23,7 +24,11 @@ export default class EmptyTile extends Tile {
     }
 
     /* eslint-disable-next-line max-params */
-    public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-      super.renderLatest(renderer, ctx, x, y, isHover);
+    public renderLatest (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D;
+      worldPosition: Vector;
+      isHovered?: boolean;
+    }): void {
+      super.renderLatest(renderer, params);
     }
 }

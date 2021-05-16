@@ -5,63 +5,64 @@ import Util from "./util";
 import Vector from "./vector";
 import BitMath from "./bit-math";
 import { InventoryItem } from "../base/inventory";
+import Browser from "browser/browser";
 
 export default class Renderer {
   public readonly FONT_SIZE = 12;
   public readonly FONT_EMOJI_SIZE = 16;
   public readonly SQUARE_SIZE = 32;
+  public readonly COLOR_WORLD_FILL_SQUARES = Util.lightenDarkenColor(EmptyTile.COLOR, 8);
 
-  private _canvas: HTMLCanvasElement = document.createElement("canvas");
+  private _ctx: CanvasRenderingContext2D | null = null;
+
   public readonly camera: Camera = new Camera(this.SQUARE_SIZE);
-
+  public size: Vector = new Vector(0, 0);
   public mousePos: Vector = new Vector(0, 0);
   public equippedItem: InventoryItem | null = null;
 
+  /**
+   * Canvas width
+   */
   public get width (): number {
-    return this._canvas.width;
+    return this.size.x;
   }
 
+  /**
+   * Canvas height
+   */
   public get height (): number {
-    return this._canvas.height;
+    return this.size.y;
   }
 
+  /**
+   * Camera zoom shorthand
+   */
   public get z (): number {
     return this.camera.zoomAmount;
   }
 
+  /**
+   * Canvas rendering context
+   */
   public get ctx (): CanvasRenderingContext2D | null {
-    return this._canvas.getContext("2d");
+    return this._ctx;
   }
 
-  constructor () {
-    this.setupCanvas();
+  /**
+   * Setup canvas for rendering
+   */
+  constructor (browser: Browser) {
+    this._ctx = browser.initializeRendererCanvas();
   }
 
-  private setupCanvas (): void {
-    this.setToWindowSize();
-
-    // TODO: Move logic to Game.ts
-    window.addEventListener("load", (e) => {
-      this.setToWindowSize();
-    });
-
-    // TODO: Move logic to Game.ts
-    window.addEventListener("resize", (e) => {
-      this.setToWindowSize();
-    });
-
-    document.body.append(this._canvas);
-  }
-
-  private setToWindowSize (): void {
-    this._canvas.width = window.innerWidth;
-    this._canvas.height = window.innerHeight;
-  }
-
-  // TODO: Remove eslint-disable, replace with alternative parameters
-  /* eslint-disable-next-line max-params */
-  public paintChar (ctx: CanvasRenderingContext2D, char: string, charColor: string, x: number, y: number, isHover: boolean): void {
-    if (isHover) {
+  public paintChar (ctx: CanvasRenderingContext2D, params: {
+    char: string;
+    textColor: string;
+    worldPosition: Vector;
+    isHovered?: boolean;
+  }): void {
+    // Apply text shadow if char is currently hovered
+    if (params.isHovered) {
       ctx.shadowColor = "white";
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
@@ -72,99 +73,148 @@ export default class Renderer {
     let fontFamily = "Courier New";
 
     // Isn't alphanumeric -> must be emoji
-    if (!Util.isAlphaNumeric(char)) {
+    if (!Util.isAlphaNumeric(params.char)) {
+      // Adjust font size and family accordingly
       fontSize = this.FONT_EMOJI_SIZE;
       fontFamily = "OpenMoji";
     }
 
+    // Calculate screen coordinates to draw text at
     const textDrawPos = new Vector(
-      (this.SQUARE_SIZE * x + this.SQUARE_SIZE / 2) * this.z - this.camera.position.x,
-      (this.SQUARE_SIZE * y + this.SQUARE_SIZE / 2) * this.z - this.camera.position.y
+      (this.SQUARE_SIZE * params.worldPosition.x + this.SQUARE_SIZE / 2) * this.z - this.camera.position.x,
+      (this.SQUARE_SIZE * params.worldPosition.y + this.SQUARE_SIZE / 2) * this.z - this.camera.position.y
     );
 
+    // Calculate font size
     const fontDrawSize = BitMath.floor(fontSize * this.z);
 
-    ctx.fillStyle = charColor;
+    // Paint actual text
+    ctx.fillStyle = params.textColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `${fontDrawSize}px "${fontFamily}"`;
-    ctx.fillText(char, BitMath.floor(textDrawPos.x), BitMath.floor(textDrawPos.y));
+    ctx.fillText(params.char, BitMath.floor(textDrawPos.x), BitMath.floor(textDrawPos.y));
 
+    // Reset text shadow
     ctx.shadowBlur = 0;
   }
 
-  // TODO: Remove eslint-disable, replace with alternative parameters
-  /* eslint-disable-next-line max-params */
-  public paintSquare (ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean, fillStyle: string, opacity: number | null = null, char?: string | null, charColor?: string | null): void {
-    const zoom = this.camera.zoomAmount;
-    const oldAlpha = ctx.globalAlpha;
+  public paintSquare (ctx: CanvasRenderingContext2D, params: {
+    worldPosition: Vector;
+    backgroundColor: string;
+    opacity?: number | null;
+    char?: string | null;
+    textColor?: string | null;
+    isHovered?: boolean;
+  }): void {
+    // Save previous global alpha
+    const oldAlpha = ctx.globalAlpha; // TODO: Remove
 
-    if (opacity !== null) {
-      ctx.globalAlpha = opacity;
+    // Set global alpha to opacity if given
+    if (params.opacity != null) {
+      ctx.globalAlpha = params.opacity;
     }
 
-    ctx.fillStyle = fillStyle;
+    // Paint square itself
+    ctx.fillStyle = params.backgroundColor;
     ctx.fillRect(
-      this.SQUARE_SIZE * x * zoom - this.camera.position.x,
-      this.SQUARE_SIZE * y * zoom - this.camera.position.y,
-      this.SQUARE_SIZE * zoom,
-      this.SQUARE_SIZE * zoom
+      this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x,
+      this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y,
+      this.SQUARE_SIZE * this.z,
+      this.SQUARE_SIZE * this.z
     );
 
-    if (char) {
-      const charFillStyle = charColor ? charColor : "white";
-      this.paintChar(ctx, char, charFillStyle, x, y, isHover);
+    // Char for square was given
+    if (params.char != null) {
+      const charFillStyle = params.textColor || "white";
+
+      // Paint char
+      this.paintChar(ctx, {
+        char: params.char,
+        textColor: charFillStyle,
+        worldPosition: params.worldPosition,
+        isHovered: params.isHovered
+      });
     }
 
-    ctx.globalAlpha = oldAlpha;
+    // Restore previous global alpha
+    ctx.globalAlpha = oldAlpha; // TODO: Remove
   }
 
-  public outlineSquare (ctx: CanvasRenderingContext2D, x: number, y: number, borderWidth: number = 1): void {
+  /**
+   * Paints an outlined square
+   * @param {CanvasRenderingContext2D} ctx Canvas rendering context
+   * @param {Vector} worldPosition World coordinates
+   * @param {number} [borderWidth=1] Outline border width
+   */
+  public outlineSquare (ctx: CanvasRenderingContext2D, worldPosition: Vector, borderWidth: number = 1): void {
     ctx.strokeStyle = "white";
     ctx.lineWidth = borderWidth * this.z;
+    
     ctx.strokeRect(
-      (this.SQUARE_SIZE * x + borderWidth / 2) * this.z - this.camera.position.x,
-      (this.SQUARE_SIZE * y + borderWidth / 2) * this.z - this.camera.position.y,
+      (this.SQUARE_SIZE * worldPosition.x + borderWidth / 2) * this.z - this.camera.position.x,
+      (this.SQUARE_SIZE * worldPosition.y + borderWidth / 2) * this.z - this.camera.position.y,
       (this.SQUARE_SIZE - borderWidth) * this.z,
       (this.SQUARE_SIZE - borderWidth) * this.z
     );
   }
 
-  // TODO: Remove eslint-disable, replace with alternative parameters
-  /* eslint-disable-next-line max-params */
-  public paintProgressBar (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, progress: number, color: string = "green"): void {
-    const oldAlpha = ctx.globalAlpha;
+  public paintProgressBar (ctx: CanvasRenderingContext2D, params: {
+    worldPosition: Vector;
+    progress: number;
+    worldSize?: Vector;
+    color?: string | null;
+  }): void {
+    params.worldSize = params.worldSize || new Vector(0.75, 0.15);
+    params.color = params.color || "green";
+
+    // Save previously global alpha
+    const oldAlpha = ctx.globalAlpha; // TODO: Remove
+
+    // Set for transparent rendering
     ctx.globalAlpha = 0.65;
 
+    // Render progress bar container
     ctx.fillStyle = "white";
     ctx.fillRect(
-      this.SQUARE_SIZE * x * this.z - this.camera.position.x,
-      this.SQUARE_SIZE * y * this.z - this.camera.position.y,
-      this.SQUARE_SIZE * width * this.z,
-      this.SQUARE_SIZE * height * this.z
+      this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x,
+      this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y,
+      this.SQUARE_SIZE * params.worldSize.x * this.z,
+      this.SQUARE_SIZE * params.worldSize.y * this.z
     );
 
-    ctx.fillStyle = color;
+    // Render progress bar itself
+    ctx.fillStyle = params.color;
     ctx.fillRect(
-      (this.SQUARE_SIZE * x + 1) * this.z - this.camera.position.x,
-      (this.SQUARE_SIZE * y + 1) * this.z - this.camera.position.y,
-      (this.SQUARE_SIZE * width - 2) * this.z * progress,
-      (this.SQUARE_SIZE * height - 2) * this.z
+      (this.SQUARE_SIZE * params.worldPosition.x + 1) * this.z - this.camera.position.x,
+      (this.SQUARE_SIZE * params.worldPosition.y + 1) * this.z - this.camera.position.y,
+      (this.SQUARE_SIZE * params.worldSize.x - 2) * this.z * params.progress,
+      (this.SQUARE_SIZE * params.worldSize.y - 2) * this.z
     );
 
-    ctx.globalAlpha = oldAlpha;
+    // Restore previous global alpha
+    ctx.globalAlpha = oldAlpha; // TODO: Remove
   }
 
+  /**
+   * Render world
+   * @param {World} world World object to render
+   */
   public render (world: World): void {
     const ctx = this.ctx;
+
+    // Stop here if no Canvas context is given yet
     if (!ctx) {
       return;
     }
 
+    // Retrieve current world coordinates from mouse screen coordinates
     const mouseWorldPos = this.camera.worldPosFromScreen(this.mousePos);
 
-    ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+    // Clear Canvas entirely
+    ctx.clearRect(0, 0, this.width, this.height);
 
+    // Calculate World X and Y start/end to render squares surrounding the world
     const xStart = Math.floor(this.camera.position.x / (this.SQUARE_SIZE * this.camera.zoomAmount));
     const xEnd = Math.ceil((this.camera.position.x + window.innerWidth) / (this.SQUARE_SIZE * this.camera.zoomAmount));
     const yStart = Math.floor(this.camera.position.y / (this.SQUARE_SIZE * this.camera.zoomAmount));
@@ -173,31 +223,54 @@ export default class Renderer {
     // Draw empty squares around world
     for (let y = yStart; y < yEnd; y++) {
       for (let x = xStart; x < xEnd; x++) {
-        this.paintSquare(ctx, x, y, false, Util.lightenDarkenColor(EmptyTile.COLOR, 8));
+        this.paintSquare(ctx, {
+          worldPosition: new Vector(x, y),
+          backgroundColor: this.COLOR_WORLD_FILL_SQUARES
+        });
       }
     }
 
-    // Draw world itself
+    // Iterate through world coordinates
     for (let y = 0; y < world.tiles.length; y++) {
       for (let x = 0; x < world.tiles[y].length; x++) {
+        // Reset global alpha
         ctx.globalAlpha = 1;
 
-        const isHover = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
+        // Is current world square being hovered?
+        const isHovered = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
 
+        // Get tile from current world coordinates
         const tile = world.tiles[y][x];
-        tile.render(this, ctx, x, y, isHover);
+        const tileWorldPos = new Vector(x, y);
 
-        if (isHover) {
-          this.outlineSquare(ctx, x, y);
+        // Render tile square
+        tile.render(this, {
+          ctx: ctx,
+          worldPosition: tileWorldPos,
+          isHovered: isHovered
+        });
+
+        // Paint tile outline if hovered
+        if (isHovered) {
+          this.outlineSquare(ctx, tileWorldPos);
         }
 
-        tile.renderLatest(this, ctx, x, y, isHover);
+        // Invoke last render
+        tile.renderLatest(this, {
+          ctx: ctx,
+          worldPosition: tileWorldPos,
+          isHovered: isHovered
+        });
       }
     }
 
     // Draw entities
     for (const entity of world.entities) {
-      this.paintChar(ctx, entity.getChar(), "white", entity.position.x, entity.position.y, false);
+      this.paintChar(ctx, {
+        char: entity.getChar(),
+        textColor: "white",
+        worldPosition: entity.position
+      });
     }
   }
 }

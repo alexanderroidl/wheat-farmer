@@ -1,6 +1,7 @@
+import Renderer from "core/renderer";
+import TradeableInterface from "interfaces/tradeable-interface";
 import Tile from "./tile";
-import Renderer from "../core/renderer";
-import TradeableInterface from "../interfaces/tradeable-interface";
+import Vector from "core/vector";
 
 export default class WallTile extends Tile implements TradeableInterface {
     public readonly buyPrice: number = 10;
@@ -19,11 +20,11 @@ export default class WallTile extends Tile implements TradeableInterface {
       return null;
     }
 
-    public getHexColor (): string | null {
+    public getBackgroundColor (): string | null {
       return "#111111";
     }
 
-    public getCharColor (): string | null {
+    public getTextColor (): string | null {
       return null;
     }
 
@@ -31,8 +32,11 @@ export default class WallTile extends Tile implements TradeableInterface {
       // TODO: Implement logic
     }
 
-    /* eslint-disable-next-line max-params */
-    public renderLatest (renderer: Renderer, ctx: CanvasRenderingContext2D, x: number, y: number, isHover: boolean): void {
-      super.renderLatest(renderer, ctx, x, y, isHover);
+    public renderLatest (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D;
+      worldPosition: Vector;
+      isHovered?: boolean;
+    }): void {
+      super.renderLatest(renderer, params);
     }
 }
