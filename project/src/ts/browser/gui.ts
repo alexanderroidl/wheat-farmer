@@ -152,7 +152,7 @@ export default class Gui {
     return `
       <strong>Renderer:</strong><br>
       <strong>X:</strong> (${xStart}, ${xEnd})<br> 
-      <strong>Y:</strong> (${yStart}, ${yEnd})<br> 
+      <strong>Y:</strong> (${yStart}, ${yEnd})<br>
     `;
   }
 

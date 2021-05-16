@@ -1,20 +1,18 @@
 /**
  * This script is used by package.json as pre-commit hook for Git
  */
-const childProcess = require("child_process");
-const path = require("path");
-const spawn = require('cross-spawn');
-const chalk = require('chalk');
-const Signale = require('signale').Signale;
+const spawn = require("cross-spawn");
+const chalk = require("chalk");
+const Signale = require("signale").Signale;
 
 
 /**
  * Spawn "git status" process and log about it
  */
-function gitStatus () {
+function gitStatus (cb) {
   // Initiate Signale for "git status" process
   const gitStatusSignale = new Signale({
-    scope: 'git status'
+    scope: "git status"
   });
   gitStatusSignale.pending("Checking commited files...");
 
@@ -25,7 +23,7 @@ function gitStatus () {
 
   // "git status" process status code was not 0 -> Stop here
   if (gitStatusProcess.status !== 0) {
-    cb(`Process exited with status code ${gitStatusProcess.status}.`)
+    cb(`Process exited with status code ${gitStatusProcess.status}.`);
     gitStatusSignale.fatal(new Error(`Process exited with status code ${gitStatusProcess.status}.`));
     process.exit(1);
   }
@@ -37,7 +35,7 @@ function gitStatus () {
 
 /**
  * Check commited files by stdout input
- * 
+ *
  * @param {string} gitStatusStdOut Stdout of "git status" process
  * @returns {boolean} Indicates whether commited changes inside "project/build" were found
  */
@@ -82,19 +80,19 @@ function checkCommitedFiles (gitStatusStdOut) {
 function yarnProduction () {
   // Initiate Signale for "yarn production" process
   const yarnProductionSignale = new Signale({
-    scope: 'yarn production'
+    scope: "yarn production"
   });
   yarnProductionSignale.pending("Building in production mode...");
 
   // Spawn "yarn production" process
   const yarnProductionProcess = spawn.sync("yarn", ["production"], {
-    cwd: 'project',
-    stdio: 'inherit'
+    cwd: "project",
+    stdio: "inherit"
   });
 
   // "yarn production" process status code was not 0 -> Stop here
   if (yarnProductionProcess.status !== 0) {
-    yarnProductionSignale.fatal(new Error(`Process exited with status code ${gitAddProcess.status}`));
+    yarnProductionSignale.fatal(new Error(`Process exited with status code ${yarnProductionProcess.status}`));
     process.exit(1);
   }
 
@@ -109,14 +107,14 @@ function yarnProduction () {
 function gitAddBuild () {
   // Initiate Signale for "git add" process
   const gitAddSignale = new Signale({
-    scope: 'git add build'
+    scope: "git add build"
   });
   gitAddSignale.pending("Adding files to commit");
 
   // Spawn "git add" process
   const gitAddProcess = spawn.sync("git", ["add", "build"], {
-    cwd: 'project',
-    stdio: 'inherit'
+    cwd: "project",
+    stdio: "inherit"
   });
 
   // "git add" process status code was not 0 -> Stop here
@@ -137,7 +135,7 @@ function main () {
   // Get stdout for "git status"
   const gitStatusStdOut = gitStatus().stdout;
   // Check whether build directory changes were commited
-  const buildChangesCommited = checkCommitedFiles(gitStatusStdOut)
+  const buildChangesCommited = checkCommitedFiles(gitStatusStdOut);
   
   // Source has not changed -> Stop here
   if (!buildChangesCommited) {
