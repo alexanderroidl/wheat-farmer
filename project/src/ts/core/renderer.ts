@@ -267,7 +267,7 @@ export default class Renderer {
     // Draw entities
     for (const entity of world.entities) {
       this.paintChar(ctx, {
-        char: entity.getChar(),
+        char: entity.char,
         textColor: "white",
         worldPosition: entity.position
       });

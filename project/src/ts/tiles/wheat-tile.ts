@@ -19,12 +19,18 @@ export default class WheatTile extends Tile implements TradeableInterface {
     public name: string = "Wheat";
 
     public get growthState (): number {
-      const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME;
-
-      if (growth < 1) {
-        return growth * (1 - this.damage);
-      }
+      const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME * (1 - this.damage);
       return growth > 1 ? 1 : growth;
+    }
+
+    public get textColor (): string | null {
+      return "#ffffff";
+    }
+
+    public get backgroundColor (): string | null {
+      const mixAmount = Easings.easeInCubic(this.growthState);
+      const growthColor = Util.mixColors(EmptyTile.COLOR, this.COLOR_GROWN, mixAmount);
+      return this.getDamagedHexColor(growthColor);
     }
 
     public getChar (preview: boolean = false): string | null {
@@ -37,16 +43,6 @@ export default class WheatTile extends Tile implements TradeableInterface {
       }
 
       return "🌿";
-    }
-
-    public getTextColor (): string | null {
-      return "#ffffff";
-    }
-
-    public getBackgroundColor (): string | null {
-      const mixAmount = Easings.easeInCubic(this.growthState);
-      const growthColor = Util.mixColors(EmptyTile.COLOR, this.COLOR_GROWN, mixAmount);
-      return this.getDamagedHexColor(growthColor);
     }
 
     public onClicked (): void {

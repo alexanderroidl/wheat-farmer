@@ -6,11 +6,11 @@ export default interface TileInterface {
     readonly timeCreated: number;
 
     damage: number;
+    backgroundColor: string | null;
+    textColor: string | null;
 
     hasCollision: () => boolean;
     getChar: (preview: boolean) => string | null;
-    getBackgroundColor: () => string | null;
-    getTextColor: () => string | null;
     onClicked: () => void;
 
     render: (renderer: Renderer, params: {

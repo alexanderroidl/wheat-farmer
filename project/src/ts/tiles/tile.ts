@@ -20,6 +20,14 @@ export default class Tile implements TileInterface {
       this._damage = amount > 1 ? 1 : amount < 0 ? 0 : amount;
     }
 
+    public get backgroundColor (): string | null {
+      return null;
+    }
+
+    public get textColor (): string | null {
+      return "#000000";
+    }
+
     public hasCollision (): boolean {
       return false;
     }
@@ -33,14 +41,6 @@ export default class Tile implements TileInterface {
       return Util.lightenDarkenColor(color, lightenDarkenFactor);
     }
 
-    public getBackgroundColor (): string | null {
-      return null;
-    }
-
-    public getTextColor (): string | null {
-      return "#000000";
-    }
-
     public onClicked (): void {
       // TODO: Implement logic
     }
@@ -51,7 +51,7 @@ export default class Tile implements TileInterface {
       isHovered?: boolean;
       opacity?: number | null;
     }) {
-      const backgroundColor = this.getBackgroundColor();
+      const backgroundColor = this.backgroundColor;
       if (!backgroundColor) {
         return;
       }
@@ -60,7 +60,7 @@ export default class Tile implements TileInterface {
         worldPosition: params.worldPosition,
         backgroundColor: backgroundColor,
         char: this.getChar(),
-        textColor: this.getTextColor(),
+        textColor: this.textColor,
         isHovered: params.isHovered
       });
     }

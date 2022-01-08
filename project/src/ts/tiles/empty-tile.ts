@@ -6,17 +6,17 @@ export default class EmptyTile extends Tile {
     public static readonly COLOR = "#ebb434";
     public name: string = "Empty";
     public timeCreated: number = Date.now();
-    
-    public getChar (preview: boolean = false): string | null {
-      return "x";
-    }
 
-    public getBackgroundColor (): string | null {
+    public get backgroundColor (): string | null {
       return this.getDamagedHexColor(EmptyTile.COLOR);
     }
 
-    public getTextColor (): string | null {
+    public get textColor (): string | null {
       return "#666666";
+    }
+    
+    public getChar (preview: boolean = false): string | null {
+      return "x";
     }
 
     public onClicked (): void {
