@@ -6,9 +6,13 @@ export default interface EntityInterface {
 
     position: Vector;
     initialPosition: Vector | null;
+    initialDistance: number | null;
     target: Vector | null;
     isHostile: boolean;
     isMoving: boolean;
+    hasCompletedMove: boolean;
+    char: string;
 
-    getChar: () => string;
+    move: (delta: number) => void;
+    update: (delta: number) => void;
 }

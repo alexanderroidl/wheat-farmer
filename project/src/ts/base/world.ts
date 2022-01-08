@@ -4,7 +4,6 @@ import Player from "./player";
 import EntityInterface from "../interfaces/entity-interface";
 import RobotEntity from "../entities/enemies/robot";
 import Vector from "../core/vector";
-import Easings from "../core/easings";
 import Tile from "../tiles/tile";
 import BitMath from "../core/bit-math";
 import WallTile from "../tiles/wall-tile";
@@ -195,6 +194,44 @@ export default class World {
     return enemy;
   }
 
+  public explode (pos: Vector, radius: number, maxRadius: number): void {
+    // Get coordinates for surrounding tiles
+    const surroundingTileCoords = this.getSurroundingTileCoords(
+      pos,
+      radius
+    );
+
+    // Iterate through surrounding tile coordinates
+    for (const tilePos of surroundingTileCoords) {
+      // Calculate distance to surrounding tile
+      const distance =
+        tilePos
+          .add(0.5, 0.5)
+          .add(
+            -(pos.x + 0.5),
+            -(pos.y + 0.5)
+          ).length;
+
+      // Calculate damage and restrict to values between 0-1
+      const damage = 1 - (distance / (maxRadius + 1));
+
+      const tileDestroyed = Math.random() * maxRadius / (distance + 1) > 0.5;
+      const existingTile = this._tiles[tilePos.y][tilePos.x];
+
+      if (tileDestroyed) {
+        const emptyTile = new EmptyTile();
+
+        // Add existing damage to new tile
+        emptyTile.damage = existingTile.damage + damage;
+
+        // Update world for tile
+        this._tiles[tilePos.y][tilePos.x] = emptyTile;
+      } else {
+        existingTile.damage = existingTile.damage + damage;
+      }
+    }
+  }
+
   public update (delta: number): void {
     // Remove old planted tiles
     this._plantedTilesPerMin = this._plantedTilesPerMin.filter((timeCreated: number) => {
@@ -243,88 +280,17 @@ export default class World {
 
     // Iterate existing entities
     for (const entity of this.entities) {
-      if (entity instanceof RobotEntity) {
-        // Robot is exploding
-        if (entity.hasExploded) {
-          // Remove this entity from list
-          this._entities = this._entities.filter((v) => v !== entity);
+      entity.update(delta);
 
-          const MAX_EXPLOSION_RADIUS = 2;
+      // Is robot and has finished exploding
+      if (entity instanceof RobotEntity && entity.hasCompletedExplosion) {
+        // Remove this entity from list
+        this._entities = this._entities.filter((v) => v !== entity);
 
-          const entityWorldPos = entity.position.floor();
-
-          // Get coordinates for surrounding tiles
-          const radius = BitMath.floor(Math.random() * (MAX_EXPLOSION_RADIUS + 1));
-          const surroundingTileCoords = this.getSurroundingTileCoords(
-            entityWorldPos,
-            radius
-          );
-
-          // Iterate through surrounding tile coordinates
-          for (const tilePos of surroundingTileCoords) {
-            // Calculate distance to surrounding tile
-            const distance =
-              tilePos
-                .add(0.5, 0.5)
-                .add(
-                  -(entityWorldPos.x + 0.5),
-                  -(entityWorldPos.y + 0.5)
-                ).length;
-
-            // Calculate damage and restrict to values between 0-1
-            const damage = 1 - (distance / (MAX_EXPLOSION_RADIUS + 1));
-
-            const tileDestroyed = Math.random() * MAX_EXPLOSION_RADIUS / (distance + 1) > 0.5;
-            const existingTile = this._tiles[tilePos.y][tilePos.x];
-
-            if (tileDestroyed) {
-              const emptyTile = new EmptyTile();
-
-              // Add existing damage to new tile
-              emptyTile.damage = existingTile.damage + damage;
-
-              // Update world for tile
-              this._tiles[tilePos.y][tilePos.x] = emptyTile;
-            } else {
-              existingTile.damage = existingTile.damage + damage;
-            }
-          }
-        }
-      }
-
-      // Move entity to target
-      if (entity.target !== null) {
-        if (!entity.isMoving) {
-          entity.isMoving = true;
-          entity.initialPosition = new Vector(entity.position.x, entity.position.y);
-        }
-
-        let entitySpeed = entity.speed * (delta / 1000);
-        let distance = new Vector(entity.target.x - entity.position.x, entity.target.y - entity.position.y).length;
-
-        if (distance > 0 && entity.initialPosition) {
-          const initialDistance = new Vector(entity.target.x - entity.initialPosition.x, entity.target.y - entity.initialPosition.y).length;
-          const distanceProgress = distance / initialDistance;
-
-          entitySpeed = entitySpeed * (1 + 2 * Easings.easeInOutQuart(1 - distanceProgress));
-        }
-
-        if (distance <= entitySpeed) {
-          distance = entitySpeed;
-        }
-
-        entity.position.x += entitySpeed * (entity.target.x - entity.position.x) / distance;
-        entity.position.y += entitySpeed * (entity.target.y - entity.position.y) / distance;
-
-        if (entity.position.x === entity.target.x && entity.position.y === entity.target.y) {
-          if (entity instanceof RobotEntity) {
-            entity.explode();
-          }
-
-          entity.target = null;
-          entity.isMoving = false;
-          entity.initialPosition = null;
-        }
+        const entityWorldPos = entity.position.floor();
+        const radius = BitMath.floor(Math.random() * (entity.MAX_EXPLOSION_RADIUS + 1));
+        
+        this.explode(entityWorldPos, radius, entity.MAX_EXPLOSION_RADIUS);
       }
     }
   }
