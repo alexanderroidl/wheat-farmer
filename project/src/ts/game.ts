@@ -66,10 +66,6 @@ export default class Game {
         this._lastClickAt = Date.now();
         return;
       }
-
-      // World tile was clicked
-      const worldPos = this._renderer.camera.worldPosFromScreen(pos);
-      this._world.onTileClicked(worldPos.floor());
     };
   }
 
@@ -159,11 +155,11 @@ export default class Game {
     // Trigger click on tile if mouse is down
     if (this._mouseDown) {
       // 250ms have passed since last click
-      if ((Date.now() - this._lastClickAt) > 250) {
+      if ((Date.now() - this._lastClickAt) > 500) {
+        this._lastClickAt = Date.now();
+
         const worldPos = this._renderer.camera.worldPosFromScreen(this._renderer.mousePos);
         this._world.onTileClicked(worldPos.floor());
-
-        this._lastClickAt = Date.now();
       }
     }
   }
