@@ -209,7 +209,7 @@ function startExpressServer (cb) {
   // BrowserSync is currently not running
   if (!browserSyncRunning) {
     browserSync.init(null, {
-      proxy: `http://${process.env.HOST_ADDRESS}:${process.env.EXPRESS_PORT}/?debug`,
+      proxy: `${process.env.WEB_PROTOCOL}://${process.env.HOST_ADDRESS}:${process.env.EXPRESS_PORT}/?debug`,
       files: ["build/**/*.*"],
       port: process.env.BROWSERSYNC_PORT,
       open: false
