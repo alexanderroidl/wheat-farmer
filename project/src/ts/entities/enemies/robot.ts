@@ -1,8 +1,11 @@
+import Renderer from "../../core/renderer";
+import Vector from "../../core/vector";
 import Entity from "../entity";
 
 export default class RobotEntity extends Entity {
   public readonly EXPLODE_TIME = 3 * 1000;
   public readonly MAX_EXPLOSION_RADIUS = 2;
+  public readonly MOVEMENT_WAVE_LENGTH = new Vector(1, 1).length * 3;
 
   public readonly name: string = "Robot";
   public readonly speed: number = 2;
@@ -10,6 +13,8 @@ export default class RobotEntity extends Entity {
   public isHostile: boolean = true;
 
   private _explodedAt: number | null = null;
+  private _sinShift: Vector = new Vector(0, 0);
+  private _sinShiftDistanceOffset: number;
 
   public get explosionProgress (): number {
     if (this._explodedAt === null) {
@@ -20,12 +25,18 @@ export default class RobotEntity extends Entity {
     return progress > 1 ? 1 : progress;
   }
 
+  public get hasStartedExploding (): boolean {
+    return this._explodedAt !== null;
+  }
+
   public get hasCompletedExplosion (): boolean {
     return this.explosionProgress === 1;
   }
 
   constructor (x: number, y: number) {
     super(x, y);
+
+    this._sinShiftDistanceOffset = Math.random() * this.MOVEMENT_WAVE_LENGTH;
   }
 
   public get char (): string {
@@ -57,11 +68,22 @@ export default class RobotEntity extends Entity {
   public update (delta: number): void {
     if (this.isMoving) {
       const moveDelta = this.move(delta);
+      const moveDirectionRad = Math.atan2(moveDelta.y, moveDelta.x);
+
       this.position = this.position.add(moveDelta.x, moveDelta.y);
 
+      if (this.initialPosition instanceof Vector) {
+        let movedDistance = new Vector(this.initialPosition.x - this.position.x, this.initialPosition.y - this.position.y).length;
+        movedDistance += this._sinShiftDistanceOffset;
 
-    if (this.hasCompletedMove && this._explodedAt === null) {
-      this.explode();
+        const shift = (movedDistance % this.MOVEMENT_WAVE_LENGTH) / this.MOVEMENT_WAVE_LENGTH;
+
+        const sinShift = Math.sin(shift * 2 * Math.PI) * 2 / 3;
+        this._sinShift = new Vector(0, sinShift).rotate(moveDirectionRad);
+      }
+  
+      if (this.hasCompletedMove && !this.hasStartedExploding) {
+        this.explode();
       }
     }
   }
