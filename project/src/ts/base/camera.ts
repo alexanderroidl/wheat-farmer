@@ -40,7 +40,6 @@ export default class Camera {
   public zoom (zoom: number): void {
     // Never let zoom go below minimum
     if (this._zoomAmount + zoom < this.MIN_ZOOM) {
-      this._zoomAmount = this.MIN_ZOOM;
       return;
     }
 
