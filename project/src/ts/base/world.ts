@@ -161,7 +161,7 @@ export default class World {
 
     // Set position randomly around the game area
     return new Vector(spawnRadius, 0)
-      .rotate(Math.random() * 360)
+      .rotateDeg(Math.random() * 360)
       .add(this.CENTER.x, this.CENTER.y);
   }
 
@@ -183,7 +183,7 @@ export default class World {
       const shiftVector = new Vector(
         Math.random() * randomShift.x,
         Math.random() * randomShift.y
-      ).rotate(Math.random() * 360);
+      ).rotateDeg(Math.random() * 360);
 
       pos = pos.add(shiftVector.x, shiftVector.y);
     }

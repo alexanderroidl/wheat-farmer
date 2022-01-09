@@ -50,9 +50,7 @@ export default class Vector {
      * @param deg - Angle in degrees
      * @returns Rotated vector
      */
-    public rotate (deg: number): Vector {
-      const rad = -deg * (Math.PI / 180);
-
+    public rotate (rad: number): Vector {
       const cos = Math.cos(rad);
       const sin = Math.sin(rad);
 
@@ -60,6 +58,11 @@ export default class Vector {
         Math.round(10000 * (this.x * cos - this.y * sin)) / 10000,
         Math.round(10000 * (this.x * sin + this.y * cos)) / 10000
       );
+    }
+
+    public rotateDeg (deg: number): Vector {
+      const rad = -deg * (Math.PI / 180);
+      return this.rotate(rad);
     }
 
     public toString (): string {
