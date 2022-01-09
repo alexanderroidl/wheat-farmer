@@ -250,6 +250,22 @@ export default class World {
       }
     }
 
+    // Iterate existing entities
+    for (const entity of this.entities) {
+      entity.update(delta);
+
+      // Is robot and has finished exploding
+      if (entity instanceof RobotEntity && entity.hasCompletedExplosion) {
+        // Remove this entity from list
+        this._entities = this._entities.filter((v) => v !== entity);
+
+        const entityWorldPos = entity.position.floor();
+        const radius = BitMath.floor(Math.random() * (entity.MAX_EXPLOSION_RADIUS + 1));
+        
+        this.explode(entityWorldPos, radius, entity.MAX_EXPLOSION_RADIUS);
+      }
+    }
+
     // Start spawning enemies at more than 50 planted tiles/min
     // Add an extra enemy for every additional 25 planted tiles/min
     const enemieGroups = Math.ceil((this.tilesPlantedPerMin - 40) / 10);
@@ -275,22 +291,6 @@ export default class World {
           // Push time enemy group was created at
           this._enemyGroupsPerMin.push(Date.now());
         }
-      }
-    }
-
-    // Iterate existing entities
-    for (const entity of this.entities) {
-      entity.update(delta);
-
-      // Is robot and has finished exploding
-      if (entity instanceof RobotEntity && entity.hasCompletedExplosion) {
-        // Remove this entity from list
-        this._entities = this._entities.filter((v) => v !== entity);
-
-        const entityWorldPos = entity.position.floor();
-        const radius = BitMath.floor(Math.random() * (entity.MAX_EXPLOSION_RADIUS + 1));
-        
-        this.explode(entityWorldPos, radius, entity.MAX_EXPLOSION_RADIUS);
       }
     }
   }
