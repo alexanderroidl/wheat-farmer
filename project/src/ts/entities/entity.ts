@@ -71,6 +71,9 @@ export default class Entity implements EntityInterface {
   }
 
   public update (delta: number): void {
-    this.move(delta);
+  }
+
+  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+    // TODO: Implement logic
   }
 }

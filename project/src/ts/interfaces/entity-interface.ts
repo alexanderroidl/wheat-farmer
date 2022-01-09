@@ -1,3 +1,4 @@
+import Renderer from "core/renderer";
 import Vector from "core/vector";
 
 export default interface EntityInterface {
@@ -15,4 +16,5 @@ export default interface EntityInterface {
 
     move: (delta: number) => void;
     update: (delta: number) => void;
+    render: (renderer: Renderer, ctx: CanvasRenderingContext2D) => void;
 }
