@@ -14,7 +14,7 @@ export default interface EntityInterface {
     hasCompletedMove: boolean;
     char: string;
 
-    move: (delta: number) => void;
+    move: (delta: number) => Vector;
     update: (delta: number) => void;
     render: (renderer: Renderer, ctx: CanvasRenderingContext2D) => void;
 }

@@ -55,10 +55,24 @@ export default class RobotEntity extends Entity {
   }
 
   public update (delta: number): void {
-    super.update(delta);
+    if (this.isMoving) {
+      const moveDelta = this.move(delta);
+      this.position = this.position.add(moveDelta.x, moveDelta.y);
+
 
     if (this.hasCompletedMove && this._explodedAt === null) {
       this.explode();
+      }
     }
+  }
+
+  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+    super.render(renderer, ctx);
+
+    renderer.paintChar(ctx, {
+      char: this.char,
+      textColor: "white",
+      worldPosition: this.position.add(this._sinShift.x, this._sinShift.y)
+    });
   }
 }

@@ -1,6 +1,7 @@
 import EntityInterface from "interfaces/entity-interface";
 import Vector from "../core/vector";
 import Easings from "../core/easings";
+import Renderer from "../core/renderer";
 
 export default class Entity implements EntityInterface {
   public readonly name: string = "";
@@ -45,14 +46,14 @@ export default class Entity implements EntityInterface {
     return "";
   }
 
-  public move (delta: number): void {
-    // Entity has no assigned target
-    if (!(this.target instanceof Vector) || typeof this.initialDistance !== "number") {
-      return;
+  public move (delta: number): Vector {
+    if (!this.isMoving) {
+      return new Vector(0, 0);
     }
 
-    if (this.hasCompletedMove) {
-      return;
+    // Entity has no assigned target
+    if (!(this.target instanceof Vector) || typeof this.initialDistance !== "number") {
+      return new Vector(0, 0);
     }
 
     let entitySpeed = this.speed * (delta / 1000);
@@ -66,11 +67,17 @@ export default class Entity implements EntityInterface {
       distance = entitySpeed;
     }
 
-    this.position.x += entitySpeed * (this.target.x - this.position.x) / distance;
-    this.position.y += entitySpeed * (this.target.y - this.position.y) / distance;
+    return new Vector(
+      entitySpeed * (this.target.x - this.position.x) / distance,
+      entitySpeed * (this.target.y - this.position.y) / distance
+    );
   }
 
   public update (delta: number): void {
+    if (this.isMoving) {
+      const moveDelta = this.move(delta);
+      this.position = this.position.add(moveDelta.x, moveDelta.y);
+    }
   }
 
   public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
