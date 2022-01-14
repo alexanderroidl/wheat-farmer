@@ -1,7 +1,5 @@
-import Renderer from "core/renderer";
 import TradeableInterface from "interfaces/tradeable-interface";
 import Tile from "./tile";
-import Vector from "core/vector";
 
 export default class WallTile extends Tile implements TradeableInterface {
     public readonly buyPrice: number = 10;
@@ -30,13 +28,5 @@ export default class WallTile extends Tile implements TradeableInterface {
 
     public onClicked (): void {
       // TODO: Implement logic
-    }
-
-    public renderLatest (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
-    }): void {
-      super.renderLatest(renderer, params);
     }
 }

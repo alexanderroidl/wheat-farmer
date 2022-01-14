@@ -169,6 +169,26 @@ export default class World {
       .add(this.CENTER.x, this.CENTER.y);
   }
 
+  public getRandomWheatPosition (): Vector | null {
+    const wheatTilePositions = [];
+
+    for (let y = 0; y < this._tiles.length; y++) {
+      for (let x = 0; x < this._tiles[y].length; x++) {
+        const tile = this._tiles[y][x];
+       
+        if (tile instanceof WheatTile) {
+          wheatTilePositions.push(new Vector(x, y));
+        }
+      }
+    }
+
+    if (!wheatTilePositions.length) {
+      return null;
+    }
+
+    return wheatTilePositions[Math.floor(Math.random() * wheatTilePositions.length)];
+  }
+
   /**
    * Spawns a robot
    *
@@ -288,8 +308,14 @@ export default class World {
           for (let enemyIndex = 0; enemyIndex < groupSize; enemyIndex++) {
             const enemy = this.spawnEnemy(spawnPos, new Vector(Math.random() * 3, Math.random() * 3));
 
-            // Assign random world coordinates as target for spawned enemie
-            enemy.target = new Vector(Math.random() * this.SIZE, Math.random() * this.SIZE).floor();
+            const wheatTilePosition = this.getRandomWheatPosition();
+
+            if (wheatTilePosition instanceof Vector) {
+              enemy.target = wheatTilePosition;
+            } else {
+              const randomPosition = new Vector(Math.random() * this.SIZE, Math.random() * this.SIZE).floor();
+              enemy.target = randomPosition;
+            }
           }
 
           // Push time enemy group was created at

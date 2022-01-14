@@ -8,7 +8,7 @@ export default class RobotEntity extends Entity {
   public readonly MOVEMENT_WAVE_LENGTH = new Vector(1, 1).length * 3;
 
   public readonly name: string = "Robot";
-  public readonly speed: number = 2;
+  public readonly speed: number = 1;
   
   public isHostile: boolean = true;
 
@@ -78,7 +78,7 @@ export default class RobotEntity extends Entity {
 
         const shift = (movedDistance % this.MOVEMENT_WAVE_LENGTH) / this.MOVEMENT_WAVE_LENGTH;
 
-        const sinShift = Math.sin(shift * 2 * Math.PI) * 2 / 3;
+        const sinShift = 0.5 * Math.sin(shift * 2 * Math.PI);
         this._sinShift = new Vector(0, sinShift).rotate(moveDirectionRad);
       }
   
