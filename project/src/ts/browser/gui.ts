@@ -103,9 +103,6 @@ export default class Gui {
 
     const stats = [
       {
-        icon: "⌛️",
-        text: Math.floor((Date.now() - world.createdAt) / 1000) + "s"
-      }, {
         icon: "🌱",
         text: world.player.items.getItemAmount("Wheat")
       }, {
