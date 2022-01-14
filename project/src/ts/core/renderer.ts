@@ -1,24 +1,30 @@
 import World from "../base/world";
 import Camera from "../base/camera";
-import EmptyTile from "../tiles/empty-tile";
 import Util from "./util";
 import Vector from "./vector";
 import BitMath from "./bit-math";
 import { InventoryItem } from "../base/inventory";
 import Browser from "browser/browser";
+import TextureFactory from "./texture-factory";
+import Texture from "./texture";
+import Canvas from "./canvas";
 
 export default class Renderer {
   public readonly FONT_SIZE = 12;
   public readonly FONT_EMOJI_SIZE = 16;
   public readonly SQUARE_SIZE = 32;
-  public readonly COLOR_WORLD_FILL_SQUARES = Util.lightenDarkenColor(EmptyTile.COLOR, 8);
 
   private _ctx: CanvasRenderingContext2D | null = null;
+  private _textures: Texture[] = [];
 
   public readonly camera: Camera = new Camera(this.SQUARE_SIZE);
   public size: Vector = new Vector(0, 0);
   public mousePos: Vector = new Vector(0, 0);
   public equippedItem: InventoryItem | null = null;
+
+  public get textures (): Texture[] {
+    return this._textures;
+  }
 
   /**
    * Canvas width
@@ -53,13 +59,26 @@ export default class Renderer {
    */
   constructor (browser: Browser) {
     this._ctx = browser.initializeRendererCanvas();
+
+    const textureFactory = new TextureFactory(64);
+    textureFactory.loadTexturesFromFile("sprites.png").then((textures: Texture[]) => {
+      this._textures = textures;
+    });
+  }
+
+  public getTextureById (id: number): Texture | null {
+    if (!(this._textures[id] instanceof Texture)) {
+      return null;
+    }
+
+    return this._textures[id];
   }
 
   public paintChar (ctx: CanvasRenderingContext2D, params: {
-    char: string;
-    textColor: string;
-    worldPosition: Vector;
-    isHovered?: boolean;
+    char: string,
+    textColor: string,
+    worldPosition: Vector,
+    isHovered?: boolean | null
   }): void {
     // Apply text shadow if char is currently hovered
     if (params.isHovered) {
@@ -99,13 +118,30 @@ export default class Renderer {
     ctx.shadowBlur = 0;
   }
 
+  public paintTexture (ctx: CanvasRenderingContext2D, params: {
+    worldPosition: Vector,
+    texture: Texture
+  }): void {
+    ctx.drawImage(
+      params.texture.image, 
+      0, 
+      0, 
+      params.texture.size.x,
+      params.texture.size.y, 
+      this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x, 
+      this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y, 
+      this.SQUARE_SIZE * this.z, 
+      this.SQUARE_SIZE * this.z
+    );
+  }
+
   public paintSquare (ctx: CanvasRenderingContext2D, params: {
-    worldPosition: Vector;
-    backgroundColor: string;
-    opacity?: number | null;
-    char?: string | null;
-    textColor?: string | null;
-    isHovered?: boolean;
+    worldPosition: Vector,
+    backgroundColor?: string | null,
+    opacity?: number | null,
+    char?: string | null,
+    textColor?: string | null,
+    isHovered?: boolean | null
   }): void {
     // Save previous global alpha
     const oldAlpha = ctx.globalAlpha; // TODO: Remove
@@ -115,14 +151,16 @@ export default class Renderer {
       ctx.globalAlpha = params.opacity;
     }
 
-    // Paint square itself
-    ctx.fillStyle = params.backgroundColor;
-    ctx.fillRect(
-      this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x,
-      this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y,
-      this.SQUARE_SIZE * this.z,
-      this.SQUARE_SIZE * this.z
-    );
+    // Paint background color itself
+    if (params.backgroundColor) {
+      ctx.fillStyle = params.backgroundColor;
+      ctx.fillRect(
+        this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x,
+        this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y,
+        this.SQUARE_SIZE * this.z,
+        this.SQUARE_SIZE * this.z
+      );
+    }
 
     // Char for square was given
     if (params.char != null) {
@@ -196,6 +234,18 @@ export default class Renderer {
     ctx.globalAlpha = oldAlpha; // TODO: Remove
   }
 
+  public static generateImageFromData (imageData: ImageData): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const canvas = new Canvas(imageData.width, imageData.height);
+      while (!canvas.ctx) {}
+
+      canvas.ctx.putImageData(imageData, 0, 0);
+      canvas.image.then((img: HTMLImageElement) => {
+        resolve(img);
+      });
+    });
+  }
+
   /**
    * Render world
    * @param {World} world World object to render
@@ -203,13 +253,12 @@ export default class Renderer {
   public render (world: World): void {
     const ctx = this.ctx;
 
-    // Stop here if no Canvas context is given yet
-    if (!ctx) {
+    // Stop here if no Canvas context or textures are loaded yet
+    if (!ctx || !this._textures.length) {
       return;
     }
 
-    // Retrieve current world coordinates from mouse screen coordinates
-    const mouseWorldPos = this.camera.worldPosFromScreen(this.mousePos);
+    ctx.imageSmoothingEnabled = false;
 
     // Clear Canvas entirely
     ctx.clearRect(0, 0, this.width, this.height);
@@ -223,12 +272,16 @@ export default class Renderer {
     // Draw empty squares around world
     for (let y = yStart; y < yEnd; y++) {
       for (let x = xStart; x < xEnd; x++) {
-        this.paintSquare(ctx, {
-          worldPosition: new Vector(x, y),
-          backgroundColor: this.COLOR_WORLD_FILL_SQUARES
+        const emptyPosition = new Vector(x, y);
+        this.paintTexture(ctx, {
+          worldPosition: emptyPosition,
+          texture: this._textures[0]
         });
       }
     }
+
+    // Retrieve current world coordinates from mouse screen coordinates
+    const mouseWorldPos = this.camera.worldPosFromScreen(this.mousePos);
 
     // Iterate through world coordinates
     for (let y = 0; y < world.tiles.length; y++) {

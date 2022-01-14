@@ -1,3 +1,4 @@
+import Texture from "../../core/texture";
 import Renderer from "../../core/renderer";
 import Vector from "../../core/vector";
 import Entity from "../entity";
@@ -9,12 +10,16 @@ export default class RobotEntity extends Entity {
 
   public readonly name: string = "Robot";
   public readonly speed: number = 1;
-  
+
   public isHostile: boolean = true;
 
   private _explodedAt: number | null = null;
   private _sinShift: Vector = new Vector(0, 0);
   private _sinShiftDistanceOffset: number;
+
+  public get textureId(): number {
+    return 14;
+  }
 
   public get explosionProgress (): number {
     if (this._explodedAt === null) {
@@ -39,27 +44,27 @@ export default class RobotEntity extends Entity {
     this._sinShiftDistanceOffset = Math.random() * this.MOVEMENT_WAVE_LENGTH;
   }
 
-  public get char (): string {
-    if (this.explosionProgress > 0) {
-      if (this.explosionProgress <= 0.6) {
-        return "💣";
-      }
+  // public get char (): string {
+  //   if (this.explosionProgress > 0) {
+  //     if (this.explosionProgress <= 0.6) {
+  //       return "💣";
+  //     }
 
-      if (this.explosionProgress > 0.6 && this.explosionProgress < 0.8) {
-        return "✨";
-      }
+  //     if (this.explosionProgress > 0.6 && this.explosionProgress < 0.8) {
+  //       return "✨";
+  //     }
 
-      if (this.explosionProgress > 0.8 && this.explosionProgress < 1) {
-        return "💥";
-      }
+  //     if (this.explosionProgress > 0.8 && this.explosionProgress < 1) {
+  //       return "💥";
+  //     }
 
-      if (this.explosionProgress >= 1) {
-        return "🔥";
-      }
-    }
+  //     if (this.explosionProgress >= 1) {
+  //       return "🔥";
+  //     }
+  //   }
 
-    return "🤖";
-  }
+  //   return "🤖";
+  // }
 
   public explode (): void {
     this._explodedAt = Date.now();
@@ -89,12 +94,13 @@ export default class RobotEntity extends Entity {
   }
 
   public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
-    super.render(renderer, ctx);
+    const texture = renderer.getTextureById(this.textureId);
 
-    renderer.paintChar(ctx, {
-      char: this.char,
-      textColor: "white",
-      worldPosition: this.position.add(this._sinShift.x, this._sinShift.y)
-    });
+    if (texture instanceof Texture) {
+      renderer.paintTexture(ctx, {
+        worldPosition: this.position.add(this._sinShift.x, this._sinShift.y),
+        texture: texture
+      });
+    }
   }
 }

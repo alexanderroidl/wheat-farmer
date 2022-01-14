@@ -6,6 +6,7 @@ export default interface TileInterface {
     readonly timeCreated: number;
 
     damage: number;
+    textureId: number | null;
     backgroundColor: string | null;
     textColor: string | null;
 

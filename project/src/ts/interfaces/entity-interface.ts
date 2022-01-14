@@ -6,6 +6,7 @@ export default interface EntityInterface {
     readonly speed: number;
 
     position: Vector;
+    textureId: number | null;
     initialPosition: Vector | null;
     initialDistance: number | null;
     target: Vector | null;

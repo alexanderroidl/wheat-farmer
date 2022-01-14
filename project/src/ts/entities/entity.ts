@@ -18,6 +18,10 @@ export default class Entity implements EntityInterface {
     this.position = new Vector(x, y);
   }
 
+  public get textureId(): number | null {
+    return null;
+  }
+
   public get hasCompletedMove (): boolean {
     return this.target instanceof Vector && (this.position.x === this.target.x && this.position.y === this.target.y);
   }
@@ -81,6 +85,21 @@ export default class Entity implements EntityInterface {
   }
 
   public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
-    // TODO: Implement logic
+    if (this.textureId !== null) {
+      const texture = renderer.getTextureById(this.textureId);
+
+      if (texture) {
+        renderer.paintTexture(ctx, {
+          worldPosition: this.position,
+          texture: texture
+        });
+      }
+    } else {
+      renderer.paintChar(ctx, {
+        char: this.char,
+        textColor: "white",
+        worldPosition: this.position
+      });
+    }
   }
 }

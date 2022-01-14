@@ -2,6 +2,7 @@ import TileInterface from "interfaces/tile-interface";
 import Renderer from "core/renderer";
 import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
 import Vector from "../core/vector"; // TODO: Resolve issue for importing from base URL
+import Texture from "../core/texture";
 
 export default class Tile implements TileInterface {
     public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
@@ -20,6 +21,10 @@ export default class Tile implements TileInterface {
       this._damage = amount > 1 ? 1 : amount < 0 ? 0 : amount;
     }
 
+    public get textureId (): number | null {
+      return null;
+    }
+
     public get backgroundColor (): string | null {
       return null;
     }
@@ -33,7 +38,7 @@ export default class Tile implements TileInterface {
     }
     
     public getChar (preview: boolean = false): string | null {
-      return "x";
+      return "";
     }
 
     public getDamagedHexColor (color: string): string {
@@ -45,44 +50,41 @@ export default class Tile implements TileInterface {
       // TODO: Implement logic
     }
 
-    private paintSquare (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
-      opacity?: number | null;
-    }) {
-      const backgroundColor = this.backgroundColor;
-      if (!backgroundColor) {
-        return;
-      }
-
-      renderer.paintSquare(params.ctx, {
-        worldPosition: params.worldPosition,
-        backgroundColor: backgroundColor,
-        char: this.getChar(),
-        textColor: this.textColor,
-        isHovered: params.isHovered
-      });
-    }
-
     public render (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
-      opacity?: number | null;
+      ctx: CanvasRenderingContext2D,
+      worldPosition: Vector,
+      isHovered?: boolean,
+      opacity?: number | null
     }): void {
-      this.paintSquare(renderer, {
-        ctx: params.ctx,
-        worldPosition: params.worldPosition,
-        isHovered: params.isHovered,
-        opacity: params.opacity
-      });
+      if (this.backgroundColor || this.textureId !== null) {
+        const texture = this.textureId !== null ? renderer.getTextureById(this.textureId) : null;
+
+        if (texture instanceof Texture) {
+          renderer.paintSquare(params.ctx, {
+            worldPosition: params.worldPosition,
+            isHovered: params.isHovered
+          });
+
+          renderer.paintTexture(params.ctx, {
+            worldPosition: params.worldPosition,
+            texture: texture
+          });
+        } else {
+          renderer.paintSquare(params.ctx, {
+            worldPosition: params.worldPosition,
+            backgroundColor: this.backgroundColor,
+            char: this.getChar(),
+            textColor: this.textColor,
+            isHovered: params.isHovered
+          });
+        }
+      }
     }
 
     public renderLatest (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
+      ctx: CanvasRenderingContext2D
+      worldPosition: Vector,
+      isHovered?: boolean
     }): void {
       // Is hovered and has damage
       if (params.isHovered && this.damage > 0) {

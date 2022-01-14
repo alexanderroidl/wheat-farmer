@@ -1,48 +1,30 @@
-import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
 import Renderer from "core/renderer";
-import Easings from "../core/easings"; // TODO: Resolve issue for importing from base URL
 import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
 import TradeableInterface from "interfaces/tradeable-interface";
 import Vector from "../core/vector";
 import Tile from "./tile";
-import EmptyTile from "./empty-tile";
 
 export default class WheatTile extends Tile implements TradeableInterface {
     public readonly buyPrice: number = 0;
     public readonly sellPrice: number = 0;
 
-    public readonly GROWTH_TIME = 7.5 * 1000;
+    public readonly GROWTH_TIME = 25 * 1000;
     public readonly MIN_SEED_DROP = 0;
     public readonly MAX_SEED_DROP = 3;
-    private readonly COLOR_GROWN = "#7dbf21";
 
     public name: string = "Wheat";
+
+    public get textureId (): number {
+      return Math.floor(this.growthState * 10) + 1;
+    }
 
     public get growthState (): number {
       const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME * (1 - this.damage);
       return growth > 1 ? 1 : growth;
     }
 
-    public get textColor (): string | null {
-      return "#ffffff";
-    }
-
-    public get backgroundColor (): string | null {
-      const mixAmount = Easings.easeInCubic(this.growthState);
-      const growthColor = Util.mixColors(EmptyTile.COLOR, this.COLOR_GROWN, mixAmount);
-      return this.getDamagedHexColor(growthColor);
-    }
-
     public getChar (preview: boolean = false): string | null {
-      if (preview || this.growthState < 0.4) {
-        return "🌱";
-      }
-
-      if (this.growthState >= 1) {
-        return "🌾";
-      }
-
-      return "🌿";
+      return preview ? "🌱" : null;
     }
 
     public onClicked (): void {
@@ -51,15 +33,6 @@ export default class WheatTile extends Tile implements TradeableInterface {
 
     public dropSeeds (): number {
       return BitMath.floor(Math.random() * (this.MAX_SEED_DROP - this.MIN_SEED_DROP + 1)) + this.MIN_SEED_DROP;
-    }
-
-    public render (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
-      opacity?: number | null;
-    }): void {
-      super.render(renderer, params);
     }
 
     public renderLatest (renderer: Renderer, params: {
