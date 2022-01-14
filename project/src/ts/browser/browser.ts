@@ -1,13 +1,14 @@
 
+import Canvas from "../core/canvas";
 import Vector from "../core/vector";
 import Gui from "./gui";
 import Mouse from "./mouse";
 
 export default class Browser {
+  private _canvas: Canvas | null = null;
   private _mouse: Mouse = new Mouse();
   private _gui: Gui = new Gui(this._mouse);
   private _windowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
-  private _rendererCanvas: HTMLCanvasElement | null = null;
 
   public get gui (): Gui {
     return this._gui;
@@ -262,15 +263,15 @@ export default class Browser {
    * @returns {CanvasRenderingContext2D}
    */
   public initializeRendererCanvas (): CanvasRenderingContext2D {
-    this._rendererCanvas = document.createElement("canvas");
+    this._canvas = new Canvas();
     
     this.updateRendererCanvasSize();
 
-    document.body.prepend(this._rendererCanvas);
+    document.body.prepend(this._canvas.element);
 
     let context;
     // eslint-disable-next-line no-cond-assign
-    while ((context = this._rendererCanvas.getContext("2d")) === null) {
+    while ((context = this._canvas.ctx) === null) {
       // Do nothing
     }
 
@@ -281,9 +282,9 @@ export default class Browser {
    * Update renderer's canvas size to current window dimensions
    */
   private updateRendererCanvasSize (): void {
-    if (this._rendererCanvas !== null) {
-      this._rendererCanvas.width = this._windowSize.x;
-      this._rendererCanvas.height = this._windowSize.y;
+    if (this._canvas !== null) {
+      this._canvas.width = this._windowSize.x;
+      this._canvas.height = this._windowSize.y;
     }
   }
 
