@@ -159,7 +159,9 @@ export default class Game {
         this._lastClickAt = Date.now();
 
         const worldPos = this._renderer.camera.worldPosFromScreen(this._renderer.mousePos);
-        this._world.onTileClicked(worldPos.floor());
+        if (!this._world.onWorldClicked(worldPos)) {
+          this._world.onTileClicked(worldPos.floor());
+        }
       }
     }
   }

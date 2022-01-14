@@ -53,6 +53,10 @@ export default class World {
     return this._tiles[y] != null && this._tiles[y][x] != null;
   }
 
+  public onWorldClicked (pos: Vector): boolean {
+    return false;
+  }
+
   public onTileClicked (pos: Vector): void {
     if (!this.isValidTilePos(pos.x, pos.y)) {
       return;
