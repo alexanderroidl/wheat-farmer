@@ -18,10 +18,10 @@ export default class RobotEntity extends Entity {
   private _sinShiftDistanceOffset: number;
 
   public get textureId (): number {
-    if (this.hasStartedBombPlant) {
-      return 16;
-    }
     if (!this.isMoving) {
+      if (this.hasStartedBombPlant) {
+        return 16;
+      }
       return 13;
     }
     return this.movedDistance % 1 < 0.5 ? 14 : 15;
