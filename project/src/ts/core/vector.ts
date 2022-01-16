@@ -31,8 +31,8 @@ export default class Vector {
      * @param y - Added to y coordinate
      * @returns Vector with added coordinates
      */
-    public add (x: number, y: number): Vector {
-      return new Vector(this.x + x, this.y + y);
+    public add (x: number, y?: number): Vector {
+      return new Vector(this.x + x, this.y + (y != null ? y : x));
     }
 
     /**
