@@ -17,7 +17,7 @@ export default class RobotEntity extends Entity {
   private _sinShift: Vector = new Vector(0, 0);
   private _sinShiftDistanceOffset: number;
 
-  public get textureId(): number {
+  public get textureId (): number {
     return 14;
   }
 
@@ -43,28 +43,6 @@ export default class RobotEntity extends Entity {
 
     this._sinShiftDistanceOffset = Math.random() * this.MOVEMENT_WAVE_LENGTH;
   }
-
-  // public get char (): string {
-  //   if (this.explosionProgress > 0) {
-  //     if (this.explosionProgress <= 0.6) {
-  //       return "💣";
-  //     }
-
-  //     if (this.explosionProgress > 0.6 && this.explosionProgress < 0.8) {
-  //       return "✨";
-  //     }
-
-  //     if (this.explosionProgress > 0.8 && this.explosionProgress < 1) {
-  //       return "💥";
-  //     }
-
-  //     if (this.explosionProgress >= 1) {
-  //       return "🔥";
-  //     }
-  //   }
-
-  //   return "🤖";
-  // }
 
   public explode (): void {
     this._explodedAt = Date.now();
