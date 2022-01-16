@@ -36,12 +36,30 @@ export default class Vector {
     }
 
     /**
-     * Round off coordinates
+     * Floor coordinates
      *
-     * @returns Vector with rounded off coordinates
+     * @returns Vector with floored coordinates
      */
     public floor (): Vector {
       return new Vector(BitMath.floor(this.x), BitMath.floor(this.y));
+    }
+
+    /**
+     * Round coordinates
+     *
+     * @returns Vector with rounded coordinates
+     */
+    public round (): Vector {
+      return new Vector(BitMath.round(this.x), BitMath.round(this.y));
+    }
+
+    /**
+     * Ceil coordinates
+     *
+     * @returns Vector with ceiled coordinates
+     */
+    public ceil (): Vector {
+      return new Vector(BitMath.ceil(this.x), BitMath.ceil(this.y));
     }
 
     /**
