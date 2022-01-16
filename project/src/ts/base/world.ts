@@ -7,6 +7,8 @@ import Vector from "../core/vector";
 import Tile from "../tiles/tile";
 import BitMath from "../core/bit-math";
 import WallTile from "../tiles/wall-tile";
+import BombEntity from "../entities/enemies/bomb";
+import Entity from "../entities/entity";
 
 export default class World {
   public readonly SIZE: number = 20; // 20x20 world size
@@ -168,9 +170,8 @@ export default class World {
     return tiles;
   }
 
-  public getRandomOutsidePos (): Vector {
-    // Make spawn radius twice the game area's diameter
-    const spawnRadius = this.CENTER.length * 3;
+  public getRandomOutsidePos (radiusMultiplier: number = 3): Vector {
+    const spawnRadius = this.CENTER.length * radiusMultiplier;
 
     // Set position randomly around the game area
     return new Vector(spawnRadius, 0)
@@ -206,7 +207,7 @@ export default class World {
    * @param [pos] - Position to spawn enemy at (Randomly computed if not given)
    * @param randomShift - Vector to randomly shift position by
    */
-  public spawnEnemy (pos?: Vector, randomShift?: Vector): EntityInterface {
+  public spawnEntity<E extends EntityInterface> (entity: { new(): E }, pos?: Vector, randomShift?: Vector): E {
     if (!pos) {
       pos = this.getRandomOutsidePos();
     }
@@ -222,13 +223,15 @@ export default class World {
 
     pos = pos.add(shiftVector.x, shiftVector.y);
 
-    const enemy = new RobotEntity(pos.x, pos.y);
-    this._entities.push(enemy);
+    const spawnedEntity = new entity();
+    spawnedEntity.position = pos;
+    this._entities.push(spawnedEntity);
 
-    const wheatTilePosition = this.getRandomWheatPosition();
-    enemy.target = wheatTilePosition ? wheatTilePosition : this.randomPosition;
+    return spawnedEntity;
+  }
 
-    return enemy;
+  public removeEntity (entity: Entity): void {
+    this._entities = this._entities.filter((e) => e !== entity);
   }
 
   public explode (pos: Vector, radius: number, maxRadius: number): void {
@@ -291,22 +294,45 @@ export default class World {
     for (const entity of this.entities) {
       entity.update(delta);
 
-      // Is robot and has finished exploding
-      if (entity instanceof RobotEntity && entity.hasCompletedExplosion) {
+      // Is bomb and has finished exploding
+      if (entity instanceof BombEntity && entity.hasCompletedExplosion) {
         // Remove this entity from list
-        this._entities = this._entities.filter((v) => v !== entity);
+        this.removeEntity(entity);
 
         const entityWorldPos = entity.position.floor();
-        const radius = BitMath.floor(Math.random() * (entity.MAX_EXPLOSION_RADIUS + 1));
+        const radius = BitMath.floor(Math.random() * (BombEntity.MAX_EXPLOSION_RADIUS + 1));
         
-        this.explode(entityWorldPos, radius, entity.MAX_EXPLOSION_RADIUS);
+        this.explode(entityWorldPos, radius, BombEntity.MAX_EXPLOSION_RADIUS);
+      }
+
+      // Is robot and has prepared bomb plant
+      if (entity instanceof RobotEntity && entity.hasCompletedBombPlant) {
+        // Robot has not planted bomb yet
+        if (!entity.bomb) {
+          // Create and ignite bomb
+          entity.bomb = this.spawnEntity(BombEntity, entity.position.add(0, 0.5), new Vector(0.5, 0.5));
+          entity.bomb.ignite();
+
+          // Start running away
+          entity.target = this.getRandomOutsidePos(7);
+          entity.speed = 3 * entity.speed;
+        }
+
+        // Has completed running away
+        if (entity.hasCompletedMove) {
+          this.removeEntity(entity);
+        }
       }
     }
 
     // Spawn enemies scheduled to spawn
     while (this._enemiesScheduledToSpawn > 0) {
       this._enemiesScheduledToSpawn--;
-      this.spawnEnemy();
+
+      const robotEntity = this.spawnEntity(RobotEntity);
+
+      const wheatTilePosition = this.getRandomWheatPosition();
+      robotEntity.target = wheatTilePosition ? wheatTilePosition : this.randomPosition;
     }
 
     // Start spawning enemies at more than 50 planted tiles/min

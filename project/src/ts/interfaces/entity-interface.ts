@@ -3,9 +3,9 @@ import Vector from "../core/vector";
 
 export default interface EntityInterface {
     readonly name: string;
-    readonly speed: number;
 
     position: Vector;
+    speed: number;
     textureId: number | null;
     initialPosition: Vector | null;
     initialDistance: number | null;

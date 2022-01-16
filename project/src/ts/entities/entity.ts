@@ -5,18 +5,14 @@ import Renderer from "../base/renderer";
 
 export default class Entity implements EntityInterface {
   public readonly name: string = "";
-  public readonly speed: number = 0;
 
-  private _target: Vector | null = null;
+  protected _target: Vector | null = null;
 
-  public position: Vector;
+  public position: Vector = new Vector(0);
+  public speed: number = 1;
   public initialPosition: Vector | null = null;
   public initialDistance: number | null = null;
-  public isHostile: boolean = true;
-
-  constructor (x: number, y: number) {
-    this.position = new Vector(x, y);
-  }
+  public isHostile: boolean = false;
 
   public get textureId (): number | null {
     return null;
@@ -28,6 +24,13 @@ export default class Entity implements EntityInterface {
 
   public get isMoving (): boolean {
     return this.target instanceof Vector && !this.hasCompletedMove;
+  }
+
+  public get movedDistance (): number {
+    if (!this.initialPosition) {
+      return 0;
+    }
+    return new Vector(this.initialPosition.x - this.position.x, this.initialPosition.y - this.position.y).length;
   }
 
   public set target (target: Vector | null) {
@@ -81,6 +84,10 @@ export default class Entity implements EntityInterface {
     if (this.isMoving) {
       const moveDelta = this.move(delta);
       this.position = this.position.add(moveDelta.x, moveDelta.y);
+
+      if (this.hasCompletedMove) {
+        this._target = null;
+      }
     }
   }
 
