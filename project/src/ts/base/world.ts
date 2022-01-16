@@ -137,6 +137,7 @@ export default class World {
     if (newTile !== null) {
       // Set damage of new tile to damage of old tile
       newTile.damage = tile.damage;
+      newTile.damageTextures = tile.damageTextures;
 
       // Update world
       this._tiles[pos.y][pos.x] = newTile;
