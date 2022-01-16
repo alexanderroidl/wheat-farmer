@@ -6,7 +6,7 @@ import Entity from "../entity";
 export default class RobotEntity extends Entity {
   public readonly EXPLODE_TIME = 3 * 1000;
   public readonly MAX_EXPLOSION_RADIUS = 2;
-  public readonly MOVEMENT_WAVE_LENGTH = new Vector(1, 1).length * 3;
+  public readonly MOVEMENT_WAVE_LENGTH = new Vector(1, 1).length * 5;
 
   public readonly name: string = "Robot";
   public readonly speed: number = 1;
