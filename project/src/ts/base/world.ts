@@ -18,6 +18,7 @@ export default class World {
   private _entities: EntityInterface[] = [];
   private _plantedTilesPerMin: number[] = [];
   private _enemyGroupsPerMin: number[] = [];
+  private _enemiesScheduledToSpawn: number = 0;
 
   public get tiles (): Tile[][] {
     return this._tiles;
@@ -43,6 +44,10 @@ export default class World {
     return this._enemyGroupsPerMin.length;
   }
 
+  public get randomPosition (): Vector {
+    return new Vector(Math.random() * this.SIZE, Math.random() * this.SIZE).floor();
+  }
+
   constructor () {
     this._tiles = Array(this.SIZE).fill([]).map(() => {
       return Array(this.SIZE).fill([]).map(() => new EmptyTile());
@@ -55,6 +60,10 @@ export default class World {
 
   public onWorldClicked (pos: Vector): boolean {
     return false;
+  }
+
+  public scheduleEnemySpawn (count: number = 1): void {
+    this._enemiesScheduledToSpawn += count;
   }
 
   public onTileClicked (pos: Vector): void {
@@ -197,23 +206,27 @@ export default class World {
    * @param [pos] - Position to spawn enemy at (Randomly computed if not given)
    * @param randomShift - Vector to randomly shift position by
    */
-  public spawnEnemy (pos: Vector | null = null, randomShift?: Vector): EntityInterface {
-    // No position given
-    if (pos === null) {
+  public spawnEnemy (pos?: Vector, randomShift?: Vector): EntityInterface {
+    if (!pos) {
       pos = this.getRandomOutsidePos();
     }
 
-    if (randomShift) {
-      const shiftVector = new Vector(
-        Math.random() * randomShift.x,
-        Math.random() * randomShift.y
-      ).rotateDeg(Math.random() * 360);
-
-      pos = pos.add(shiftVector.x, shiftVector.y);
+    if (!randomShift) {
+      randomShift = new Vector(Math.random() * 3, Math.random() * 3);
     }
+
+    const shiftVector = new Vector(
+      Math.random() * randomShift.x,
+      Math.random() * randomShift.y
+    ).rotateDeg(Math.random() * 360);
+
+    pos = pos.add(shiftVector.x, shiftVector.y);
 
     const enemy = new RobotEntity(pos.x, pos.y);
     this._entities.push(enemy);
+
+    const wheatTilePosition = this.getRandomWheatPosition();
+    enemy.target = wheatTilePosition ? wheatTilePosition : this.randomPosition;
 
     return enemy;
   }
@@ -290,6 +303,12 @@ export default class World {
       }
     }
 
+    // Spawn enemies scheduled to spawn
+    while (this._enemiesScheduledToSpawn > 0) {
+      this._enemiesScheduledToSpawn--;
+      this.spawnEnemy();
+    }
+
     // Start spawning enemies at more than 50 planted tiles/min
     // Add an extra enemy for every additional 25 planted tiles/min
     const enemieGroups = Math.ceil((this.tilesPlantedPerMin - 40) / 10);
@@ -302,21 +321,9 @@ export default class World {
         for (let groupIndex = 0; groupIndex < spawnableGroupCount; groupIndex++) {
           // Determine random group size
           const groupSize = BitMath.floor(Math.random() * 3) + 1;
-          const spawnPos = this.getRandomOutsidePos();
 
-          // Create each enemy for set group size
-          for (let enemyIndex = 0; enemyIndex < groupSize; enemyIndex++) {
-            const enemy = this.spawnEnemy(spawnPos, new Vector(Math.random() * 3, Math.random() * 3));
-
-            const wheatTilePosition = this.getRandomWheatPosition();
-
-            if (wheatTilePosition instanceof Vector) {
-              enemy.target = wheatTilePosition;
-            } else {
-              const randomPosition = new Vector(Math.random() * this.SIZE, Math.random() * this.SIZE).floor();
-              enemy.target = randomPosition;
-            }
-          }
+          // Schedule enemy group to spawn
+          this.scheduleEnemySpawn(groupSize);
 
           // Push time enemy group was created at
           this._enemyGroupsPerMin.push(Date.now());

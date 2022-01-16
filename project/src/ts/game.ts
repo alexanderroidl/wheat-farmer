@@ -6,6 +6,14 @@ import Vector from "./core/vector";
 import TitleScreen from "./title-screen/title-screen";
 import Sound from "./base/sound";
 
+declare global {
+  interface Window {
+    wheatFarmer: {
+      spawnEnemy: (count: number) => void
+    };
+  }
+}
+
 export default class Game {
   private static _instance: Game;
 
@@ -33,8 +41,20 @@ export default class Game {
     this.setupKeyboard();
     this.setupTouchScreen();
     this.setupWindow();
+    this.setupCLI();
 
     this._renderer.camera.setup(this._world.SIZE);
+  }
+
+  private setupCLI (): void {
+    if (Browser.getParameter("debug")) {
+      window.wheatFarmer = {
+        spawnEnemy: (count: number = 1) => {
+          console.log(`Scheduled ${count} enemies to spawn`);
+          return this._world.scheduleEnemySpawn(count);
+        }
+      };
+    }
   }
 
   private setupMouse (): void {
