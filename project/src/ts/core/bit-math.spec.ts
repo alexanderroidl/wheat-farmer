@@ -110,8 +110,6 @@ describe("BitMath operations should be faster than native equivalents", () => {
     for (const step of SPEED_COUNT_STEPS) {
       const numbers = generateRandomFloats(step, seed);
 
-      console.log(numbers);
-
       // Measure native performance
       const nativeBefore = performance.now();
       for (let number of numbers) {
@@ -179,8 +177,6 @@ describe("BitMath operations should be faster than native equivalents", () => {
     // Iterate threw speed count steps
     for (const step of SPEED_COUNT_STEPS) {
       const numbers = generateRandomIntegers(step);
-
-      console.log(numbers);
 
       // Measure native performance
       const nativeBefore = performance.now();
