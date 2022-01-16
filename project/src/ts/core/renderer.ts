@@ -1,6 +1,5 @@
 import World from "../base/world";
 import Camera from "../base/camera";
-import Util from "./util";
 import Vector from "./vector";
 import BitMath from "./bit-math";
 import { InventoryItem } from "../base/inventory";
@@ -74,109 +73,45 @@ export default class Renderer {
     return this._textures[id];
   }
 
-  public paintChar (ctx: CanvasRenderingContext2D, params: {
-    char: string,
-    textColor: string,
+  public fillRectWorld (ctx: CanvasRenderingContext2D,
     worldPosition: Vector,
-    isHovered?: boolean | null
-  }): void {
-    // Apply text shadow if char is currently hovered
-    if (params.isHovered) {
-      ctx.shadowColor = "white";
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-      ctx.shadowBlur = BitMath.floor(5 * this.z);
-    }
-
-    let fontSize = this.FONT_SIZE;
-    let fontFamily = "Courier New";
-
-    // Isn't alphanumeric -> must be emoji
-    if (!Util.isAlphaNumeric(params.char)) {
-      // Adjust font size and family accordingly
-      fontSize = this.FONT_EMOJI_SIZE;
-      fontFamily = "OpenMoji";
-    }
-
-    // Calculate screen coordinates to draw text at
-    const textDrawPos = new Vector(
-      (this.SQUARE_SIZE * params.worldPosition.x + this.SQUARE_SIZE / 2) * this.z - this.camera.position.x,
-      (this.SQUARE_SIZE * params.worldPosition.y + this.SQUARE_SIZE / 2) * this.z - this.camera.position.y
+    worldSize: Vector = new Vector(1, 1)): void {
+    ctx.fillRect(
+      Math.ceil(this.z * (this.SQUARE_SIZE * worldPosition.x) - this.camera.position.x),
+      Math.ceil(this.z * (this.SQUARE_SIZE * worldPosition.y) - this.camera.position.y),
+      Math.ceil(this.z * (this.SQUARE_SIZE * worldSize.x)),
+      Math.ceil(this.z * (this.SQUARE_SIZE * worldSize.y))
     );
-
-    // Calculate font size
-    const fontDrawSize = BitMath.floor(fontSize * this.z);
-
-    // Paint actual text
-    ctx.fillStyle = params.textColor;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = `${fontDrawSize}px "${fontFamily}"`;
-    ctx.fillText(params.char, BitMath.floor(textDrawPos.x), BitMath.floor(textDrawPos.y));
-
-    // Reset text shadow
-    ctx.shadowBlur = 0;
   }
 
   public paintTexture (ctx: CanvasRenderingContext2D, params: {
     worldPosition: Vector,
-    texture: Texture
-  }): void {
-    ctx.drawImage(
-      params.texture.image, 
-      0, 
-      0, 
-      params.texture.size.x,
-      params.texture.size.y, 
-      this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x, 
-      this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y, 
-      this.SQUARE_SIZE * this.z, 
-      this.SQUARE_SIZE * this.z
-    );
-  }
-
-  public paintSquare (ctx: CanvasRenderingContext2D, params: {
-    worldPosition: Vector,
-    backgroundColor?: string | null,
-    opacity?: number | null,
-    char?: string | null,
-    textColor?: string | null,
-    isHovered?: boolean | null
+    texture: Texture,
+    opacity?: number | null
   }): void {
     // Save previous global alpha
-    const oldAlpha = ctx.globalAlpha; // TODO: Remove
+    const oldAlpha = ctx.globalAlpha;
 
     // Set global alpha to opacity if given
     if (params.opacity != null) {
       ctx.globalAlpha = params.opacity;
     }
-
-    // Paint background color itself
-    if (params.backgroundColor) {
-      ctx.fillStyle = params.backgroundColor;
-      ctx.fillRect(
-        this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x,
-        this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y,
-        this.SQUARE_SIZE * this.z,
-        this.SQUARE_SIZE * this.z
-      );
-    }
-
-    // Char for square was given
-    if (params.char != null) {
-      const charFillStyle = params.textColor || "white";
-
-      // Paint char
-      this.paintChar(ctx, {
-        char: params.char,
-        textColor: charFillStyle,
-        worldPosition: params.worldPosition,
-        isHovered: params.isHovered
-      });
-    }
+    
+    // Paint texture itself
+    ctx.drawImage(
+      params.texture.image,
+      0,
+      0,
+      params.texture.size.x,
+      params.texture.size.y,
+      Math.ceil(this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x),
+      Math.ceil(this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y),
+      Math.ceil(this.SQUARE_SIZE * this.z),
+      Math.ceil(this.SQUARE_SIZE * this.z)
+    );
 
     // Restore previous global alpha
-    ctx.globalAlpha = oldAlpha; // TODO: Remove
+    ctx.globalAlpha = oldAlpha;
   }
 
   /**
@@ -200,10 +135,9 @@ export default class Renderer {
   public paintProgressBar (ctx: CanvasRenderingContext2D, params: {
     worldPosition: Vector;
     progress: number;
-    worldSize?: Vector;
     color?: string | null;
   }): void {
-    params.worldSize = params.worldSize || new Vector(0.75, 0.15);
+    const worldSize = new Vector(0.75, 0.10);
     params.color = params.color || "green";
 
     // Save previously global alpha
@@ -214,21 +148,13 @@ export default class Renderer {
 
     // Render progress bar container
     ctx.fillStyle = "white";
-    ctx.fillRect(
-      this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x,
-      this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y,
-      this.SQUARE_SIZE * params.worldSize.x * this.z,
-      this.SQUARE_SIZE * params.worldSize.y * this.z
-    );
+
+    this.fillRectWorld(ctx, params.worldPosition, worldSize);
 
     // Render progress bar itself
     ctx.fillStyle = params.color;
-    ctx.fillRect(
-      (this.SQUARE_SIZE * params.worldPosition.x + 1) * this.z - this.camera.position.x,
-      (this.SQUARE_SIZE * params.worldPosition.y + 1) * this.z - this.camera.position.y,
-      (this.SQUARE_SIZE * params.worldSize.x - 2) * this.z * params.progress,
-      (this.SQUARE_SIZE * params.worldSize.y - 2) * this.z
-    );
+    const progressBarSize = new Vector(worldSize.x * params.progress, worldSize.y);
+    this.fillRectWorld(ctx, params.worldPosition, progressBarSize);
 
     // Restore previous global alpha
     ctx.globalAlpha = oldAlpha; // TODO: Remove
@@ -237,7 +163,9 @@ export default class Renderer {
   public static generateImageFromData (imageData: ImageData): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const canvas = new Canvas(imageData.width, imageData.height);
-      while (!canvas.ctx) {}
+      while (!canvas.ctx) {
+        // Do nothing
+      }
 
       canvas.ctx.putImageData(imageData, 0, 0);
       canvas.image.then((img: HTMLImageElement) => {
@@ -263,6 +191,9 @@ export default class Renderer {
     // Clear Canvas entirely
     ctx.clearRect(0, 0, this.width, this.height);
 
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, this.width, this.height);
+
     // Calculate World X and Y start/end to render squares surrounding the world
     const xStart = Math.floor(this.camera.position.x / (this.SQUARE_SIZE * this.camera.zoomAmount));
     const xEnd = Math.ceil((this.camera.position.x + window.innerWidth) / (this.SQUARE_SIZE * this.camera.zoomAmount));
@@ -273,10 +204,14 @@ export default class Renderer {
     for (let y = yStart; y < yEnd; y++) {
       for (let x = xStart; x < xEnd; x++) {
         const emptyPosition = new Vector(x, y);
+
         this.paintTexture(ctx, {
           worldPosition: emptyPosition,
           texture: this._textures[0]
         });
+
+        ctx.fillStyle = "rgba(0,0,0,0.05)";
+        this.fillRectWorld(ctx, emptyPosition);
       }
     }
 
@@ -295,6 +230,12 @@ export default class Renderer {
         // Get tile from current world coordinates
         const tile = world.tiles[y][x];
         const tileWorldPos = new Vector(x, y);
+
+        // Render background tile
+        this.paintTexture(ctx, {
+          worldPosition: tileWorldPos,
+          texture: this._textures[0]
+        });
 
         // Render tile square
         tile.render(this, {

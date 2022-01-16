@@ -66,16 +66,12 @@ export default class Tile implements TileInterface {
         // Calculate world position for progress bar
         const damageProgressWorldPos = new Vector(
           params.worldPosition.x + 0.25 / 2,
-          params.worldPosition.y + 0.15
+          params.worldPosition.y + 0.10
         );
-
-        // Calculate world dimensions for progress bar
-        const damageProgressWorldSize = new Vector(0.75, 0.15);
 
         // Render damage progress bar
         renderer.paintProgressBar(params.ctx, {
           worldPosition: damageProgressWorldPos,
-          worldSize: damageProgressWorldSize,
           progress: this.damage,
           color: "red"
         });

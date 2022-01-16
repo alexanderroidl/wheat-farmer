@@ -47,7 +47,7 @@ export default class WheatTile extends Tile implements TradeableInterface {
         // Calculate world position for progress bar
         const growthProgressWorldPos = new Vector(
           params.worldPosition.x + 0.25 / 2,
-          params.worldPosition.y + 0.7
+          params.worldPosition.y + 0.75
         );
         
         renderer.paintProgressBar(params.ctx, {
