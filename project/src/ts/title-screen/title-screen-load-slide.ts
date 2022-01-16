@@ -1,39 +1,36 @@
 import SlideInterface from "interfaces/slide-interface";
-import Renderer from "core/renderer";
-import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
-import Vector from "core/vector";
+import Renderer from "../core/renderer";
+import Vector from "../core/vector";
+import Color from "../core/color";
 
 export default class TitleScreenLoadSlide implements SlideInterface {
-  private readonly TEXT = "Click to load";
-  private readonly TRANSFORMED_TEXT: string;
-  private readonly COLOR_BACKGROUND: string = "#111111";
-  private readonly COLOR_TEXT: string = "#f3bc3c";
-  private readonly COLOR_TEXT_SHADOW: string = Util.lightenDarkenColor(this.COLOR_TEXT, 20);
-
-  constructor () {
-    const upperCaseText = this.TEXT.toUpperCase();
-    this.TRANSFORMED_TEXT = upperCaseText.split("").join(" ");
-  }
+  private static readonly TEXT = "Click to load";
+  private static readonly TRANSFORMED_TEXT: string = TitleScreenLoadSlide.TEXT.toUpperCase().split("").join(" ");
+  private static readonly COLOR_BACKGROUND_HEX: string = "#111111";
+  private static readonly COLOR_TEXT_HEX: string = "#f3bc3c";
+  private static readonly COLOR_TEXT_SHADOW_HEX?: string = Color.fromHex(TitleScreenLoadSlide.COLOR_TEXT_HEX)?.lightenDarken(20)?.toHex();
 
   public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
     // Paint black background
-    ctx.fillStyle = this.COLOR_BACKGROUND;
+    ctx.fillStyle = TitleScreenLoadSlide.COLOR_BACKGROUND_HEX;
     ctx.fillRect(0, 0, renderer.width, renderer.height);
 
     // Setup basic text effects
-    ctx.fillStyle = this.COLOR_TEXT;
+    ctx.fillStyle = TitleScreenLoadSlide.COLOR_TEXT_HEX;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `${20}px "Courier New"`; // TODO: Make responsive
 
     // Setup glowing text effect
-    ctx.shadowColor = this.COLOR_TEXT_SHADOW;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.shadowBlur = 7; // TODO: Make responsive
+    if (TitleScreenLoadSlide.COLOR_TEXT_SHADOW_HEX) {
+      ctx.shadowColor = TitleScreenLoadSlide.COLOR_TEXT_SHADOW_HEX;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.shadowBlur = 7; // TODO: Make responsive
+    }
 
     // Fill actual text
-    ctx.fillText(this.TRANSFORMED_TEXT, renderer.width / 2, renderer.height / 2);
+    ctx.fillText(TitleScreenLoadSlide.TRANSFORMED_TEXT, renderer.width / 2, renderer.height / 2);
 
     // Reset glowing text effect
     ctx.shadowBlur = 0;
