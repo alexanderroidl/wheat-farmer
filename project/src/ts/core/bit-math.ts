@@ -5,7 +5,7 @@ export default class BitMath {
    * @returns {number}
    */
   public static floor (n: number): number {
-    return n << 0;
+    return n + (n < 0 ? -1 : 0) >> 0;
   }
     
   /**
@@ -15,6 +15,15 @@ export default class BitMath {
    */
   public static round (n: number): number {
     return (((n + 0.5) << 1) >> 1);
+  }
+
+  /**
+   * Ceils a number
+   * @param {number} n
+   * @returns {number}
+   */
+  public static ceil (n: number): number {
+    return n + (n < 0 ? 0 : 1) >> 0;
   }
   
   /**

@@ -165,15 +165,15 @@ export default class World {
   public getSurroundingTileCoords (v: Vector, radius: number = 1, includeSelf: boolean = true): Vector[] {
     const tiles: Vector[] = [];
 
-    for (let y = v.y - Math.ceil(radius); y <= v.y + Math.ceil(radius); y++) {
+    for (let y = v.y - BitMath.ceil(radius); y <= v.y + BitMath.ceil(radius); y++) {
       if (!this._tiles[y]) {
         continue;
       }
 
-      for (let x = v.x - Math.ceil(radius); x <= v.x + Math.ceil(radius); x++) {
+      for (let x = v.x - BitMath.ceil(radius); x <= v.x + BitMath.ceil(radius); x++) {
         if (!this._tiles[y][x] ||
           (x === v.x && y === v.y && !includeSelf) ||
-          new Vector(v.x - x, v.y - y).length > Math.ceil(radius)) {
+          new Vector(v.x - x, v.y - y).length > BitMath.ceil(radius)) {
           continue;
         }
 
@@ -211,7 +211,7 @@ export default class World {
       return null;
     }
 
-    return wheatTilePositions[Math.floor(Math.random() * wheatTilePositions.length)];
+    return wheatTilePositions[BitMath.floor(Math.random() * wheatTilePositions.length)];
   }
 
   /**

@@ -15,7 +15,7 @@ export default class WheatTile extends Tile implements TradeableInterface {
     public name: string = "Wheat";
 
     public get textureId (): number {
-      return Math.floor(this.growthState * 10) + 1;
+      return BitMath.floor(this.growthState * 10) + 1;
     }
 
     public get growthState (): number {

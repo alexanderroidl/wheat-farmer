@@ -1,3 +1,4 @@
+import BitMath from "./bit-math";
 import Util from "./util";
 
 export default class Color {
@@ -60,9 +61,9 @@ export default class Color {
   }
 
   public mix (color: Color, percent: number): Color {
-    const r = Math.round(Util.mix(this.r, color.r, percent));
-    const g = Math.round(Util.mix(this.g, color.g, percent));
-    const b = Math.round(Util.mix(this.b, color.b, percent));
+    const r = BitMath.round(Util.mix(this.r, color.r, percent));
+    const g = BitMath.round(Util.mix(this.g, color.g, percent));
+    const b = BitMath.round(Util.mix(this.b, color.b, percent));
   
     return new Color(r, g, b);
   }

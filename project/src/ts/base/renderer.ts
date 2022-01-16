@@ -78,10 +78,10 @@ export default class Renderer {
     worldPosition: Vector,
     worldSize: Vector = new Vector(1, 1)): void {
     ctx.fillRect(
-      Math.ceil(this.z * (this.SQUARE_SIZE * worldPosition.x) - this.camera.position.x),
-      Math.ceil(this.z * (this.SQUARE_SIZE * worldPosition.y) - this.camera.position.y),
-      Math.ceil(this.z * (this.SQUARE_SIZE * worldSize.x)),
-      Math.ceil(this.z * (this.SQUARE_SIZE * worldSize.y))
+      BitMath.ceil(this.z * (this.SQUARE_SIZE * worldPosition.x) - this.camera.position.x),
+      BitMath.ceil(this.z * (this.SQUARE_SIZE * worldPosition.y) - this.camera.position.y),
+      BitMath.ceil(this.z * (this.SQUARE_SIZE * worldSize.x)),
+      BitMath.ceil(this.z * (this.SQUARE_SIZE * worldSize.y))
     );
   }
 
@@ -105,10 +105,10 @@ export default class Renderer {
       0,
       params.texture.size.x,
       params.texture.size.y,
-      Math.ceil(this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x),
-      Math.ceil(this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y),
-      Math.ceil(this.SQUARE_SIZE * this.z),
-      Math.ceil(this.SQUARE_SIZE * this.z)
+      BitMath.ceil(this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x),
+      BitMath.ceil(this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y),
+      BitMath.ceil(this.SQUARE_SIZE * this.z),
+      BitMath.ceil(this.SQUARE_SIZE * this.z)
     );
 
     // Restore previous global alpha
@@ -193,10 +193,10 @@ export default class Renderer {
     ctx.clearRect(0, 0, this.width, this.height);
 
     // Calculate World X and Y start/end to render squares surrounding the world
-    const xStart = Math.floor(this.camera.position.x / (this.SQUARE_SIZE * this.camera.zoomAmount));
-    const xEnd = Math.ceil((this.camera.position.x + window.innerWidth) / (this.SQUARE_SIZE * this.camera.zoomAmount));
-    const yStart = Math.floor(this.camera.position.y / (this.SQUARE_SIZE * this.camera.zoomAmount));
-    const yEnd = Math.ceil((this.camera.position.y + window.innerHeight) / (this.SQUARE_SIZE * this.camera.zoomAmount));
+    const xStart = BitMath.floor(this.camera.position.x / (this.SQUARE_SIZE * this.camera.zoomAmount));
+    const xEnd = BitMath.ceil((this.camera.position.x + window.innerWidth) / (this.SQUARE_SIZE * this.camera.zoomAmount));
+    const yStart = BitMath.floor(this.camera.position.y / (this.SQUARE_SIZE * this.camera.zoomAmount));
+    const yEnd = BitMath.ceil((this.camera.position.y + window.innerHeight) / (this.SQUARE_SIZE * this.camera.zoomAmount));
 
     // Draw empty squares around world
     for (let y = yStart; y < yEnd; y++) {

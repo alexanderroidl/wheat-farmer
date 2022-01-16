@@ -141,10 +141,10 @@ export default class Gui {
   private getRendererDebugHTML (renderer: Renderer): string {
     const camera = renderer.camera;
 
-    const xStart = Math.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const xEnd = Math.ceil((camera.position.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const yStart = Math.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const yEnd = Math.ceil((camera.position.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
+    const xStart = BitMath.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
+    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
+    const yStart = BitMath.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
+    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
 
     return `
       <strong>Renderer:</strong><br>
@@ -239,7 +239,7 @@ export default class Gui {
   }
 
   public onShopItemBuy (inventory: Inventory, item: InventoryItem, cb?: () => void): void {
-    const maxBuyAmount = Math.floor(inventory.money / item.type.buyPrice);
+    const maxBuyAmount = BitMath.floor(inventory.money / item.type.buyPrice);
 
     this.sellDialog(maxBuyAmount, (amount: number) => {
       const purchaseResult = inventory.purchaseItem(

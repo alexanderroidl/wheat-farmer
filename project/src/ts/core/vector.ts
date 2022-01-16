@@ -55,8 +55,8 @@ export default class Vector {
       const sin = Math.sin(rad);
 
       return new Vector(
-        Math.round(10000 * (this.x * cos - this.y * sin)) / 10000,
-        Math.round(10000 * (this.x * sin + this.y * cos)) / 10000
+        BitMath.round(10000 * (this.x * cos - this.y * sin)) / 10000,
+        BitMath.round(10000 * (this.x * sin + this.y * cos)) / 10000
       );
     }
 
