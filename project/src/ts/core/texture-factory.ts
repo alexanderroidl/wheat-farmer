@@ -1,9 +1,12 @@
 import Renderer from "../core/renderer";
 import Canvas from "./canvas";
+import Color from "./color";
 import Texture from "./texture";
 import Vector from "./vector";
 
 export default class TextureFactory {
+  public static readonly TRANSPARENCY_COLOR: Color | null = Color.fromHex("#f91581");
+
   private _textures: Texture[] = [];
   private _textureSize: number;
 
@@ -33,15 +36,16 @@ export default class TextureFactory {
         const pixels = imgData.data;
 
         for (let p = 0; p < pixels.length; p += 4) {
-          if (pixels[p+0] == 249 &&
-              pixels[p+1] == 21 &&
-              pixels[p+2] == 129) {
-            pixels[p+3] = 0;
+          if (pixels[p + 0] === TextureFactory.TRANSPARENCY_COLOR?.r &&
+              pixels[p + 1] === TextureFactory.TRANSPARENCY_COLOR?.g &&
+              pixels[p + 2] === TextureFactory.TRANSPARENCY_COLOR?.b) {
+            pixels[p + 3] = 0;
           }
         }
 
         const image = await Renderer.generateImageFromData(imgData);
-        const texture = new Texture(new Vector(this._textureSize, this._textureSize), image, imgData);
+        const textureSize = new Vector(this._textureSize, this._textureSize);
+        const texture = new Texture(textureSize, image, imgData);
         
 				textures.push(texture);
 			}
