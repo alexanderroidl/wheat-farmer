@@ -234,7 +234,7 @@ export default class World {
     this._entities = this._entities.filter((e) => e !== entity);
   }
 
-  public explode (pos: Vector, radius: number, maxRadius: number): void {
+  public createExplosion (pos: Vector, radius: number, maxRadius: number): void {
     // Get coordinates for surrounding tiles
     const surroundingTileCoords = this.getSurroundingTileCoords(
       pos,
@@ -302,25 +302,27 @@ export default class World {
         const entityWorldPos = entity.position.floor();
         const radius = BitMath.floor(Math.random() * (BombEntity.MAX_EXPLOSION_RADIUS + 1));
         
-        this.explode(entityWorldPos, radius, BombEntity.MAX_EXPLOSION_RADIUS);
+        this.createExplosion(entityWorldPos, radius, BombEntity.MAX_EXPLOSION_RADIUS);
       }
 
       // Is robot and has prepared bomb plant
-      if (entity instanceof RobotEntity && entity.hasCompletedBombPlant) {
-        // Robot has not planted bomb yet
-        if (!entity.bomb) {
-          // Create and ignite bomb
+      if (entity instanceof RobotEntity) {
+        if (entity.hasStartedBombPlant && !entity.bomb) {
           entity.bomb = this.spawnEntity(BombEntity, entity.position.add(0, 0.5), new Vector(0.5, 0.5));
-          entity.bomb.ignite();
+        }
+
+        // Robot has not planted bomb yet
+        if (entity.hasCompletedBombPlant && !entity.bomb?.hasStartedExploding) {
+          entity.bomb?.ignite();
 
           // Start running away
           entity.target = this.getRandomOutsidePos(7);
           entity.speed = 3 * entity.speed;
-        }
 
-        // Has completed running away
-        if (entity.hasCompletedMove) {
-          this.removeEntity(entity);
+          // Has completed running away
+          if (entity.hasCompletedMove) {
+            this.removeEntity(entity);
+          }
         }
       }
     }
