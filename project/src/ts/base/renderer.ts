@@ -8,7 +8,6 @@ import Vector from "../core/vector";
 import BitMath from "../core/bit-math";
 import Browser from "../browser/browser";
 
-
 export default class Renderer {
   public readonly FONT_SIZE = 12;
   public readonly FONT_EMOJI_SIZE = 16;
@@ -97,18 +96,21 @@ export default class Renderer {
     if (params.opacity != null) {
       ctx.globalAlpha = params.opacity;
     }
+
+    const textureScreenWidth = BitMath.ceil(this.SQUARE_SIZE * this.z);
     
     // Paint texture itself
+    const textureToDraw = params.texture.getForScreenWidth(textureScreenWidth);
     ctx.drawImage(
-      params.texture.image,
+      textureToDraw.image,
       0,
       0,
-      params.texture.size.x,
-      params.texture.size.y,
+      textureToDraw.size.x,
+      textureToDraw.size.y,
       BitMath.ceil(this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x),
       BitMath.ceil(this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y),
-      BitMath.ceil(this.SQUARE_SIZE * this.z),
-      BitMath.ceil(this.SQUARE_SIZE * this.z)
+      textureScreenWidth,
+      textureScreenWidth
     );
 
     // Restore previous global alpha
@@ -161,18 +163,27 @@ export default class Renderer {
     ctx.globalAlpha = oldAlpha; // TODO: Remove
   }
 
-  public static generateImageFromData (imageData: ImageData): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-      const canvas = new Canvas(imageData.width, imageData.height);
-      while (!canvas.ctx) {
-        // Do nothing
-      }
+  public static async generateImageFromData (imageData: ImageData, size: Vector = new Vector(imageData.width, imageData.height)): Promise<HTMLImageElement> {
+    const canvas = new Canvas(imageData.width, imageData.height);
+    while (!canvas.ctx) {
+      // Do nothing
+    }
 
-      canvas.ctx.putImageData(imageData, 0, 0);
-      canvas.image.then((img: HTMLImageElement) => {
-        resolve(img);
-      });
-    });
+    canvas.ctx.imageSmoothingEnabled = false;
+    canvas.ctx.putImageData(imageData, 0, 0);
+    const img = await canvas.image;
+
+    // Image doesn't need to be resized and is immediately resolved
+    if (imageData.width === size.x && imageData.height === size.y) {
+      return img;
+    }
+
+    // Image requires resizing first
+    canvas.width = size.x;
+    canvas.height = size.y;
+    canvas.ctx?.drawImage(img, 0, 0, imageData.width, imageData.height, 0, 0, size.x, size.y);
+
+    return await canvas.image;
   }
 
   /**
