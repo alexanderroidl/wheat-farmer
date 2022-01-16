@@ -9,10 +9,11 @@ export default class RobotEntity extends Entity {
   public static readonly BOMB_PLANT_TIME = 2000;
   public readonly name: string = "Robot";
 
-  public speed: number = 1;
+  public speed: number = 1 + Math.random() * 0.5;
   public isHostile: boolean = true;
   public bomb: BombEntity | null = null;
   private _bombPlantedAt: number | null = null;
+  private _sinAmplifier: number = Math.random() * 0.5;
   private _sinShift: Vector = new Vector(0);
   private _sinShiftDistanceOffset: number;
 
@@ -68,7 +69,7 @@ export default class RobotEntity extends Entity {
 
       const shift = (movedDistance % RobotEntity.MOVEMENT_WAVE_LENGTH) / RobotEntity.MOVEMENT_WAVE_LENGTH;
 
-      const sinShift = 0.5 * Math.sin(shift * 2 * Math.PI);
+      const sinShift = (0.5 + this._sinAmplifier) * Math.sin(shift * 2 * Math.PI);
       this._sinShift = new Vector(0, sinShift).rotate(moveDirectionRad);
     }
 

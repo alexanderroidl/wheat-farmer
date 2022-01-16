@@ -11,7 +11,7 @@ export default class BombEntity extends Entity {
   private _ignitedAt: number | null = null;
 
   public get textureId (): number {
-    return 17 + BitMath.floor(7 * Easings.easeInExpo(this.explosionProgress));
+    return 17 + BitMath.floor(6 * Easings.easeInExpo(this.explosionProgress));
   }
 
   public get explosionProgress (): number {
