@@ -5,10 +5,6 @@ export default class EmptyTile extends Tile {
     public name: string = "Empty";
     public timeCreated: number = Date.now();
 
-    public get backgroundColor (): string | null {
-      return this.getDamagedHexColor(EmptyTile.COLOR);
-    }
-
     public get textureId (): number {
       return 0;
     }

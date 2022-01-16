@@ -13,7 +13,6 @@ export default interface EntityInterface {
     isHostile: boolean;
     isMoving: boolean;
     hasCompletedMove: boolean;
-    char: string;
 
     move: (delta: number) => Vector;
     update: (delta: number) => void;

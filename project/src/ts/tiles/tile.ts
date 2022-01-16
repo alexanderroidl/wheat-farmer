@@ -1,7 +1,6 @@
 import TileInterface from "interfaces/tile-interface";
-import Renderer from "core/renderer";
-import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
-import Vector from "../core/vector"; // TODO: Resolve issue for importing from base URL
+import Renderer from "../core/renderer";
+import Vector from "../core/vector";
 import Texture from "../core/texture";
 
 export default class Tile implements TileInterface {
@@ -25,25 +24,12 @@ export default class Tile implements TileInterface {
       return null;
     }
 
-    public get backgroundColor (): string | null {
-      return null;
-    }
-
-    public get textColor (): string | null {
-      return "#000000";
-    }
-
     public hasCollision (): boolean {
       return false;
     }
-    
-    public getChar (preview: boolean = false): string | null {
-      return "";
-    }
 
-    public getDamagedHexColor (color: string): string {
-      const lightenDarkenFactor = -(this.damage) * 50;
-      return Util.lightenDarkenColor(color, lightenDarkenFactor);
+    public getChar (preview: boolean = false): string | null {
+      return null;
     }
 
     public onClicked (): void {
@@ -56,28 +42,17 @@ export default class Tile implements TileInterface {
       isHovered?: boolean,
       opacity?: number | null
     }): void {
-      if (this.backgroundColor || this.textureId !== null) {
-        const texture = this.textureId !== null ? renderer.getTextureById(this.textureId) : null;
+      if (this.textureId === null) {
+        return;
+      }
+      
+      const texture = renderer.getTextureById(this.textureId);
 
-        if (texture instanceof Texture) {
-          renderer.paintSquare(params.ctx, {
-            worldPosition: params.worldPosition,
-            isHovered: params.isHovered
-          });
-
-          renderer.paintTexture(params.ctx, {
-            worldPosition: params.worldPosition,
-            texture: texture
-          });
-        } else {
-          renderer.paintSquare(params.ctx, {
-            worldPosition: params.worldPosition,
-            backgroundColor: this.backgroundColor,
-            char: this.getChar(),
-            textColor: this.textColor,
-            isHovered: params.isHovered
-          });
-        }
+      if (texture instanceof Texture) {
+        renderer.paintTexture(params.ctx, {
+          worldPosition: params.worldPosition,
+          texture: texture
+        });
       }
     }
 

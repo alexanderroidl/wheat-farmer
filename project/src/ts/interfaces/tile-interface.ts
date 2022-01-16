@@ -7,8 +7,6 @@ export default interface TileInterface {
 
     damage: number;
     textureId: number | null;
-    backgroundColor: string | null;
-    textColor: string | null;
 
     hasCollision: () => boolean;
     getChar: (preview: boolean) => string | null;
