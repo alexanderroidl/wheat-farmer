@@ -191,9 +191,6 @@ export default class Renderer {
     // Clear Canvas entirely
     ctx.clearRect(0, 0, this.width, this.height);
 
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, this.width, this.height);
-
     // Calculate World X and Y start/end to render squares surrounding the world
     const xStart = Math.floor(this.camera.position.x / (this.SQUARE_SIZE * this.camera.zoomAmount));
     const xEnd = Math.ceil((this.camera.position.x + window.innerWidth) / (this.SQUARE_SIZE * this.camera.zoomAmount));
