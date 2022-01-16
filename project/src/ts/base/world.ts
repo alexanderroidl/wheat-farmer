@@ -10,8 +10,7 @@ import WallTile from "../tiles/wall-tile";
 
 export default class World {
   public readonly SIZE: number = 20; // 20x20 world size
-  public readonly CENTER: Vector = new Vector(this.SIZE / 2, this.SIZE / 2).floor();
-  public readonly ENTITY_CLICKABLE_RANGE: Vector = new Vector(3, 3);
+  public readonly CENTER: Vector = new Vector(this.SIZE / 2).floor();
 
   private _tiles: Tile[][];
   private _createdAt: number = Date.now();

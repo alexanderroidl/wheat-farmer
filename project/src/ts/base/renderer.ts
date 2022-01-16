@@ -76,7 +76,7 @@ export default class Renderer {
 
   public fillRectWorld (ctx: CanvasRenderingContext2D,
     worldPosition: Vector,
-    worldSize: Vector = new Vector(1, 1)): void {
+    worldSize: Vector = new Vector(1)): void {
     ctx.fillRect(
       BitMath.ceil(this.z * (this.SQUARE_SIZE * worldPosition.x) - this.camera.position.x),
       BitMath.ceil(this.z * (this.SQUARE_SIZE * worldPosition.y) - this.camera.position.y),

@@ -45,7 +45,7 @@ export default class TextureFactory {
         }
 
         const image = await Renderer.generateImageFromData(imgData);
-        const textureSize = new Vector(this._textureSize, this._textureSize);
+        const textureSize = new Vector(this._textureSize);
         const texture = new Texture(textureSize, image, imgData);
         
         textures.push(texture);

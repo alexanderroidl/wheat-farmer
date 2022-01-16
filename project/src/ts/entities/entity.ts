@@ -52,12 +52,12 @@ export default class Entity implements EntityInterface {
 
   public move (delta: number): Vector {
     if (!this.isMoving) {
-      return new Vector(0, 0);
+      return new Vector(0);
     }
 
     // Entity has no assigned target
     if (!(this.target instanceof Vector) || typeof this.initialDistance !== "number") {
-      return new Vector(0, 0);
+      return new Vector(0);
     }
 
     let entitySpeed = this.speed * (delta / 1000);

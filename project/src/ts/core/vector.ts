@@ -19,9 +19,9 @@ export default class Vector {
      * @param x - Initial x coordinate
      * @param y - Initial y coordinate
      */
-    constructor (x: number, y: number) {
+    constructor (x: number, y?: number) {
       this.x = x;
-      this.y = y;
+      this.y = y == null ? x : y;
     }
 
     /**

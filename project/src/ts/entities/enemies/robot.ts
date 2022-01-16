@@ -6,7 +6,7 @@ import Renderer from "../../base/renderer";
 export default class RobotEntity extends Entity {
   public readonly EXPLODE_TIME = 3 * 1000;
   public readonly MAX_EXPLOSION_RADIUS = 2;
-  public readonly MOVEMENT_WAVE_LENGTH = new Vector(1, 1).length * 5;
+  public readonly MOVEMENT_WAVE_LENGTH = new Vector(10).length;
 
   public readonly name: string = "Robot";
   public readonly speed: number = 1;
@@ -14,7 +14,7 @@ export default class RobotEntity extends Entity {
   public isHostile: boolean = true;
 
   private _explodedAt: number | null = null;
-  private _sinShift: Vector = new Vector(0, 0);
+  private _sinShift: Vector = new Vector(0);
   private _sinShiftDistanceOffset: number;
 
   public get textureId (): number {
