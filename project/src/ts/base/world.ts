@@ -55,30 +55,6 @@ export default class World {
   }
 
   public onWorldClicked (pos: Vector): boolean {
-    // TODO: FIX
-
-    // Const clickRange = new Vector(this.ENTITY_CLICKABLE_RANGE.x / 2, this.ENTITY_CLICKABLE_RANGE.y / 2);
-
-    // // Iterate through entities
-    // For (const entity of this._entities) {
-    //   // Entity was clicked
-    //   If ((entity.position.x - clickRange.x >= pos.x && entity.position.x + clickRange.x <= pos.x) &&
-    //       (entity.position.y - clickRange.y >= pos.y && entity.position.y + clickRange.y <= pos.y)) {
-    //     // Clicked entity is robot and hasn't started exploding yet
-    //     If (entity instanceof RobotEntity && !entity.hasStartedExploding) {
-    //       // Ensure entity stops moving
-    //       Entity.target = null;
-
-    //       // Make entity explode
-    //       Entity.explode();
-
-    //       Alert("EXPLODE");
-
-    //       Return true;
-    //     }
-    //   }
-    // }
-
     return false;
   }
 
