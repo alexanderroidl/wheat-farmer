@@ -1,4 +1,4 @@
-import Renderer from "core/renderer";
+import Renderer from "../base/renderer";
 import SlideInterface from "interfaces/slide-interface";
 import Vector from "core/vector";
 import TitleScreenLogoSlide from "./title-screen-logo-slide";

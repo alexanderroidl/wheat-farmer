@@ -1,8 +1,8 @@
-import Renderer from "../core/renderer";
-import Canvas from "./canvas";
-import Color from "./color";
+import Renderer from "./renderer";
 import Texture from "./texture";
-import Vector from "./vector";
+import Canvas from "../core/canvas";
+import Color from "../core/color";
+import Vector from "../core/vector";
 
 export default class TextureFactory {
   public static readonly TRANSPARENCY_COLOR: Color | null = Color.fromHex("#f91581");

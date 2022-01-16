@@ -1,5 +1,5 @@
-import Renderer from "core/renderer";
-import Vector from "core/vector";
+import Renderer from "../base/renderer";
+import Vector from "../core/vector";
 
 export default interface EntityInterface {
     readonly name: string;

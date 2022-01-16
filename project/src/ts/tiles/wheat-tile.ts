@@ -1,8 +1,8 @@
-import Renderer from "core/renderer";
-import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
-import TradeableInterface from "interfaces/tradeable-interface";
-import Vector from "../core/vector";
 import Tile from "./tile";
+import Renderer from "../base/renderer";
+import BitMath from "../core/bit-math";
+import Vector from "../core/vector";
+import TradeableInterface from "interfaces/tradeable-interface";
 
 export default class WheatTile extends Tile implements TradeableInterface {
     public readonly buyPrice: number = 0;

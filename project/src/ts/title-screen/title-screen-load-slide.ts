@@ -1,7 +1,7 @@
 import SlideInterface from "interfaces/slide-interface";
-import Renderer from "../core/renderer";
 import Vector from "../core/vector";
 import Color from "../core/color";
+import Renderer from "../base/renderer";
 
 export default class TitleScreenLoadSlide implements SlideInterface {
   private static readonly TEXT = "Click to load";

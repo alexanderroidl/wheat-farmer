@@ -1,12 +1,13 @@
-import World from "../base/world";
-import Camera from "../base/camera";
-import Vector from "./vector";
-import BitMath from "./bit-math";
-import { InventoryItem } from "../base/inventory";
-import Browser from "browser/browser";
+import World from "./world";
+import Camera from "./camera";
+import { InventoryItem } from "./inventory";
 import TextureFactory from "./texture-factory";
 import Texture from "./texture";
-import Canvas from "./canvas";
+import Canvas from "../core/canvas";
+import Vector from "../core/vector";
+import BitMath from "../core/bit-math";
+import Browser from "../browser/browser";
+
 
 export default class Renderer {
   public readonly FONT_SIZE = 12;

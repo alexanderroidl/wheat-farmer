@@ -1,7 +1,7 @@
 import EntityInterface from "interfaces/entity-interface";
 import Vector from "../core/vector";
 import Easings from "../core/easings";
-import Renderer from "../core/renderer";
+import Renderer from "../base/renderer";
 
 export default class Entity implements EntityInterface {
   public readonly name: string = "";

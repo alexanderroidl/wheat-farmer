@@ -1,7 +1,7 @@
-import Texture from "../../core/texture";
-import Renderer from "../../core/renderer";
-import Vector from "../../core/vector";
 import Entity from "../entity";
+import Vector from "../../core/vector";
+import Texture from "../../base/texture";
+import Renderer from "../../base/renderer";
 
 export default class RobotEntity extends Entity {
   public readonly EXPLODE_TIME = 3 * 1000;

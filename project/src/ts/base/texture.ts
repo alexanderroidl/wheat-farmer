@@ -1,4 +1,4 @@
-import Vector from "./vector";
+import Vector from "../core/vector";
 
 export default class Texture {
   private _size: Vector;

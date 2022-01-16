@@ -1,7 +1,7 @@
-import TileInterface from "interfaces/tile-interface";
-import Renderer from "../core/renderer";
+import TileInterface from "../interfaces/tile-interface";
 import Vector from "../core/vector";
-import Texture from "../core/texture";
+import Texture from "../base/texture";
+import Renderer from "../base/renderer";
 
 export default class Tile implements TileInterface {
     public static readonly DAMAGE_HEAL_TIME = 60 * 1000;

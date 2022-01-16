@@ -1,6 +1,6 @@
-import SlideInterface from "interfaces/slide-interface";
-import Renderer from "core/renderer";
-import Vector from "core/vector";
+import SlideInterface from "../interfaces/slide-interface";
+import Renderer from "../base/renderer";
+import Vector from "../core/vector";
 import Sound from "../base/sound"; // TODO: Resolve issue for importing from base URL
 import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
 import Color from "../core/color";

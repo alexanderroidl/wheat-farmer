@@ -6,7 +6,7 @@ import Util from "../core/util";
 import Player from "../base/player";
 import World from "../base/world";
 import Camera from "../base/camera";
-import Renderer from "../core/renderer";
+import Renderer from "../base/renderer";
 import Mouse from "./mouse";
 
 export default class Gui {

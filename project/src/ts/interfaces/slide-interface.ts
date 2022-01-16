@@ -1,4 +1,4 @@
-import Renderer from "../core/renderer";
+import Renderer from "../base/renderer";
 import Vector from "../core/vector";
 
 export default interface SlideInterface {
