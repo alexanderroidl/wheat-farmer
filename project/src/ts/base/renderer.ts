@@ -87,7 +87,9 @@ export default class Renderer {
   public paintTexture (ctx: CanvasRenderingContext2D, params: {
     worldPosition: Vector,
     texture: Texture,
-    opacity?: number | null
+    opacity?: number | null,
+    rotate?: number | null,
+    size?: number | null
   }): void {
     // Save previous global alpha
     const oldAlpha = ctx.globalAlpha;
@@ -97,21 +99,50 @@ export default class Renderer {
       ctx.globalAlpha = params.opacity;
     }
 
-    const textureScreenWidth = BitMath.ceil(this.SQUARE_SIZE * this.z);
+    // Prepare size parameter
+    params.size = params.size || 1;
+
+    // Calculate values required for texture rendering
+    const worldPosDelta = new Vector(params.rotate != null ? 0.5 : 0);
+    const totalWorldPos = new Vector(
+      params.worldPosition.x + worldPosDelta.x,
+      params.worldPosition.y + worldPosDelta.y
+    );
+    const drawDelta = new Vector(
+      this.SQUARE_SIZE * totalWorldPos.x * this.z - this.camera.position.x,
+      this.SQUARE_SIZE * totalWorldPos.y * this.z - this.camera.position.y
+    ).ceil();
+    const textureScreenSize = BitMath.ceil(this.SQUARE_SIZE * params.size * this.z);
+
+    // Adjust context for drawing of rotated image
+    if (params.rotate != null) {
+      ctx.save();
+      ctx.translate(drawDelta.x, drawDelta.y);
+
+      drawDelta.x = -textureScreenSize / 2;
+      drawDelta.y = -textureScreenSize / 2;
+
+      ctx.rotate(params.rotate);
+    }
     
     // Paint texture itself
-    const textureToDraw = params.texture.getForScreenWidth(textureScreenWidth);
+    const textureToDraw = params.texture.getForScreenWidth(textureScreenSize);
     ctx.drawImage(
       textureToDraw.image,
       0,
       0,
       textureToDraw.size.x,
       textureToDraw.size.y,
-      BitMath.ceil(this.SQUARE_SIZE * params.worldPosition.x * this.z - this.camera.position.x),
-      BitMath.ceil(this.SQUARE_SIZE * params.worldPosition.y * this.z - this.camera.position.y),
-      textureScreenWidth,
-      textureScreenWidth
+      drawDelta.x,
+      drawDelta.y,
+      textureScreenSize,
+      textureScreenSize
     );
+
+    // Restore context if rotation was done
+    if (params.rotate != null) {
+      ctx.restore();
+    }
 
     // Restore previous global alpha
     ctx.globalAlpha = oldAlpha;
@@ -230,9 +261,6 @@ export default class Renderer {
     // Iterate through world coordinates
     for (let y = 0; y < world.tiles.length; y++) {
       for (let x = 0; x < world.tiles[y].length; x++) {
-        // Reset global alpha
-        ctx.globalAlpha = 1;
-
         // Is current world square being hovered?
         const isHovered = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
 
@@ -257,7 +285,18 @@ export default class Renderer {
         if (isHovered) {
           this.outlineSquare(ctx, tileWorldPos);
         }
+      }
+    }
 
+    for (let y = 0; y < world.tiles.length; y++) {
+      for (let x = 0; x < world.tiles[y].length; x++) {
+        // Is current world square being hovered?
+        const isHovered = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
+
+        // Get tile from current world coordinates
+        const tile = world.tiles[y][x];
+        const tileWorldPos = new Vector(x, y);
+        
         // Invoke last render
         tile.renderLatest(this, {
           ctx: ctx,
