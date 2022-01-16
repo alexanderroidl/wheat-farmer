@@ -6,7 +6,7 @@ export default class Canvas {
     return this._element;
   }
 
-	public get ctx(): CanvasRenderingContext2D | null {
+  public get ctx (): CanvasRenderingContext2D | null {
     return this._ctx;
   }
 
@@ -35,7 +35,7 @@ export default class Canvas {
         }
 
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
           resolve(img);
         };
         img.src = URL.createObjectURL(blob);
@@ -43,22 +43,22 @@ export default class Canvas {
     });
   }
 
-	constructor (width?: number, height?: number) {
-		this._element = this._createElement(width, height);
-		this._ctx = this._element.getContext("2d");
-	}
+  constructor (width?: number, height?: number) {
+    this._element = this._createElement(width, height);
+    this._ctx = this._element.getContext("2d");
+  }
 
-	private _createElement(width?: number, height?: number): HTMLCanvasElement {
-		const element = document.createElement("canvas");
+  private _createElement (width?: number, height?: number): HTMLCanvasElement {
+    const element = document.createElement("canvas");
 		
-		if (width) {
+    if (width) {
       element.width = width;
     }
 
-		if (height) {
+    if (height) {
       element.height = height;
     }
 
-		return element;
-	}
+    return element;
+  }
 }

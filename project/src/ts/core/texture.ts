@@ -17,9 +17,9 @@ export default class Texture {
     return this._data;
   }
   
-	constructor (size: Vector, image: HTMLImageElement, data: ImageData) {
+  constructor (size: Vector, image: HTMLImageElement, data: ImageData) {
     this._size = size;
     this._image = image;
-		this._data = data;
-	}
+    this._data = data;
+  }
 }

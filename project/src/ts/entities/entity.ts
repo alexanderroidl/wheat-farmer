@@ -18,7 +18,7 @@ export default class Entity implements EntityInterface {
     this.position = new Vector(x, y);
   }
 
-  public get textureId(): number | null {
+  public get textureId (): number | null {
     return null;
   }
 
@@ -27,7 +27,7 @@ export default class Entity implements EntityInterface {
   }
 
   public get isMoving (): boolean {
-    return this.target instanceof Vector && !this.hasCompletedMove; 
+    return this.target instanceof Vector && !this.hasCompletedMove;
   }
 
   public set target (target: Vector | null) {
