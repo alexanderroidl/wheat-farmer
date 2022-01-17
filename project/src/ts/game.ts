@@ -49,9 +49,9 @@ export default class Game {
   private setupCLI (): void {
     if (Browser.getParameter("debug")) {
       window.wheatFarmer = {
-        spawnEnemy: (count: number = 1) => {
+        spawnEnemy: (count: number = 1): void => {
           console.log(`Scheduled ${count} enemies to spawn`);
-          return this._world.scheduleEnemySpawn(count);
+          this._world.scheduleEnemySpawn(count);
         }
       };
     }

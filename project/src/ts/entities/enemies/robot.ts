@@ -15,7 +15,7 @@ export default class RobotEntity extends Entity {
   private _bombPlantedAt: number | null = null;
   private _sinAmplifier: number = Math.random() * 0.5;
   private _sinShift: Vector = new Vector(0);
-  private _sinShiftDistanceOffset: number;
+  private _sinShiftDistanceOffset: number = Math.random() * RobotEntity.MOVEMENT_WAVE_LENGTH;
 
   public get textureId (): number {
     if (!this.isMoving) {
@@ -42,12 +42,6 @@ export default class RobotEntity extends Entity {
 
   public get hasCompletedBombPlant (): boolean {
     return this.bombPlantProgress === 1;
-  }
-
-  constructor () {
-    super();
-
-    this._sinShiftDistanceOffset = Math.random() * RobotEntity.MOVEMENT_WAVE_LENGTH;
   }
 
   public plantBomb (): void {
