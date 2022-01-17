@@ -138,18 +138,19 @@ export default class Gui {
     `;
   }
 
-  private getRendererDebugHTML (renderer: Renderer): string {
+  private getRendererDebugHTML (renderer: Renderer, fps: number): string {
     const camera = renderer.camera;
 
-    const xStart = BitMath.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const yStart = BitMath.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
+    const xStart = BitMath.floor(camera.position.x / (Renderer.SQUARE_SIZE * camera.zoomAmount));
+    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (Renderer.SQUARE_SIZE * camera.zoomAmount));
+    const yStart = BitMath.floor(camera.position.y / (Renderer.SQUARE_SIZE * camera.zoomAmount));
+    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (Renderer.SQUARE_SIZE * camera.zoomAmount));
 
     return `
       <strong>Renderer:</strong><br>
       <strong>X:</strong> (${xStart}, ${xEnd})<br> 
       <strong>Y:</strong> (${yStart}, ${yEnd})<br>
+      <strong>FPS:</strong> ${fps}
     `;
   }
 
@@ -159,11 +160,11 @@ export default class Gui {
         `;
   }
 
-  public renderDebug (camera: Camera, renderer: Renderer, world: World): void {
+  public renderDebug (camera: Camera, renderer: Renderer, world: World, fps: number): void {
     const debugHTMLParts = [
       this.getCameraDebugHTML(camera),
       this.getMouseDebugHTML(camera),
-      this.getRendererDebugHTML(renderer),
+      this.getRendererDebugHTML(renderer, fps),
       this.getMiscDebugHTML(world)
     ];
 

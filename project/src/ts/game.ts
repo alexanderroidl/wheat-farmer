@@ -174,7 +174,7 @@ export default class Game {
 
     // Trigger click on tile if mouse is down
     if (this._mouseDown) {
-      // 250ms have passed since last click
+      // 500ms have passed since last click
       if ((Date.now() - this._lastClickAt) > 500) {
         this._lastClickAt = Date.now();
 
@@ -190,10 +190,7 @@ export default class Game {
     this._renderer.size = this._browser.windowSize;
 
     // Render title screen if it's not hidden and canvas context is given
-    if (!this._titleScreen.hidden && this._renderer.ctx !== null) {
-      this._titleScreen.render(this._renderer, this._renderer.ctx);
-      return;
-    }
+    this._renderer.renderTitleScreen(this._titleScreen);
 
     // Stop here if game is currently paused
     if (this._paused) {
@@ -209,7 +206,7 @@ export default class Game {
     // Debug GET parameter provided
     if (Browser.getParameter("debug")) {
       // Render debug info
-      this._browser.gui.renderDebug(this._renderer.camera, this._renderer, this._world);
+      this._browser.gui.renderDebug(this._renderer.camera, this._renderer, this._world, this._loop.fps);
     }
   }
 
