@@ -1,5 +1,5 @@
 import Tile from "./tile";
-import Renderer from "../base/renderer";
+import Renderer, { RendererLayer } from "../base/renderer";
 import BitMath from "../core/bit-math";
 import Vector from "../core/vector";
 import TradeableInterface from "interfaces/tradeable-interface";
@@ -35,25 +35,40 @@ export default class WheatTile extends Tile implements TradeableInterface {
       return BitMath.floor(Math.random() * (this.MAX_SEED_DROP - this.MIN_SEED_DROP + 1)) + this.MIN_SEED_DROP;
     }
 
-    public renderLatest (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
+    public render (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D,
+      layer: RendererLayer,
+      worldPosition: Vector,
+      isHovered?: boolean
     }): void {
-      super.renderLatest(renderer, params);
+      if (params.layer === RendererLayer.Tiles) {
+        const backgroundTexture = renderer.getTextureById(0);
 
-      // Is hovered and has not fully grown yet
-      if (params.isHovered && this.growthState < 1) {
-        // Calculate world position for progress bar
-        const growthProgressWorldPos = new Vector(
-          params.worldPosition.x + 0.25 / 2,
-          params.worldPosition.y + 0.75
-        );
-        
-        renderer.paintProgressBar(params.ctx, {
-          worldPosition: growthProgressWorldPos,
-          progress: this.growthState
-        });
+        if (backgroundTexture) {
+          // Render background tile
+          renderer.paintTexture(params.ctx, {
+            worldPosition: params.worldPosition,
+            texture: backgroundTexture
+          });
+        }
       }
+
+      if (params.layer === RendererLayer.GUI) {
+        // Is hovered and has not fully grown yet
+        if (params.isHovered && this.growthState < 1) {
+          // Calculate world position for progress bar
+          const growthProgressWorldPos = new Vector(
+            params.worldPosition.x + 0.25 / 2,
+            params.worldPosition.y + 0.75
+          );
+          
+          renderer.paintProgressBar(params.ctx, {
+            worldPosition: growthProgressWorldPos,
+            progress: this.growthState
+          });
+        }
+      }
+
+      super.render(renderer, params);
     }
 }

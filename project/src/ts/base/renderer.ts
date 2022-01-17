@@ -1,4 +1,4 @@
-import World from "./world";
+import World, { WorldTileInfo } from "./world";
 import Camera from "./camera";
 import { InventoryItem } from "./inventory";
 import TextureFactory from "./texture-factory";
@@ -7,16 +7,29 @@ import Canvas from "../core/canvas";
 import Vector from "../core/vector";
 import BitMath from "../core/bit-math";
 import Browser from "../browser/browser";
+import TitleScreen from "../title-screen/title-screen";
+import Easings from "../core/easings";
+
+export enum RendererLayer {
+  Background,
+  GroundEffects,
+  Tiles,
+  Entities,
+  Air,
+  GUI
+}
 
 export default class Renderer {
-  public readonly FONT_SIZE = 12;
-  public readonly FONT_EMOJI_SIZE = 16;
-  public readonly SQUARE_SIZE = 32;
+  public static readonly LAYERS_COUNT = Object.keys(RendererLayer).length / 2;
+  public static readonly FONT_SIZE = 12;
+  public static readonly FONT_EMOJI_SIZE = 16;
+  public static readonly SQUARE_SIZE = 32;
+  public static readonly TEXTURE_RES = 64;
 
-  private _ctx: CanvasRenderingContext2D | null = null;
+  private _layers: CanvasRenderingContext2D[] = [];
   private _textures: Texture[] = [];
 
-  public readonly camera: Camera = new Camera(this.SQUARE_SIZE);
+  public readonly camera: Camera = new Camera(Renderer.SQUARE_SIZE);
   public size: Vector = new Vector(0, 0);
   public mousePos: Vector = new Vector(0, 0);
   public equippedItem: InventoryItem | null = null;
@@ -49,38 +62,44 @@ export default class Renderer {
   /**
    * Canvas rendering context
    */
-  public get ctx (): CanvasRenderingContext2D | null {
-    return this._ctx;
+  public get layers (): CanvasRenderingContext2D[] {
+    return this._layers;
+  }
+
+  public get mouseWorldPos (): Vector {
+    return this.camera.worldPosFromScreen(this.mousePos);
   }
 
   /**
    * Setup canvas for rendering
    */
   constructor (browser: Browser) {
-    this._ctx = browser.initializeRendererCanvas();
+    this.setupCanvasLayers(browser);
+    this.setupTextures();
+  }
 
-    const textureFactory = new TextureFactory(64);
-    textureFactory.loadTexturesFromFile("sprites.png").then((textures: Texture[]) => {
-      this._textures = textures;
-    });
+  private async setupCanvasLayers (browser: Browser): Promise<void> {
+    for (let i = 0; i < Renderer.LAYERS_COUNT; i++) {
+      this._layers[i] = await browser.initializeRendererCanvas();
+    }
+  }
+
+  private async setupTextures (): Promise<void> {
+    this._textures = await new TextureFactory(Renderer.TEXTURE_RES).loadTexturesFromFile("sprites.png");
   }
 
   public getTextureById (id: number): Texture | null {
-    if (!(this._textures[id] instanceof Texture)) {
-      return null;
-    }
-
-    return this._textures[id];
+    return this._textures[id] ?? null;
   }
 
   public fillRectWorld (ctx: CanvasRenderingContext2D,
     worldPosition: Vector,
     worldSize: Vector = new Vector(1)): void {
     ctx.fillRect(
-      BitMath.ceil(this.z * (this.SQUARE_SIZE * worldPosition.x) - this.camera.position.x),
-      BitMath.ceil(this.z * (this.SQUARE_SIZE * worldPosition.y) - this.camera.position.y),
-      BitMath.ceil(this.z * (this.SQUARE_SIZE * worldSize.x)),
-      BitMath.ceil(this.z * (this.SQUARE_SIZE * worldSize.y))
+      BitMath.ceil(this.z * (Renderer.SQUARE_SIZE * worldPosition.x) - this.camera.position.x),
+      BitMath.ceil(this.z * (Renderer.SQUARE_SIZE * worldPosition.y) - this.camera.position.y),
+      BitMath.ceil(this.z * (Renderer.SQUARE_SIZE * worldSize.x)),
+      BitMath.ceil(this.z * (Renderer.SQUARE_SIZE * worldSize.y))
     );
   }
 
@@ -109,10 +128,10 @@ export default class Renderer {
       params.worldPosition.y + worldPosDelta.y
     );
     const drawDelta = new Vector(
-      this.SQUARE_SIZE * totalWorldPos.x * this.z - this.camera.position.x,
-      this.SQUARE_SIZE * totalWorldPos.y * this.z - this.camera.position.y
+      Renderer.SQUARE_SIZE * totalWorldPos.x * this.z - this.camera.position.x,
+      Renderer.SQUARE_SIZE * totalWorldPos.y * this.z - this.camera.position.y
     ).ceil();
-    const textureScreenSize = BitMath.ceil(this.SQUARE_SIZE * params.size * this.z);
+    const textureScreenSize = BitMath.ceil(Renderer.SQUARE_SIZE * params.size * this.z);
 
     // Adjust context for drawing of rotated image
     if (params.rotate != null) {
@@ -126,7 +145,10 @@ export default class Renderer {
     }
     
     // Paint texture itself
-    const textureToDraw = params.texture.getForScreenWidth(textureScreenSize);
+    const ratio = textureScreenSize / Renderer.TEXTURE_RES;
+    const output = Easings.easeInQuad(ratio);
+    const relScreenSize = output * Renderer.TEXTURE_RES;
+    const textureToDraw = params.texture.getForScreenWidth(relScreenSize);
     ctx.drawImage(
       textureToDraw.image,
       0,
@@ -159,10 +181,10 @@ export default class Renderer {
     ctx.lineWidth = borderWidth * this.z;
     
     ctx.strokeRect(
-      (this.SQUARE_SIZE * worldPosition.x + borderWidth / 2) * this.z - this.camera.position.x,
-      (this.SQUARE_SIZE * worldPosition.y + borderWidth / 2) * this.z - this.camera.position.y,
-      (this.SQUARE_SIZE - borderWidth) * this.z,
-      (this.SQUARE_SIZE - borderWidth) * this.z
+      (Renderer.SQUARE_SIZE * worldPosition.x + borderWidth / 2) * this.z - this.camera.position.x,
+      (Renderer.SQUARE_SIZE * worldPosition.y + borderWidth / 2) * this.z - this.camera.position.y,
+      (Renderer.SQUARE_SIZE - borderWidth) * this.z,
+      (Renderer.SQUARE_SIZE - borderWidth) * this.z
     );
   }
 
@@ -217,98 +239,89 @@ export default class Renderer {
     return await canvas.image;
   }
 
+  private async renderLayer (ctx: CanvasRenderingContext2D, layer: RendererLayer, world: World) {
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    if (layer === RendererLayer.Background) {
+      // Calculate World X and Y start/end to render squares surrounding the world
+      const xyDivider = Renderer.SQUARE_SIZE * this.camera.zoomAmount;
+      const xStart = BitMath.floor(this.camera.position.x / xyDivider);
+      const xEnd = BitMath.ceil((this.camera.position.x + window.innerWidth) / xyDivider);
+      const yStart = BitMath.floor(this.camera.position.y / xyDivider);
+      const yEnd = BitMath.ceil((this.camera.position.y + window.innerHeight) / xyDivider);
+
+      // Draw empty squares around world
+      for (let y = yStart; y < yEnd; y++) {
+        for (let x = xStart; x < xEnd; x++) {
+          const emptyPosition = new Vector(x, y);
+
+          this.paintTexture(ctx, {
+            worldPosition: emptyPosition,
+            texture: this._textures[0]
+          });
+
+          // Darken textures
+          ctx.fillStyle = "rgba(0,0,0,0.05)";
+          this.fillRectWorld(ctx, emptyPosition);
+        }
+      }
+    }
+
+    if (layer === RendererLayer.Tiles) {
+      world.iterateTiles((tileInfo: WorldTileInfo) => {
+        // Render tile square
+        tileInfo.tile.render(this, {
+          ctx: ctx,
+          layer: layer,
+          worldPosition: tileInfo.worldPos,
+          isHovered: tileInfo.isHovered
+        });
+
+        // Paint tile outline if hovered
+        if (tileInfo.isHovered) {
+          this.outlineSquare(ctx, tileInfo.worldPos);
+        }
+      }, this.mouseWorldPos);
+    }
+
+    if (layer === RendererLayer.Entities) {
+      // Draw entities
+      for (const entity of world.entities) {
+        entity.render(this, ctx);
+      }
+    }
+
+    if (layer === RendererLayer.GroundEffects || layer === RendererLayer.GUI) {
+      world.iterateTiles((tileInfo: WorldTileInfo) => {
+        // Invoke last render
+        tileInfo.tile.render(this, {
+          ctx: ctx,
+          layer: layer,
+          worldPosition: tileInfo.worldPos,
+          isHovered: tileInfo.isHovered
+        });
+      }, this.mouseWorldPos);
+    }
+  }
+
   /**
    * Render world
    * @param {World} world World object to render
    */
   public render (world: World): void {
-    const ctx = this.ctx;
-
-    // Stop here if no Canvas context or textures are loaded yet
-    if (!ctx || !this._textures.length) {
+    if (!this._textures.length) {
       return;
     }
 
-    ctx.imageSmoothingEnabled = false;
+    this.renderLayer(this.layers[RendererLayer.Background], RendererLayer.Background, world);
+    this.renderLayer(this.layers[RendererLayer.GroundEffects], RendererLayer.GroundEffects, world);
+    this.renderLayer(this.layers[RendererLayer.Tiles], RendererLayer.Tiles, world);
+    this.renderLayer(this.layers[RendererLayer.Entities], RendererLayer.Entities, world);
+    this.renderLayer(this.layers[RendererLayer.GUI], RendererLayer.GUI, world);
+  }
 
-    // Clear Canvas entirely
-    ctx.clearRect(0, 0, this.width, this.height);
-
-    // Calculate World X and Y start/end to render squares surrounding the world
-    const xStart = BitMath.floor(this.camera.position.x / (this.SQUARE_SIZE * this.camera.zoomAmount));
-    const xEnd = BitMath.ceil((this.camera.position.x + window.innerWidth) / (this.SQUARE_SIZE * this.camera.zoomAmount));
-    const yStart = BitMath.floor(this.camera.position.y / (this.SQUARE_SIZE * this.camera.zoomAmount));
-    const yEnd = BitMath.ceil((this.camera.position.y + window.innerHeight) / (this.SQUARE_SIZE * this.camera.zoomAmount));
-
-    // Draw empty squares around world
-    for (let y = yStart; y < yEnd; y++) {
-      for (let x = xStart; x < xEnd; x++) {
-        const emptyPosition = new Vector(x, y);
-
-        this.paintTexture(ctx, {
-          worldPosition: emptyPosition,
-          texture: this._textures[0]
-        });
-
-        ctx.fillStyle = "rgba(0,0,0,0.05)";
-        this.fillRectWorld(ctx, emptyPosition);
-      }
-    }
-
-    // Retrieve current world coordinates from mouse screen coordinates
-    const mouseWorldPos = this.camera.worldPosFromScreen(this.mousePos);
-
-    // Iterate through world coordinates
-    for (let y = 0; y < world.tiles.length; y++) {
-      for (let x = 0; x < world.tiles[y].length; x++) {
-        // Is current world square being hovered?
-        const isHovered = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
-
-        // Get tile from current world coordinates
-        const tile = world.tiles[y][x];
-        const tileWorldPos = new Vector(x, y);
-
-        // Render background tile
-        this.paintTexture(ctx, {
-          worldPosition: tileWorldPos,
-          texture: this._textures[0]
-        });
-
-        // Render tile square
-        tile.render(this, {
-          ctx: ctx,
-          worldPosition: tileWorldPos,
-          isHovered: isHovered
-        });
-
-        // Paint tile outline if hovered
-        if (isHovered) {
-          this.outlineSquare(ctx, tileWorldPos);
-        }
-      }
-    }
-
-    for (let y = 0; y < world.tiles.length; y++) {
-      for (let x = 0; x < world.tiles[y].length; x++) {
-        // Is current world square being hovered?
-        const isHovered = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
-
-        // Get tile from current world coordinates
-        const tile = world.tiles[y][x];
-        const tileWorldPos = new Vector(x, y);
-        
-        // Invoke last render
-        tile.renderLatest(this, {
-          ctx: ctx,
-          worldPosition: tileWorldPos,
-          isHovered: isHovered
-        });
-      }
-    }
-
-    // Draw entities
-    for (const entity of world.entities) {
-      entity.render(this, ctx);
-    }
+  public renderTitleScreen (titleScreen: TitleScreen): void {
+    titleScreen.render(this, this._layers[RendererLayer.GUI]);
   }
 }

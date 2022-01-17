@@ -262,12 +262,18 @@ export default class Browser {
    * Initially setup renderer canvas
    * @returns {CanvasRenderingContext2D}
    */
-  public initializeRendererCanvas (): CanvasRenderingContext2D {
+  public async initializeRendererCanvas (id?: string): Promise<CanvasRenderingContext2D> {
     this._canvas = new Canvas();
     
     this.updateRendererCanvasSize();
 
-    document.body.prepend(this._canvas.element);
+    const canvases = document.body.querySelectorAll("canvas");
+    if (canvases.length) {
+      const lastCanvas = canvases[canvases.length - 1];
+      lastCanvas.parentNode?.insertBefore(this._canvas.element, lastCanvas.nextSibling);
+    } else {
+      document.body.prepend(this._canvas.element);
+    }
 
     let context;
     // eslint-disable-next-line no-cond-assign

@@ -1,7 +1,7 @@
 import TileInterface, { TileDamageTextureInterface } from "../interfaces/tile-interface";
 import Vector from "../core/vector";
 import Texture from "../base/texture";
-import Renderer from "../base/renderer";
+import Renderer, { RendererLayer } from "../base/renderer";
 import BitMath from "../core/bit-math";
 import Easings from "../core/easings";
 
@@ -63,60 +63,59 @@ export default class Tile implements TileInterface {
 
   public render (renderer: Renderer, params: {
     ctx: CanvasRenderingContext2D,
-    worldPosition: Vector,
-    isHovered?: boolean,
-    opacity?: number | null
-  }): void {
-    if (this.textureId === null) {
-      return;
-    }
-    
-    const texture = renderer.getTextureById(this.textureId);
-    if (!(texture instanceof Texture)) {
-      return;
-    }
-
-    renderer.paintTexture(params.ctx, {
-      worldPosition: params.worldPosition,
-      texture: texture
-    });
-  }
-
-  public renderLatest (renderer: Renderer, params: {
-    ctx: CanvasRenderingContext2D
+    layer: RendererLayer,
     worldPosition: Vector,
     isHovered?: boolean
   }): void {
-    // Iterate through damage textures of tile
-    for (const damageTexture of this.damageTextures) {
-      const texture = renderer.getTextureById(24 + damageTexture.textureIdOffset);
-      if (!texture) {
-        continue;
+    if (params.layer === RendererLayer.GroundEffects) {
+      for (const damageTexture of this.damageTextures) {
+        const texture = renderer.getTextureById(24 + damageTexture.textureIdOffset);
+        if (!texture) {
+          continue;
+        }
+  
+        renderer.paintTexture(params.ctx, {
+          worldPosition: params.worldPosition.add(damageTexture.worldOffset.x, damageTexture.worldOffset.y),
+          texture: texture,
+          opacity: damageTexture.opacity * this.damage,
+          rotate: damageTexture.angle,
+          size: damageTexture.size
+        });
       }
+    }
 
+    if (params.layer === RendererLayer.Tiles) {
+      if (this.textureId === null) {
+        return;
+      }
+      
+      const texture = renderer.getTextureById(this.textureId);
+      if (!(texture instanceof Texture)) {
+        return;
+      }
+  
       renderer.paintTexture(params.ctx, {
-        worldPosition: params.worldPosition.add(damageTexture.worldOffset.x, damageTexture.worldOffset.y),
-        texture: texture,
-        opacity: damageTexture.opacity * this.damage,
-        rotate: damageTexture.angle,
-        size: damageTexture.size
+        worldPosition: params.worldPosition,
+        texture: texture
       });
     }
 
-    // Is hovered and has damage
-    if (params.isHovered && this.damage > 0) {
-      // Calculate world position for progress bar
-      const damageProgressWorldPos = new Vector(
-        params.worldPosition.x + 0.25 / 2,
-        params.worldPosition.y + 0.10
-      );
+    if (params.layer === RendererLayer.GUI) {
+      // Is hovered and has damage
+      if (params.isHovered && this.damage > 0) {
+        // Calculate world position for progress bar
+        const damageProgressWorldPos = new Vector(
+          params.worldPosition.x + 0.25 / 2,
+          params.worldPosition.y + 0.10
+        );
 
-      // Render damage progress bar
-      renderer.paintProgressBar(params.ctx, {
-        worldPosition: damageProgressWorldPos,
-        progress: this.damage,
-        color: "red"
-      });
+        // Render damage progress bar
+        renderer.paintProgressBar(params.ctx, {
+          worldPosition: damageProgressWorldPos,
+          progress: this.damage,
+          color: "red"
+        });
+      }
     }
   }
 

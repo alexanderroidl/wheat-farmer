@@ -1,4 +1,4 @@
-import Renderer from "../base/renderer";
+import Renderer, { RendererLayer } from "../base/renderer";
 import Vector from "../core/vector";
 
 export interface TileDamageTextureInterface {
@@ -23,15 +23,10 @@ export default interface TileInterface {
 
     render: (renderer: Renderer, params: {
       ctx: CanvasRenderingContext2D;
+      layer: RendererLayer;
       worldPosition: Vector;
       isHovered?: boolean;
       opacity?: number | null;
-    }) => void;
-
-    renderLatest: (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
     }) => void;
 
     update: (delta: number) => void;

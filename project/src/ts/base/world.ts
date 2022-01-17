@@ -10,6 +10,14 @@ import WallTile from "../tiles/wall-tile";
 import BombEntity from "../entities/enemies/bomb";
 import Entity from "../entities/entity";
 
+export interface WorldTileInfo {
+  isHovered: boolean,
+  tile: Tile,
+  worldPos: Vector
+}
+
+export type WorldIterationCallback = (params: WorldTileInfo) => void;
+
 export default class World {
   public readonly SIZE: number = 20; // 20x20 world size
   public readonly CENTER: Vector = new Vector(this.SIZE / 2).floor();
@@ -66,6 +74,28 @@ export default class World {
 
   public scheduleEnemySpawn (count: number = 1): void {
     this._enemiesScheduledToSpawn += count;
+  }
+
+  public getTileInfo (x: number, y: number, mouseWorldPos?: Vector): WorldTileInfo {
+    let isHovered = false;
+    if (mouseWorldPos instanceof Vector) {
+      isHovered = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
+    }
+
+    // Get tile from current world coordinates
+    const tile = this.tiles[y][x];
+    const worldPos = new Vector(x, y);
+
+    return { tile, worldPos, isHovered };
+  }
+
+  public iterateTiles (callback: WorldIterationCallback, mouseWorldPos?: Vector): void {
+    for (let y = 0; y < this.tiles.length; y++) {
+      for (let x = 0; x < this.tiles[y].length; x++) {
+        const tileInfo = this.getTileInfo(x, y, mouseWorldPos);
+        callback(tileInfo);
+      }
+    }
   }
 
   public onTileClicked (pos: Vector): void {

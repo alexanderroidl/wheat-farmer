@@ -22,7 +22,7 @@ export default class TextureFactory {
   }
 
   public async createLowResTextures (texture: Texture, imgData: ImageData, textureSize: number): Promise<void> {
-    if (textureSize > this._textureSize / TextureFactory.TEXTURE_DOWNSCALE_ITERATIONS) {
+    if (textureSize >= this._textureSize / TextureFactory.TEXTURE_DOWNSCALE_ITERATIONS) {
       textureSize = BitMath.floor(textureSize / 2);
 
       const lowResSize = new Vector(textureSize);
