@@ -19,9 +19,9 @@ export default class Vector {
      * @param x - Initial x coordinate
      * @param y - Initial y coordinate
      */
-    constructor (x: number, y: number) {
+    constructor (x: number, y?: number) {
       this.x = x;
-      this.y = y;
+      this.y = y == null ? x : y;
     }
 
     /**
@@ -31,17 +31,35 @@ export default class Vector {
      * @param y - Added to y coordinate
      * @returns Vector with added coordinates
      */
-    public add (x: number, y: number): Vector {
-      return new Vector(this.x + x, this.y + y);
+    public add (x: number, y?: number): Vector {
+      return new Vector(this.x + x, this.y + (y != null ? y : x));
     }
 
     /**
-     * Round off coordinates
+     * Floor coordinates
      *
-     * @returns Vector with rounded off coordinates
+     * @returns Vector with floored coordinates
      */
     public floor (): Vector {
       return new Vector(BitMath.floor(this.x), BitMath.floor(this.y));
+    }
+
+    /**
+     * Round coordinates
+     *
+     * @returns Vector with rounded coordinates
+     */
+    public round (): Vector {
+      return new Vector(BitMath.round(this.x), BitMath.round(this.y));
+    }
+
+    /**
+     * Ceil coordinates
+     *
+     * @returns Vector with ceiled coordinates
+     */
+    public ceil (): Vector {
+      return new Vector(BitMath.ceil(this.x), BitMath.ceil(this.y));
     }
 
     /**
@@ -50,16 +68,19 @@ export default class Vector {
      * @param deg - Angle in degrees
      * @returns Rotated vector
      */
-    public rotate (deg: number): Vector {
-      const rad = -deg * (Math.PI / 180);
-
+    public rotate (rad: number): Vector {
       const cos = Math.cos(rad);
       const sin = Math.sin(rad);
 
       return new Vector(
-        Math.round(10000 * (this.x * cos - this.y * sin)) / 10000,
-        Math.round(10000 * (this.x * sin + this.y * cos)) / 10000
+        BitMath.round(10000 * (this.x * cos - this.y * sin)) / 10000,
+        BitMath.round(10000 * (this.x * sin + this.y * cos)) / 10000
       );
+    }
+
+    public rotateDeg (deg: number): Vector {
+      const rad = -deg * (Math.PI / 180);
+      return this.rotate(rad);
     }
 
     public toString (): string {

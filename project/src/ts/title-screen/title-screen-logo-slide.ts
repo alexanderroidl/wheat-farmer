@@ -1,79 +1,76 @@
-import SlideInterface from "interfaces/slide-interface";
-import Renderer from "core/renderer";
-import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
-import Vector from "core/vector";
+import SlideInterface from "../interfaces/slide-interface";
+import Renderer from "../base/renderer";
+import Vector from "../core/vector";
 import Sound from "../base/sound"; // TODO: Resolve issue for importing from base URL
 import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
+import Color from "../core/color";
 
 export default class TitleScreenLogoSlide implements SlideInterface {
   // Generated with "Text To ASCII Art Generator (TAAG)" by patorjk.com
   // https://patorjk.com/software/taag/#p=display&f=Sub-Zero&t=Wheat%20Farmer%0A
-  private readonly LOGO: string[] = [
+  private static readonly LOGO: string[] = [
     " __     __     __  __     ______     ______     ______      ______   ______     ______     __    __     ______     ______    ",
     '/\\ \\  _ \\ \\   /\\ \\_\\ \\   /\\  ___\\   /\\  __ \\   /\\__  _\\    /\\  ___\\ /\\  __ \\   /\\  == \\   /\\ "-./  \\   /\\  ___\\   /\\  == \\   ',
     '\\ \\ \\/ ".\\ \\  \\ \\  __ \\  \\ \\  __\\   \\ \\  __ \\  \\/_/\\ \\/    \\ \\  __\\ \\ \\  __ \\  \\ \\  __<   \\ \\ \\-./\\ \\  \\ \\  __\\   \\ \\  __<   ',
     ' \\ \\__/".~\\_\\  \\ \\_\\ \\_\\  \\ \\_____\\  \\ \\_\\ \\_\\    \\ \\_\\     \\ \\_\\    \\ \\_\\ \\_\\  \\ \\_\\ \\_\\  \\ \\_\\ \\ \\_\\  \\ \\_____\\  \\ \\_\\ \\_\\ ',
     "  \\/_/   \\/_/   \\/_/\\/_/   \\/_____/   \\/_/\\/_/     \\/_/      \\/_/     \\/_/\\/_/   \\/_/ /_/   \\/_/  \\/_/   \\/_____/   \\/_/ /_/ "
   ];
+  private static readonly LONGEST_LINE_WIDTH: number = TitleScreenLogoSlide.LOGO.reduce((a: string, b: string) => {
+    return a.length > b.length ? a : b;
+  }).length;
 
-  private readonly DESCRIPTION: string[] = [
+  private static readonly DESCRIPTION: string[] = [
     "Plant wheat seeds, harvest crops and sell them.",
     "",
     "Avoid robot attacks at all costs."
   ];
 
-  private readonly CREDITS: string[] = [
+  private static readonly CREDITS: string[] = [
     "Programming by ALEXANDER ROIDL and JULIAN ARNOLD",
     "Soundtrack by JULIAN ARNOLD"
   ];
 
-  private readonly COLOR_BACKGROUND: string = "#111111";
-  private readonly COLOR_TEXT: string = "#f3bc3c";
-  private readonly COLOR_TEXT_SHADOW: string = Util.lightenDarkenColor(this.COLOR_TEXT, 20);
-  private readonly LONGEST_LINE_WIDTH: number;
-
-  constructor () {
-    // Determine length of longest logo line
-    this.LONGEST_LINE_WIDTH = this.LOGO.reduce((a: string, b: string) => {
-      return a.length > b.length ? a : b;
-    }).length;
-  }
+  private static readonly COLOR_BACKGROUND_HEX: string = "#111111";
+  private static readonly COLOR_TEXT_HEX: string = "#f3bc3c";
+  private static readonly COLOR_TEXT_SHADOW_HEX?: string = Color.fromHex(TitleScreenLogoSlide.COLOR_TEXT_HEX)?.lightenDarken(20)?.toHex();
 
   public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
     const targetLogoWidth = 0.75; // 75 % screen width
 
     // Calculate font size based off target logo screen size
-    let fontSize = (renderer.width / (20 * this.LONGEST_LINE_WIDTH) * 1.65) * targetLogoWidth;
+    let fontSize = (renderer.width / (20 * TitleScreenLogoSlide.LONGEST_LINE_WIDTH) * 1.65) * targetLogoWidth;
     let lineHeight = 1;
 
     // Paint black background
-    ctx.fillStyle = this.COLOR_BACKGROUND;
+    ctx.fillStyle = TitleScreenLogoSlide.COLOR_BACKGROUND_HEX;
     ctx.fillRect(0, 0, renderer.width, renderer.height);
 
     // Setup basic text effects
-    ctx.fillStyle = this.COLOR_TEXT;
+    ctx.fillStyle = TitleScreenLogoSlide.COLOR_TEXT_HEX;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `${20 * fontSize}px "Courier New"`;
 
     // Setup glowing text effect
-    ctx.shadowColor = this.COLOR_TEXT_SHADOW;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.shadowBlur = 7; // TODO: Make responsive
+    if (TitleScreenLogoSlide.COLOR_TEXT_SHADOW_HEX) {
+      ctx.shadowColor = TitleScreenLogoSlide.COLOR_TEXT_SHADOW_HEX;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.shadowBlur = 7; // TODO: Make responsive
+    }
 
     // Compute random y-axis shift value
     // (This leads to the "floating" effect of the logo text)
     const yShift = Math.sin(Date.now() / 1000) * 10;
 
     // Iterate and output logo lines
-    for (let logoLineIndex = 0; logoLineIndex < this.LOGO.length; logoLineIndex++) {
-      const logoLineOffset = 20 * lineHeight * fontSize * (logoLineIndex - this.LOGO.length);
+    for (let logoLineIndex = 0; logoLineIndex < TitleScreenLogoSlide.LOGO.length; logoLineIndex++) {
+      const logoLineOffset = 20 * lineHeight * fontSize * (logoLineIndex - TitleScreenLogoSlide.LOGO.length);
 
       const logoTextX = BitMath.floor(renderer.width / 2);
       const logoTextY = BitMath.floor(renderer.height / 2 + logoLineOffset + yShift);
 
-      ctx.fillText(this.LOGO[logoLineIndex], logoTextX, logoTextY);
+      ctx.fillText(TitleScreenLogoSlide.LOGO[logoLineIndex], logoTextX, logoTextY);
     }
 
     // Set static font size for description text
@@ -86,13 +83,13 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     const DESCRIPTION_MARGIN_LINES = 3; // 3 empty lines before description
 
     // Iterate and output description lines
-    for (let descriptionLineIndex = 0; descriptionLineIndex < this.DESCRIPTION.length; descriptionLineIndex++) {
+    for (let descriptionLineIndex = 0; descriptionLineIndex < TitleScreenLogoSlide.DESCRIPTION.length; descriptionLineIndex++) {
       const descriptionLineOffset = lineHeight * fontSize * (descriptionLineIndex + DESCRIPTION_MARGIN_LINES);
 
       const descriptionTextX = BitMath.floor(renderer.width / 2);
       const descriptionTextY = BitMath.floor(renderer.height / 2 + descriptionLineOffset);
 
-      ctx.fillText(this.DESCRIPTION[descriptionLineIndex], descriptionTextX, descriptionTextY);
+      ctx.fillText(TitleScreenLogoSlide.DESCRIPTION[descriptionLineIndex], descriptionTextX, descriptionTextY);
     }
 
     // Set static font size for credits text
@@ -104,9 +101,9 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     ctx.shadowBlur = 5; // TODO: Make responsive
 
     // Iterate and output credit lines
-    for (let cLine = 0; cLine < this.CREDITS.length; cLine++) {
+    for (let cLine = 0; cLine < TitleScreenLogoSlide.CREDITS.length; cLine++) {
       const creditsOffset = lineHeight * fontSize * (cLine);
-      ctx.fillText(this.CREDITS[cLine], renderer.width / 2, renderer.height - (1.5 * 3 * fontSize) + creditsOffset);
+      ctx.fillText(TitleScreenLogoSlide.CREDITS[cLine], renderer.width / 2, renderer.height - (1.5 * 3 * fontSize) + creditsOffset);
     }
 
     // Reset shadow

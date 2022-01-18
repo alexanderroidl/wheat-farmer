@@ -1,64 +1,93 @@
 import Entity from "../entity";
+import Vector from "../../core/vector";
+import Texture from "../../base/texture";
+import Renderer from "../../base/renderer";
+import BombEntity from "./bomb";
 
 export default class RobotEntity extends Entity {
-  public readonly EXPLODE_TIME = 3 * 1000;
-  public readonly MAX_EXPLOSION_RADIUS = 2;
-
+  public static readonly MOVEMENT_WAVE_LENGTH = new Vector(10).length;
+  public static readonly BOMB_PLANT_TIME = 2000;
   public readonly name: string = "Robot";
-  public readonly speed: number = 2;
-  
+
+  public speed: number = 1 + Math.random() * 0.5;
   public isHostile: boolean = true;
+  public bomb: BombEntity | null = null;
+  private _bombPlantedAt: number | null = null;
+  private _sinAmplifier: number = Math.random() * 0.5;
+  private _sinShift: Vector = new Vector(0);
+  private _sinShiftDistanceOffset: number = Math.random() * RobotEntity.MOVEMENT_WAVE_LENGTH;
 
-  private _explodedAt: number | null = null;
+  public get textureId (): number {
+    if (!this.isMoving) {
+      if (this.hasStartedBombPlant) {
+        return 16;
+      }
+      return 13;
+    }
+    return this.movedDistance % 1 < 0.5 ? 14 : 15;
+  }
 
-  public get explosionProgress (): number {
-    if (this._explodedAt === null) {
+  public get bombPlantProgress (): number {
+    if (this._bombPlantedAt === null) {
       return 0;
     }
       
-    const progress = (Date.now() - this._explodedAt) / this.EXPLODE_TIME;
+    const progress = (Date.now() - this._bombPlantedAt) / RobotEntity.BOMB_PLANT_TIME;
     return progress > 1 ? 1 : progress;
   }
 
-  public get hasCompletedExplosion (): boolean {
-    return this.explosionProgress === 1;
+  public get hasStartedBombPlant (): boolean {
+    return this._bombPlantedAt !== null;
   }
 
-  constructor (x: number, y: number) {
-    super(x, y);
+  public get hasCompletedBombPlant (): boolean {
+    return this.bombPlantProgress === 1;
   }
 
-  public get char (): string {
-    if (this.explosionProgress > 0) {
-      if (this.explosionProgress <= 0.6) {
-        return "💣";
-      }
-
-      if (this.explosionProgress > 0.6 && this.explosionProgress < 0.8) {
-        return "✨";
-      }
-
-      if (this.explosionProgress > 0.8 && this.explosionProgress < 1) {
-        return "💥";
-      }
-
-      if (this.explosionProgress >= 1) {
-        return "🔥";
-      }
-    }
-
-    return "🤖";
-  }
-
-  public explode (): void {
-    this._explodedAt = Date.now();
+  public plantBomb (): void {
+    this._bombPlantedAt = Date.now();
   }
 
   public update (delta: number): void {
-    super.update(delta);
+    if (!this.isMoving) {
+      return;
+    }
 
-    if (this.hasCompletedMove && this._explodedAt === null) {
-      this.explode();
+    const moveDelta = this.move(delta);
+    const moveDirectionRad = Math.atan2(moveDelta.y, moveDelta.x);
+
+    this.position = this.position.add(moveDelta.x, moveDelta.y);
+
+    if (this.initialPosition instanceof Vector) {
+      const movedDistance = this.movedDistance + this._sinShiftDistanceOffset;
+
+      const shift = (movedDistance % RobotEntity.MOVEMENT_WAVE_LENGTH) / RobotEntity.MOVEMENT_WAVE_LENGTH;
+
+      const sinShift = (0.5 + this._sinAmplifier) * Math.sin(shift * 2 * Math.PI);
+      this._sinShift = new Vector(0, sinShift).rotate(moveDirectionRad);
+    }
+
+    if (this.hasCompletedMove && !this.hasStartedBombPlant) {
+      this.plantBomb();
+
+      // Delete target
+      this.target = null;
+      // Add sinus shift to position
+      this.position = this.position.add(this._sinShift.x, this._sinShift.y);
+      // Reset sinus shift entirely
+      this._sinShift = new Vector(0);
+      this._sinShiftDistanceOffset = 0;
+    }
+  }
+
+  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+    const texture = renderer.getTextureById(this.textureId);
+
+    if (texture instanceof Texture) {
+      renderer.paintTexture(ctx, {
+        worldPosition: this.position.add(this._sinShift.x, this._sinShift.y),
+        texture: texture
+      });
     }
   }
 }

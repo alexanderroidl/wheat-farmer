@@ -1,34 +1,32 @@
-import Renderer from "core/renderer";
-import Tile from "./tile";
+import Renderer, { RendererLayer } from "../base/renderer";
 import Vector from "../core/vector";
+import Tile from "./tile";
 
 export default class EmptyTile extends Tile {
     public static readonly COLOR = "#ebb434";
     public name: string = "Empty";
     public timeCreated: number = Date.now();
 
-    public get backgroundColor (): string | null {
-      return this.getDamagedHexColor(EmptyTile.COLOR);
+    public get textureId (): number {
+      return 0;
     }
 
-    public get textColor (): string | null {
-      return "#666666";
-    }
-    
-    public getChar (preview: boolean = false): string | null {
-      return "x";
-    }
-
-    public onClicked (): void {
-      // TODO: Implement logic
-    }
-
-    /* eslint-disable-next-line max-params */
-    public renderLatest (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
+    public render (renderer: Renderer, params: {
+      ctx: CanvasRenderingContext2D,
+      layer: RendererLayer,
+      worldPosition: Vector,
+      isHovered?: boolean
     }): void {
-      super.renderLatest(renderer, params);
+      const texture = renderer.getTextureById(this.textureId);
+      if (params.layer === RendererLayer.Background && texture != null) {
+        renderer.paintTexture(params.ctx, {
+          worldPosition: params.worldPosition,
+          texture: texture
+        });
+      }
+
+      if (params.layer !== RendererLayer.Tiles) {
+        super.render(renderer, params);
+      }
     }
 }

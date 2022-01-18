@@ -4,7 +4,7 @@ export default class Camera {
   public readonly DEFAULT_ZOOM = 1;
   public readonly MIN_ZOOM = 0.25;
 
-  private _position: Vector = new Vector(0, 0);
+  private _position: Vector = new Vector(0);
   private _zoomAmount: number = this.DEFAULT_ZOOM;
   private _worldSquareSize: number;
 
@@ -40,7 +40,6 @@ export default class Camera {
   public zoom (zoom: number): void {
     // Never let zoom go below minimum
     if (this._zoomAmount + zoom < this.MIN_ZOOM) {
-      this._zoomAmount = this.MIN_ZOOM;
       return;
     }
 

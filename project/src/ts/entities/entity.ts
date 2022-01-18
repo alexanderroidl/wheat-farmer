@@ -1,20 +1,21 @@
 import EntityInterface from "interfaces/entity-interface";
 import Vector from "../core/vector";
 import Easings from "../core/easings";
+import Renderer from "../base/renderer";
 
 export default class Entity implements EntityInterface {
   public readonly name: string = "";
-  public readonly speed: number = 0;
 
-  private _target: Vector | null = null;
+  protected _target: Vector | null = null;
 
-  public position: Vector;
+  public position: Vector = new Vector(0);
+  public speed: number = 1;
   public initialPosition: Vector | null = null;
   public initialDistance: number | null = null;
-  public isHostile: boolean = true;
+  public isHostile: boolean = false;
 
-  constructor (x: number, y: number) {
-    this.position = new Vector(x, y);
+  public get textureId (): number | null {
+    return null;
   }
 
   public get hasCompletedMove (): boolean {
@@ -22,7 +23,14 @@ export default class Entity implements EntityInterface {
   }
 
   public get isMoving (): boolean {
-    return this.target instanceof Vector && !this.hasCompletedMove; 
+    return this.target instanceof Vector && !this.hasCompletedMove;
+  }
+
+  public get movedDistance (): number {
+    if (!this.initialPosition) {
+      return 0;
+    }
+    return new Vector(this.initialPosition.x - this.position.x, this.initialPosition.y - this.position.y).length;
   }
 
   public set target (target: Vector | null) {
@@ -45,14 +53,14 @@ export default class Entity implements EntityInterface {
     return "";
   }
 
-  public move (delta: number): void {
-    // Entity has no assigned target
-    if (!(this.target instanceof Vector) || typeof this.initialDistance !== "number") {
-      return;
+  public move (delta: number): Vector {
+    if (!this.isMoving) {
+      return new Vector(0);
     }
 
-    if (this.hasCompletedMove) {
-      return;
+    // Entity has no assigned target
+    if (!(this.target instanceof Vector) || typeof this.initialDistance !== "number") {
+      return new Vector(0);
     }
 
     let entitySpeed = this.speed * (delta / 1000);
@@ -66,11 +74,35 @@ export default class Entity implements EntityInterface {
       distance = entitySpeed;
     }
 
-    this.position.x += entitySpeed * (this.target.x - this.position.x) / distance;
-    this.position.y += entitySpeed * (this.target.y - this.position.y) / distance;
+    return new Vector(
+      entitySpeed * (this.target.x - this.position.x) / distance,
+      entitySpeed * (this.target.y - this.position.y) / distance
+    );
   }
 
   public update (delta: number): void {
-    this.move(delta);
+    if (this.isMoving) {
+      const moveDelta = this.move(delta);
+      this.position = this.position.add(moveDelta.x, moveDelta.y);
+
+      if (this.hasCompletedMove) {
+        this._target = null;
+      }
+    }
+  }
+
+  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+    if (this.textureId === null) {
+      return;
+    }
+    
+    const texture = renderer.getTextureById(this.textureId);
+
+    if (texture) {
+      renderer.paintTexture(ctx, {
+        worldPosition: this.position,
+        texture: texture
+      });
+    }
   }
 }

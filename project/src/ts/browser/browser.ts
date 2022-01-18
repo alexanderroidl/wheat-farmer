@@ -1,19 +1,28 @@
 
+import Canvas from "../core/canvas";
 import Vector from "../core/vector";
 import Gui from "./gui";
-import Mouse from "./mouse";
+
+export class BrowserMouse {
+  public position: Vector = new Vector(0, 0);
+  public pressed: boolean = false;
+}
 
 export default class Browser {
-  private _mouse: Mouse = new Mouse();
+  private _canvas: Canvas[] = [];
+  private _mouse: BrowserMouse = new BrowserMouse();
   private _gui: Gui = new Gui(this._mouse);
   private _windowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
-  private _rendererCanvas: HTMLCanvasElement | null = null;
+
+  public static get debug (): boolean {
+    return Boolean(Browser.getParameter("debug"));
+  }
 
   public get gui (): Gui {
     return this._gui;
   }
 
-  public get mouse (): Mouse {
+  public get mouse (): BrowserMouse {
     return this._mouse;
   }
 
@@ -108,11 +117,11 @@ export default class Browser {
    * @param {Vector} oldSize
    */
   private _onResize (newSize: Vector, oldSize: Vector): void {
+    this._windowSize = new Vector(window.innerWidth, window.innerHeight);
+
     this.updateRendererCanvasSize();
 
     this.onResize(newSize, oldSize);
-
-    this._windowSize = new Vector(window.innerWidth, window.innerHeight);
   }
 
   /**
@@ -261,29 +270,36 @@ export default class Browser {
    * Initially setup renderer canvas
    * @returns {CanvasRenderingContext2D}
    */
-  public initializeRendererCanvas (): CanvasRenderingContext2D {
-    this._rendererCanvas = document.createElement("canvas");
+  public initializeRendererCanvas (id: string | null = null): CanvasRenderingContext2D {
+    const canvas = new Canvas();
+    this._canvas.push(canvas);
     
     this.updateRendererCanvasSize();
 
-    document.body.prepend(this._rendererCanvas);
-
-    let context;
-    // eslint-disable-next-line no-cond-assign
-    while ((context = this._rendererCanvas.getContext("2d")) === null) {
-      // Do nothing
+    const canvases = document.body.querySelectorAll("canvas");
+    if (canvases.length) {
+      const lastCanvas = canvases[canvases.length - 1];
+      lastCanvas.parentNode?.insertBefore(canvas.element, lastCanvas.nextSibling);
+    } else {
+      document.body.prepend(canvas.element);
     }
 
-    return context;
+    if (id != null) {
+      canvas.element.id = id;
+    }
+    
+    return canvas.ctx;
   }
 
   /**
    * Update renderer's canvas size to current window dimensions
    */
   private updateRendererCanvasSize (): void {
-    if (this._rendererCanvas !== null) {
-      this._rendererCanvas.width = this._windowSize.x;
-      this._rendererCanvas.height = this._windowSize.y;
+    this._canvas = this._canvas.filter(c => Boolean(c.element));
+
+    for (const canvas of this._canvas) {
+      canvas.width = this.windowSize.x;
+      canvas.height = this.windowSize.y;
     }
   }
 
