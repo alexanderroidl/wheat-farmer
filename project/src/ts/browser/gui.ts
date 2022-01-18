@@ -34,21 +34,21 @@ export default class Gui {
     // Keyboard info
     const menuInfo = document.createElement("div");
     menuInfo.classList.add("keyboard-info-row");
-    menuInfo.innerHTML = "<span>m</span> Open menu";
+    menuInfo.innerHTML = "<span>m</span> Menu";
     menuInfo.addEventListener("click", (e) => {
       // TODO: Implement logic
     });
 
     const shopInfo = document.createElement("div");
     shopInfo.classList.add("keyboard-info-row");
-    shopInfo.innerHTML = "<span>S</span> Open shop";
+    shopInfo.innerHTML = "<span>S</span> Shop";
     shopInfo.addEventListener("click", (e) => {
       // TODO: Implement logic
     });
 
     const inventoryInfo = document.createElement("div");
     inventoryInfo.classList.add("keyboard-info-row");
-    inventoryInfo.innerHTML = "<span>E</span> Open inventory";
+    inventoryInfo.innerHTML = "<span>E</span> Inventory";
     inventoryInfo.addEventListener("click", (e) => {
       // TODO: Implement logic
     });
@@ -150,7 +150,7 @@ export default class Gui {
       <strong>Renderer:</strong><br>
       <strong>X:</strong> (${xStart}, ${xEnd})<br> 
       <strong>Y:</strong> (${yStart}, ${yEnd})<br>
-      <strong>FPS:</strong> ${fps}
+      <strong>FPS:</strong> ${fps.toFixed(1)}
     `;
   }
 
