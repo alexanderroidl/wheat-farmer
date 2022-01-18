@@ -39,7 +39,7 @@ export default class Canvas {
           resolve(img);
         };
         img.src = URL.createObjectURL(blob);
-      });
+      }, "image/png", 1);
     });
   }
 

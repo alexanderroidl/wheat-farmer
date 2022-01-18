@@ -7,7 +7,7 @@ import BitMath from "../core/bit-math";
 
 export default class TextureFactory {
   public static readonly TEXTURE_DOWNSCALE_ITERATIONS = 4;
-  public static readonly TRANSPARENCY_COLOR: Color | null = Color.fromHex("#f91581");
+  public static readonly TRANSPARENCY_COLOR: Color = new Color(255, 0, 131);
 
   private _textures: Texture[] = [];
   private _textureSize: number;
@@ -46,6 +46,7 @@ export default class TextureFactory {
     // Extract pixel data for each texture
     const textures = [];
     const textureSize = new Vector(this._textureSize);
+    const transparency = TextureFactory.TRANSPARENCY_COLOR;
 
     for (let y = 0; y < map.height / this._textureSize; y++) {
       for (let x = 0; x < map.width / this._textureSize; x++) {
@@ -54,9 +55,9 @@ export default class TextureFactory {
 
         // Remove pixels which equal transparency color
         for (let p = 0; p < pixels.length; p += 4) {
-          if (pixels[p + 0] === TextureFactory.TRANSPARENCY_COLOR?.r &&
-              pixels[p + 1] === TextureFactory.TRANSPARENCY_COLOR?.g &&
-              pixels[p + 2] === TextureFactory.TRANSPARENCY_COLOR?.b) {
+          if (pixels[p + 0] === transparency.r &&
+              pixels[p + 1] === transparency.g &&
+              pixels[p + 2] === transparency.b) {
             pixels[p + 3] = 0;
           }
         }
