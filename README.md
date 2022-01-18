@@ -112,7 +112,6 @@ $ yarn lint # Lint /scripts and unit tests
 
 # 5. Third-party contents
 * [GameLoop.js](https://gist.github.com/niklaskorz/2ef312693977e02d3fb4751b28f7d435) by [Niklas Korz](https://gist.github.com/niklaskorz)
-* [OpenMoji font](https://openmoji.org/)
 * ["212 Keyboard" font](https://www.dafont.com/212-keyboard.font) by [212 fonts](https://www.dafont.com/elizabeth.d7791)
 
 # 6. Collaborators

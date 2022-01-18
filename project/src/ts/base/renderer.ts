@@ -86,7 +86,7 @@ export default class Renderer {
   }
 
   private async setupTextures (): Promise<void> {
-    this._textures = await new TextureFactory(Renderer.TEXTURE_RES).loadTexturesFromFile("sprites.png");
+    this._textures = await new TextureFactory(Renderer.TEXTURE_RES).loadTexturesFromFile("spritesheet.png");
   }
 
   public getLayerTypeName (layerType: RendererLayer): string {
