@@ -1,10 +1,18 @@
 import GameLoop from "./core/game-loop";
 import Browser from "./browser/browser";
 import World from "./base/world";
-import Renderer from "./core/renderer";
+import Renderer from "./base/renderer";
 import Vector from "./core/vector";
 import TitleScreen from "./title-screen/title-screen";
 import Sound from "./base/sound";
+
+declare global {
+  interface Window {
+    wheatFarmer: {
+      spawnEnemy: (count: number) => void
+    };
+  }
+}
 
 export default class Game {
   private static _instance: Game;
@@ -33,8 +41,20 @@ export default class Game {
     this.setupKeyboard();
     this.setupTouchScreen();
     this.setupWindow();
+    this.setupCLI();
 
     this._renderer.camera.setup(this._world.SIZE);
+  }
+
+  private setupCLI (): void {
+    if (Browser.debug) {
+      window.wheatFarmer = {
+        spawnEnemy: (count: number = 1): void => {
+          console.log(`Scheduled ${count} enemies to spawn`);
+          this._world.scheduleEnemySpawn(count);
+        }
+      };
+    }
   }
 
   private setupMouse (): void {
@@ -154,12 +174,14 @@ export default class Game {
 
     // Trigger click on tile if mouse is down
     if (this._mouseDown) {
-      // 250ms have passed since last click
+      // 500ms have passed since last click
       if ((Date.now() - this._lastClickAt) > 500) {
         this._lastClickAt = Date.now();
 
         const worldPos = this._renderer.camera.worldPosFromScreen(this._renderer.mousePos);
-        this._world.onTileClicked(worldPos.floor());
+        if (!this._world.onWorldClicked(worldPos)) {
+          this._world.onTileClicked(worldPos.floor());
+        }
       }
     }
   }
@@ -168,8 +190,8 @@ export default class Game {
     this._renderer.size = this._browser.windowSize;
 
     // Render title screen if it's not hidden and canvas context is given
-    if (!this._titleScreen.hidden && this._renderer.ctx !== null) {
-      this._titleScreen.render(this._renderer, this._renderer.ctx);
+    if (!this._titleScreen.hidden) {
+      this._renderer.renderTitleScreen(this._titleScreen);
       return;
     }
 
@@ -185,9 +207,9 @@ export default class Game {
     this._browser.gui.renderWorldStatsHTML(this._world);
 
     // Debug GET parameter provided
-    if (Browser.getParameter("debug")) {
+    if (Browser.debug) {
       // Render debug info
-      this._browser.gui.renderDebug(this._renderer.camera, this._renderer, this._world);
+      this._browser.gui.renderDebug(this._renderer.camera, this._renderer, this._world, this._loop.fps);
     }
   }
 

@@ -1,111 +1,125 @@
-import TileInterface from "interfaces/tile-interface";
-import Renderer from "core/renderer";
-import Util from "../core/util"; // TODO: Resolve issue for importing from base URL
-import Vector from "../core/vector"; // TODO: Resolve issue for importing from base URL
+import TileInterface, { TileDamageTextureInterface } from "../interfaces/tile-interface";
+import Vector from "../core/vector";
+import Texture from "../base/texture";
+import Renderer, { RendererLayer } from "../base/renderer";
+import BitMath from "../core/bit-math";
+import Easings from "../core/easings";
 
 export default class Tile implements TileInterface {
-    public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
-    public static readonly COLOR: string = "";
+  public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
+  public static readonly COLOR: string = "";
 
-    public name: string = "";
-    public timeCreated: number = Date.now();
+  public name: string = "";
+  public timeCreated: number = Date.now();
+  public damageTextures: TileDamageTextureInterface[] = [];
 
-    private _damage: number = 0;
+  private _damage: number = 0;
 
-    public get damage (): number {
-      return this._damage;
+  public get damage (): number {
+    return this._damage;
+  }
+
+  public set damage (damage: number) {
+    damage = damage > 1 ? 1 : damage < 0 ? 0 : damage;
+
+    if (damage === 0) {
+      this.damageTextures = [];
+    }
+    if (damage > this._damage) {
+      this.createDamageTextures(damage);
+    }
+    this._damage = damage;
+  }
+
+  public get textureId (): number | null {
+    return null;
+  }
+
+  private createDamageTextures (damage: number): void {
+    const damageTextureCount = BitMath.floor(damage * 3) + 1;
+
+    for (let damageTextureNr = 0; damageTextureNr < damageTextureCount; damageTextureNr++) {
+      this.damageTextures.push({
+        textureIdOffset: BitMath.floor(Math.random() * 3),
+        worldOffset: new Vector(Math.random() - 0.5, Math.random() - 0.5),
+        angle: Math.random() * Math.PI * 2,
+        opacity: Math.random() * 0.65 * damage,
+        size: (1 + Easings.easeInCubic(Math.random()) * 2)
+      });
+    }
+  }
+
+  public hasCollision (): boolean {
+    return false;
+  }
+
+  public getChar (preview: boolean = false): string | null {
+    return null;
+  }
+
+  public onClicked (): void {
+    // TODO: Implement logic
+  }
+
+  public render (renderer: Renderer, params: {
+    ctx: CanvasRenderingContext2D,
+    layer: RendererLayer,
+    worldPosition: Vector,
+    isHovered?: boolean
+  }): void {
+    if (params.layer === RendererLayer.GroundEffects) {
+      for (const damageTexture of this.damageTextures) {
+        const texture = renderer.getTextureById(24 + damageTexture.textureIdOffset);
+        if (!texture) {
+          continue;
+        }
+  
+        renderer.paintTexture(params.ctx, {
+          worldPosition: params.worldPosition.add(damageTexture.worldOffset.x, damageTexture.worldOffset.y),
+          texture: texture,
+          opacity: damageTexture.opacity * this.damage,
+          rotate: damageTexture.angle,
+          size: damageTexture.size
+        });
+      }
     }
 
-    public set damage (amount: number) {
-      this._damage = amount > 1 ? 1 : amount < 0 ? 0 : amount;
-    }
-
-    public get backgroundColor (): string | null {
-      return null;
-    }
-
-    public get textColor (): string | null {
-      return "#000000";
-    }
-
-    public hasCollision (): boolean {
-      return false;
-    }
-    
-    public getChar (preview: boolean = false): string | null {
-      return "x";
-    }
-
-    public getDamagedHexColor (color: string): string {
-      const lightenDarkenFactor = -(this.damage) * 50;
-      return Util.lightenDarkenColor(color, lightenDarkenFactor);
-    }
-
-    public onClicked (): void {
-      // TODO: Implement logic
-    }
-
-    private paintSquare (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
-      opacity?: number | null;
-    }) {
-      const backgroundColor = this.backgroundColor;
-      if (!backgroundColor) {
+    if (params.layer === RendererLayer.Tiles) {
+      if (this.textureId === null) {
         return;
       }
-
-      renderer.paintSquare(params.ctx, {
+      
+      const texture = renderer.getTextureById(this.textureId);
+      if (!(texture instanceof Texture)) {
+        return;
+      }
+  
+      renderer.paintTexture(params.ctx, {
         worldPosition: params.worldPosition,
-        backgroundColor: backgroundColor,
-        char: this.getChar(),
-        textColor: this.textColor,
-        isHovered: params.isHovered
+        texture: texture
       });
     }
 
-    public render (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
-      opacity?: number | null;
-    }): void {
-      this.paintSquare(renderer, {
-        ctx: params.ctx,
-        worldPosition: params.worldPosition,
-        isHovered: params.isHovered,
-        opacity: params.opacity
-      });
-    }
-
-    public renderLatest (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
-    }): void {
+    if (params.layer === RendererLayer.GUI) {
       // Is hovered and has damage
       if (params.isHovered && this.damage > 0) {
         // Calculate world position for progress bar
         const damageProgressWorldPos = new Vector(
           params.worldPosition.x + 0.25 / 2,
-          params.worldPosition.y + 0.15
+          params.worldPosition.y + 0.10
         );
-
-        // Calculate world dimensions for progress bar
-        const damageProgressWorldSize = new Vector(0.75, 0.15);
 
         // Render damage progress bar
         renderer.paintProgressBar(params.ctx, {
           worldPosition: damageProgressWorldPos,
-          worldSize: damageProgressWorldSize,
           progress: this.damage,
           color: "red"
         });
       }
     }
+  }
 
-    public update (delta: number): void {
-      this.damage -= delta / Tile.DAMAGE_HEAL_TIME;
-    }
+  public update (delta: number): void {
+    this.damage -= delta / Tile.DAMAGE_HEAL_TIME;
+  }
 }

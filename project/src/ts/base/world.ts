@@ -7,10 +7,20 @@ import Vector from "../core/vector";
 import Tile from "../tiles/tile";
 import BitMath from "../core/bit-math";
 import WallTile from "../tiles/wall-tile";
+import BombEntity from "../entities/enemies/bomb";
+import Entity from "../entities/entity";
+
+export interface WorldTileInfo {
+  isHovered: boolean,
+  tile: Tile,
+  worldPos: Vector
+}
+
+export type WorldIterationCallback = (params: WorldTileInfo) => void;
 
 export default class World {
   public readonly SIZE: number = 20; // 20x20 world size
-  public readonly CENTER: Vector = new Vector(this.SIZE / 2, this.SIZE / 2).floor();
+  public readonly CENTER: Vector = new Vector(this.SIZE / 2).floor();
 
   private _tiles: Tile[][];
   private _createdAt: number = Date.now();
@@ -18,6 +28,7 @@ export default class World {
   private _entities: EntityInterface[] = [];
   private _plantedTilesPerMin: number[] = [];
   private _enemyGroupsPerMin: number[] = [];
+  private _enemiesScheduledToSpawn: number = 0;
 
   public get tiles (): Tile[][] {
     return this._tiles;
@@ -43,6 +54,10 @@ export default class World {
     return this._enemyGroupsPerMin.length;
   }
 
+  public get randomPosition (): Vector {
+    return new Vector(Math.random() * this.SIZE, Math.random() * this.SIZE).floor();
+  }
+
   constructor () {
     this._tiles = Array(this.SIZE).fill([]).map(() => {
       return Array(this.SIZE).fill([]).map(() => new EmptyTile());
@@ -51,6 +66,36 @@ export default class World {
 
   public isValidTilePos (x: number, y: number): boolean {
     return this._tiles[y] != null && this._tiles[y][x] != null;
+  }
+
+  public onWorldClicked (pos: Vector): boolean {
+    return false;
+  }
+
+  public scheduleEnemySpawn (count: number = 1): void {
+    this._enemiesScheduledToSpawn += count;
+  }
+
+  public getTileInfo (x: number, y: number, mouseWorldPos?: Vector): WorldTileInfo {
+    let isHovered = false;
+    if (mouseWorldPos instanceof Vector) {
+      isHovered = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
+    }
+
+    // Get tile from current world coordinates
+    const tile = this.tiles[y][x];
+    const worldPos = new Vector(x, y);
+
+    return { tile, worldPos, isHovered };
+  }
+
+  public iterateTiles (callback: WorldIterationCallback, mouseWorldPos?: Vector): void {
+    for (let y = 0; y < this.tiles.length; y++) {
+      for (let x = 0; x < this.tiles[y].length; x++) {
+        const tileInfo = this.getTileInfo(x, y, mouseWorldPos);
+        callback(tileInfo);
+      }
+    }
   }
 
   public onTileClicked (pos: Vector): void {
@@ -122,6 +167,7 @@ export default class World {
     if (newTile !== null) {
       // Set damage of new tile to damage of old tile
       newTile.damage = tile.damage;
+      newTile.damageTextures = tile.damageTextures;
 
       // Update world
       this._tiles[pos.y][pos.x] = newTile;
@@ -136,15 +182,15 @@ export default class World {
   public getSurroundingTileCoords (v: Vector, radius: number = 1, includeSelf: boolean = true): Vector[] {
     const tiles: Vector[] = [];
 
-    for (let y = v.y - Math.ceil(radius); y <= v.y + Math.ceil(radius); y++) {
+    for (let y = v.y - BitMath.ceil(radius); y <= v.y + BitMath.ceil(radius); y++) {
       if (!this._tiles[y]) {
         continue;
       }
 
-      for (let x = v.x - Math.ceil(radius); x <= v.x + Math.ceil(radius); x++) {
+      for (let x = v.x - BitMath.ceil(radius); x <= v.x + BitMath.ceil(radius); x++) {
         if (!this._tiles[y][x] ||
           (x === v.x && y === v.y && !includeSelf) ||
-          new Vector(v.x - x, v.y - y).length > Math.ceil(radius)) {
+          new Vector(v.x - x, v.y - y).length > BitMath.ceil(radius)) {
           continue;
         }
 
@@ -155,14 +201,33 @@ export default class World {
     return tiles;
   }
 
-  public getRandomOutsidePos (): Vector {
-    // Make spawn radius twice the game area's diameter
-    const spawnRadius = this.CENTER.length * 3;
+  public getRandomOutsidePos (radiusMultiplier: number = 3): Vector {
+    const spawnRadius = this.CENTER.length * radiusMultiplier;
 
     // Set position randomly around the game area
     return new Vector(spawnRadius, 0)
       .rotateDeg(Math.random() * 360)
       .add(this.CENTER.x, this.CENTER.y);
+  }
+
+  public getRandomWheatPosition (): Vector | null {
+    const wheatTilePositions = [];
+
+    for (let y = 0; y < this._tiles.length; y++) {
+      for (let x = 0; x < this._tiles[y].length; x++) {
+        const tile = this._tiles[y][x];
+       
+        if (tile instanceof WheatTile) {
+          wheatTilePositions.push(new Vector(x, y));
+        }
+      }
+    }
+
+    if (!wheatTilePositions.length) {
+      return null;
+    }
+
+    return wheatTilePositions[BitMath.floor(Math.random() * wheatTilePositions.length)];
   }
 
   /**
@@ -173,28 +238,34 @@ export default class World {
    * @param [pos] - Position to spawn enemy at (Randomly computed if not given)
    * @param randomShift - Vector to randomly shift position by
    */
-  public spawnEnemy (pos: Vector | null = null, randomShift?: Vector): EntityInterface {
-    // No position given
-    if (pos === null) {
+  public spawnEntity<E extends EntityInterface> (entity: { new(): E }, pos?: Vector, randomShift?: Vector): E {
+    if (!pos) {
       pos = this.getRandomOutsidePos();
     }
 
-    if (randomShift) {
-      const shiftVector = new Vector(
-        Math.random() * randomShift.x,
-        Math.random() * randomShift.y
-      ).rotateDeg(Math.random() * 360);
-
-      pos = pos.add(shiftVector.x, shiftVector.y);
+    if (!randomShift) {
+      randomShift = new Vector(Math.random() * 3, Math.random() * 3);
     }
 
-    const enemy = new RobotEntity(pos.x, pos.y);
-    this._entities.push(enemy);
+    const shiftVector = new Vector(
+      Math.random() * randomShift.x,
+      Math.random() * randomShift.y
+    ).rotateDeg(Math.random() * 360);
 
-    return enemy;
+    pos = pos.add(shiftVector.x, shiftVector.y);
+
+    const spawnedEntity = new entity();
+    spawnedEntity.position = pos;
+    this._entities.push(spawnedEntity);
+
+    return spawnedEntity;
   }
 
-  public explode (pos: Vector, radius: number, maxRadius: number): void {
+  public removeEntity (entity: Entity): void {
+    this._entities = this._entities.filter((e) => e !== entity);
+  }
+
+  public createExplosion (pos: Vector, radius: number, maxRadius: number): void {
     // Get coordinates for surrounding tiles
     const surroundingTileCoords = this.getSurroundingTileCoords(
       pos,
@@ -254,16 +325,47 @@ export default class World {
     for (const entity of this.entities) {
       entity.update(delta);
 
-      // Is robot and has finished exploding
-      if (entity instanceof RobotEntity && entity.hasCompletedExplosion) {
+      // Is bomb and has finished exploding
+      if (entity instanceof BombEntity && entity.hasCompletedExplosion) {
         // Remove this entity from list
-        this._entities = this._entities.filter((v) => v !== entity);
+        this.removeEntity(entity);
 
         const entityWorldPos = entity.position.floor();
-        const radius = BitMath.floor(Math.random() * (entity.MAX_EXPLOSION_RADIUS + 1));
+        const radius = BitMath.floor(Math.random() * (BombEntity.MAX_EXPLOSION_RADIUS + 1));
         
-        this.explode(entityWorldPos, radius, entity.MAX_EXPLOSION_RADIUS);
+        this.createExplosion(entityWorldPos, radius, BombEntity.MAX_EXPLOSION_RADIUS);
       }
+
+      // Is robot and has prepared bomb plant
+      if (entity instanceof RobotEntity) {
+        if (entity.hasStartedBombPlant && !entity.bomb) {
+          entity.bomb = this.spawnEntity(BombEntity, entity.position.add(0, 0.5), new Vector(0.5, 0.5));
+        }
+
+        // Robot has not planted bomb yet
+        if (entity.hasCompletedBombPlant && !entity.bomb?.hasStartedExploding) {
+          entity.bomb?.ignite();
+
+          // Start running away
+          entity.target = this.getRandomOutsidePos(7);
+          entity.speed = 3 * entity.speed;
+
+          // Has completed running away
+          if (entity.hasCompletedMove) {
+            this.removeEntity(entity);
+          }
+        }
+      }
+    }
+
+    // Spawn enemies scheduled to spawn
+    while (this._enemiesScheduledToSpawn > 0) {
+      this._enemiesScheduledToSpawn--;
+
+      const robotEntity = this.spawnEntity(RobotEntity);
+
+      const wheatTilePosition = this.getRandomWheatPosition();
+      robotEntity.target = wheatTilePosition ? wheatTilePosition : this.randomPosition;
     }
 
     // Start spawning enemies at more than 50 planted tiles/min
@@ -278,15 +380,9 @@ export default class World {
         for (let groupIndex = 0; groupIndex < spawnableGroupCount; groupIndex++) {
           // Determine random group size
           const groupSize = BitMath.floor(Math.random() * 3) + 1;
-          const spawnPos = this.getRandomOutsidePos();
 
-          // Create each enemy for set group size
-          for (let enemyIndex = 0; enemyIndex < groupSize; enemyIndex++) {
-            const enemy = this.spawnEnemy(spawnPos, new Vector(Math.random() * 3, Math.random() * 3));
-
-            // Assign random world coordinates as target for spawned enemie
-            enemy.target = new Vector(Math.random() * this.SIZE, Math.random() * this.SIZE).floor();
-          }
+          // Schedule enemy group to spawn
+          this.scheduleEnemySpawn(groupSize);
 
           // Push time enemy group was created at
           this._enemyGroupsPerMin.push(Date.now());

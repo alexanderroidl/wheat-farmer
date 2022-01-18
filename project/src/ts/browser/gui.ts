@@ -1,23 +1,22 @@
-
-import BitMath from "../core/bit-math";
-import { Inventory, InventoryItem } from "../base/inventory";
-import Tile from "../tiles/tile";
-import Util from "../core/util";
-import Player from "../base/player";
-import World from "../base/world";
+import { BrowserMouse } from "./browser";
 import Camera from "../base/camera";
-import Renderer from "../core/renderer";
-import Mouse from "./mouse";
+import { Inventory, InventoryItem } from "../base/inventory";
+import Player from "../base/player";
+import Renderer from "../base/renderer";
+import World from "../base/world";
+import Util from "../core/util";
+import Tile from "../tiles/tile";
+import BitMath from "../core/bit-math";
 
 export default class Gui {
-  private _mouse: Mouse;
+  private _mouse: BrowserMouse;
 
   private _statsDisplay: HTMLDivElement = document.createElement("div");
   private _worldStats: HTMLDivElement = document.createElement("div");
   private _shop: HTMLDivElement | null = null;
   private _inventory: HTMLDivElement | null = null;
 
-  constructor (mouse: Mouse) {
+  constructor (mouse: BrowserMouse) {
     this._mouse = mouse;
 
     this.setupDOM();
@@ -34,21 +33,21 @@ export default class Gui {
     // Keyboard info
     const menuInfo = document.createElement("div");
     menuInfo.classList.add("keyboard-info-row");
-    menuInfo.innerHTML = "<span>m</span> Open menu";
+    menuInfo.innerHTML = "<span>m</span> Menu";
     menuInfo.addEventListener("click", (e) => {
       // TODO: Implement logic
     });
 
     const shopInfo = document.createElement("div");
     shopInfo.classList.add("keyboard-info-row");
-    shopInfo.innerHTML = "<span>S</span> Open shop";
+    shopInfo.innerHTML = "<span>S</span> Shop";
     shopInfo.addEventListener("click", (e) => {
       // TODO: Implement logic
     });
 
     const inventoryInfo = document.createElement("div");
     inventoryInfo.classList.add("keyboard-info-row");
-    inventoryInfo.innerHTML = "<span>E</span> Open inventory";
+    inventoryInfo.innerHTML = "<span>E</span> Inventory";
     inventoryInfo.addEventListener("click", (e) => {
       // TODO: Implement logic
     });
@@ -103,9 +102,6 @@ export default class Gui {
 
     const stats = [
       {
-        icon: "⌛️",
-        text: Math.floor((Date.now() - world.createdAt) / 1000) + "s"
-      }, {
         icon: "🌱",
         text: world.player.items.getItemAmount("Wheat")
       }, {
@@ -141,18 +137,19 @@ export default class Gui {
     `;
   }
 
-  private getRendererDebugHTML (renderer: Renderer): string {
+  private getRendererDebugHTML (renderer: Renderer, fps: number): string {
     const camera = renderer.camera;
 
-    const xStart = Math.floor(camera.position.x / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const xEnd = Math.ceil((camera.position.x + window.innerWidth) / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const yStart = Math.floor(camera.position.y / (renderer.SQUARE_SIZE * camera.zoomAmount));
-    const yEnd = Math.ceil((camera.position.y + window.innerHeight) / (renderer.SQUARE_SIZE * camera.zoomAmount));
+    const xStart = BitMath.floor(camera.position.x / (Renderer.SQUARE_SIZE * camera.zoomAmount));
+    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (Renderer.SQUARE_SIZE * camera.zoomAmount));
+    const yStart = BitMath.floor(camera.position.y / (Renderer.SQUARE_SIZE * camera.zoomAmount));
+    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (Renderer.SQUARE_SIZE * camera.zoomAmount));
 
     return `
       <strong>Renderer:</strong><br>
       <strong>X:</strong> (${xStart}, ${xEnd})<br> 
       <strong>Y:</strong> (${yStart}, ${yEnd})<br>
+      <strong>FPS:</strong> ${fps.toFixed(1)}
     `;
   }
 
@@ -162,11 +159,11 @@ export default class Gui {
         `;
   }
 
-  public renderDebug (camera: Camera, renderer: Renderer, world: World): void {
+  public renderDebug (camera: Camera, renderer: Renderer, world: World, fps: number): void {
     const debugHTMLParts = [
       this.getCameraDebugHTML(camera),
       this.getMouseDebugHTML(camera),
-      this.getRendererDebugHTML(renderer),
+      this.getRendererDebugHTML(renderer, fps),
       this.getMiscDebugHTML(world)
     ];
 
@@ -242,7 +239,7 @@ export default class Gui {
   }
 
   public onShopItemBuy (inventory: Inventory, item: InventoryItem, cb?: () => void): void {
-    const maxBuyAmount = Math.floor(inventory.money / item.type.buyPrice);
+    const maxBuyAmount = BitMath.floor(inventory.money / item.type.buyPrice);
 
     this.sellDialog(maxBuyAmount, (amount: number) => {
       const purchaseResult = inventory.purchaseItem(

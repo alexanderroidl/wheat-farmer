@@ -1,13 +1,21 @@
-import Renderer from "core/renderer";
+import Renderer, { RendererLayer } from "../base/renderer";
 import Vector from "../core/vector";
+
+export interface TileDamageTextureInterface {
+  textureIdOffset: number,
+  angle: number,
+  worldOffset: Vector,
+  size: number,
+  opacity: number
+}
 
 export default interface TileInterface {
     readonly name: string;
     readonly timeCreated: number;
 
     damage: number;
-    backgroundColor: string | null;
-    textColor: string | null;
+    damageTextures: TileDamageTextureInterface[];
+    textureId: number | null;
 
     hasCollision: () => boolean;
     getChar: (preview: boolean) => string | null;
@@ -15,15 +23,10 @@ export default interface TileInterface {
 
     render: (renderer: Renderer, params: {
       ctx: CanvasRenderingContext2D;
+      layer: RendererLayer;
       worldPosition: Vector;
       isHovered?: boolean;
       opacity?: number | null;
-    }) => void;
-
-    renderLatest: (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D;
-      worldPosition: Vector;
-      isHovered?: boolean;
     }) => void;
 
     update: (delta: number) => void;

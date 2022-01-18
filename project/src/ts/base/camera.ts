@@ -4,7 +4,7 @@ export default class Camera {
   public readonly DEFAULT_ZOOM = 1;
   public readonly MIN_ZOOM = 0.25;
 
-  private _position: Vector = new Vector(0, 0);
+  private _position: Vector = new Vector(0);
   private _zoomAmount: number = this.DEFAULT_ZOOM;
   private _worldSquareSize: number;
 
