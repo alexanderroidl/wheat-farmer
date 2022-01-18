@@ -9,8 +9,9 @@ Farming/Tower Defense web-based game. **[Live demo (desktop-only)](https://360-n
 * 🌾 Linted with **ESLint**
 * 🌾 Built using **Node**/**Gulp** (**Browserify** + **TSify** + **Babelify**)
 * 🌾 Deployed with **Docker** multi-stage build
-* 🌾 Rendering on HTMLCanvas
-* 🌾 Soundtrack by collaborator [@julianarnold96](https://github.com/julianarnold96)
+* 🌾 Rendering on **HTML5 Canvas**
+* 🌾 **Selfmade graphics**
+* 🌾 **Soundtrack** by collaborator [@julianarnold96](https://github.com/julianarnold96)
 
 ![](preview.gif)
 
@@ -32,14 +33,14 @@ Farming/Tower Defense web-based game. **[Live demo (desktop-only)](https://360-n
 **The game is currently at early alpha developing stage**, meaning it is neither complete, nor bug-free.
 
 **Implemented mechanics:**
-- Gather wheat by planting seeds and waiting for your crops to grow, harvesting them upon completion ✅ 
-- Avoid hostile robot attacks while farming ✅
-- Purchase and build up walls for defense ✅
-- Manage your inventory ✅
-- Purchase items in the shop ✅
+- ✅ Gather wheat by planting seeds and waiting for your crops to grow, harvesting them upon completion
+- ✅ Avoid hostile robot attacks while farming
+- ✅ Purchase and build up walls for defense
+- ✅ Manage your inventory
+- ✅ Purchase items in the shop
 
 **Road map:**
-* Automate farming by upgrading technology ❌
+* \**to be written*\*
 
 
 # 2. Dependencies
