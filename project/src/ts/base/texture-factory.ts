@@ -36,11 +36,6 @@ export default class TextureFactory {
 
   public async loadTexturesFromImage (map: HTMLImageElement): Promise<Texture[]> {
     const canvas = new Canvas(map.width, map.height);
-
-    while (!canvas.ctx) {
-      // Do nothing
-    }
-
     canvas.ctx.drawImage(map, 0, 0, map.width, map.height);
 
     // Extract pixel data for each texture

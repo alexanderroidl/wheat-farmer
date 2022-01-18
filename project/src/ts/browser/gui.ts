@@ -1,23 +1,15 @@
 
-import BitMath from "../core/bit-math";
-import { Inventory, InventoryItem } from "../base/inventory";
-import Tile from "../tiles/tile";
-import Util from "../core/util";
-import Player from "../base/player";
-import World from "../base/world";
-import Camera from "../base/camera";
-import Renderer from "../base/renderer";
-import Mouse from "./mouse";
+import { BrowserMouse } from "./browser";
 
 export default class Gui {
-  private _mouse: Mouse;
+  private _mouse: BrowserMouse;
 
   private _statsDisplay: HTMLDivElement = document.createElement("div");
   private _worldStats: HTMLDivElement = document.createElement("div");
   private _shop: HTMLDivElement | null = null;
   private _inventory: HTMLDivElement | null = null;
 
-  constructor (mouse: Mouse) {
+  constructor (mouse: BrowserMouse) {
     this._mouse = mouse;
 
     this.setupDOM();

@@ -2,11 +2,15 @@
 import Canvas from "../core/canvas";
 import Vector from "../core/vector";
 import Gui from "./gui";
-import Mouse from "./mouse";
+
+export class BrowserMouse {
+  public position: Vector = new Vector(0, 0);
+  public pressed: boolean = false;
+}
 
 export default class Browser {
   private _canvas: Canvas[] = [];
-  private _mouse: Mouse = new Mouse();
+  private _mouse: BrowserMouse = new BrowserMouse();
   private _gui: Gui = new Gui(this._mouse);
   private _windowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
 
@@ -18,7 +22,7 @@ export default class Browser {
     return this._gui;
   }
 
-  public get mouse (): Mouse {
+  public get mouse (): BrowserMouse {
     return this._mouse;
   }
 
@@ -282,10 +286,6 @@ export default class Browser {
 
     if (id != null) {
       canvas.element.id = id;
-    }
-
-    if (!canvas.ctx) {
-      throw Error("Canvas 2d context not found");
     }
     
     return canvas.ctx;

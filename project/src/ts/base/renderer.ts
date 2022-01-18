@@ -224,9 +224,6 @@ export default class Renderer {
 
   public static async generateImageFromData (imageData: ImageData, size: Vector = new Vector(imageData.width, imageData.height)): Promise<HTMLImageElement> {
     const canvas = new Canvas(imageData.width, imageData.height);
-    while (!canvas.ctx) {
-      // Do nothing
-    }
 
     canvas.ctx.imageSmoothingEnabled = false;
     canvas.ctx.putImageData(imageData, 0, 0);

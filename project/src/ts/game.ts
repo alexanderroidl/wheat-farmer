@@ -47,7 +47,7 @@ export default class Game {
   }
 
   private setupCLI (): void {
-    if (Browser.getParameter("debug")) {
+    if (Browser.debug) {
       window.wheatFarmer = {
         spawnEnemy: (count: number = 1): void => {
           console.log(`Scheduled ${count} enemies to spawn`);
@@ -207,7 +207,7 @@ export default class Game {
     this._browser.gui.renderWorldStatsHTML(this._world);
 
     // Debug GET parameter provided
-    if (Browser.getParameter("debug")) {
+    if (Browser.debug) {
       // Render debug info
       this._browser.gui.renderDebug(this._renderer.camera, this._renderer, this._world, this._loop.fps);
     }
