@@ -1,5 +1,12 @@
-
 import { BrowserMouse } from "./browser";
+import Camera from "../base/camera";
+import { Inventory, InventoryItem } from "../base/inventory";
+import Player from "../base/player";
+import Renderer from "../base/renderer";
+import World from "../base/world";
+import Util from "../core/util";
+import Tile from "../tiles/tile";
+import BitMath from "../core/bit-math";
 
 export default class Gui {
   private _mouse: BrowserMouse;
