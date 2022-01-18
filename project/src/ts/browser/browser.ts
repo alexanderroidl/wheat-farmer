@@ -5,10 +5,14 @@ import Gui from "./gui";
 import Mouse from "./mouse";
 
 export default class Browser {
-  private _canvas: Canvas | null = null;
+  private _canvas: Canvas[] = [];
   private _mouse: Mouse = new Mouse();
   private _gui: Gui = new Gui(this._mouse);
   private _windowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
+
+  public static get debug (): boolean {
+    return Boolean(Browser.getParameter("debug"));
+  }
 
   public get gui (): Gui {
     return this._gui;
@@ -109,11 +113,11 @@ export default class Browser {
    * @param {Vector} oldSize
    */
   private _onResize (newSize: Vector, oldSize: Vector): void {
+    this._windowSize = new Vector(window.innerWidth, window.innerHeight);
+
     this.updateRendererCanvasSize();
 
     this.onResize(newSize, oldSize);
-
-    this._windowSize = new Vector(window.innerWidth, window.innerHeight);
   }
 
   /**
@@ -262,35 +266,40 @@ export default class Browser {
    * Initially setup renderer canvas
    * @returns {CanvasRenderingContext2D}
    */
-  public async initializeRendererCanvas (id?: string): Promise<CanvasRenderingContext2D> {
-    this._canvas = new Canvas();
+  public initializeRendererCanvas (id: string | null = null): CanvasRenderingContext2D {
+    const canvas = new Canvas();
+    this._canvas.push(canvas);
     
     this.updateRendererCanvasSize();
 
     const canvases = document.body.querySelectorAll("canvas");
     if (canvases.length) {
       const lastCanvas = canvases[canvases.length - 1];
-      lastCanvas.parentNode?.insertBefore(this._canvas.element, lastCanvas.nextSibling);
+      lastCanvas.parentNode?.insertBefore(canvas.element, lastCanvas.nextSibling);
     } else {
-      document.body.prepend(this._canvas.element);
+      document.body.prepend(canvas.element);
     }
 
-    let context;
-    // eslint-disable-next-line no-cond-assign
-    while ((context = this._canvas.ctx) === null) {
-      // Do nothing
+    if (id != null) {
+      canvas.element.id = id;
     }
 
-    return context;
+    if (!canvas.ctx) {
+      throw Error("Canvas 2d context not found");
+    }
+    
+    return canvas.ctx;
   }
 
   /**
    * Update renderer's canvas size to current window dimensions
    */
   private updateRendererCanvasSize (): void {
-    if (this._canvas !== null) {
-      this._canvas.width = this._windowSize.x;
-      this._canvas.height = this._windowSize.y;
+    this._canvas = this._canvas.filter(c => Boolean(c.element));
+
+    for (const canvas of this._canvas) {
+      canvas.width = this.windowSize.x;
+      canvas.height = this.windowSize.y;
     }
   }
 

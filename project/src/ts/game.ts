@@ -190,7 +190,10 @@ export default class Game {
     this._renderer.size = this._browser.windowSize;
 
     // Render title screen if it's not hidden and canvas context is given
-    this._renderer.renderTitleScreen(this._titleScreen);
+    if (!this._titleScreen.hidden) {
+      this._renderer.renderTitleScreen(this._titleScreen);
+      return;
+    }
 
     // Stop here if game is currently paused
     if (this._paused) {

@@ -80,12 +80,18 @@ export default class Renderer {
 
   private async setupCanvasLayers (browser: Browser): Promise<void> {
     for (let i = 0; i < Renderer.LAYERS_COUNT; i++) {
-      this._layers[i] = await browser.initializeRendererCanvas();
+      const layerName = Browser.debug ? this.getLayerTypeName(i).toLowerCase() : null;
+      this._layers[i] = await browser.initializeRendererCanvas(layerName);
     }
   }
 
   private async setupTextures (): Promise<void> {
     this._textures = await new TextureFactory(Renderer.TEXTURE_RES).loadTexturesFromFile("sprites.png");
+  }
+
+  public getLayerTypeName (layerType: RendererLayer): string {
+    const layerKeys = Object.keys(RendererLayer);
+    return layerKeys[layerType + layerKeys.length / 2];
   }
 
   public getTextureById (id: number): Texture | null {
@@ -292,7 +298,9 @@ export default class Renderer {
       }
     }
 
-    if (layer === RendererLayer.GroundEffects || layer === RendererLayer.GUI) {
+    if (layer === RendererLayer.Background ||
+        layer === RendererLayer.GroundEffects ||
+        layer === RendererLayer.GUI) {
       world.iterateTiles((tileInfo: WorldTileInfo) => {
         // Invoke last render
         tileInfo.tile.render(this, {

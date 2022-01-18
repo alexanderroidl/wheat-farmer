@@ -41,7 +41,7 @@ export default class WheatTile extends Tile implements TradeableInterface {
       worldPosition: Vector,
       isHovered?: boolean
     }): void {
-      if (params.layer === RendererLayer.Tiles) {
+      if (params.layer === RendererLayer.Background) {
         const backgroundTexture = renderer.getTextureById(0);
 
         if (backgroundTexture) {
