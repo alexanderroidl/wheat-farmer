@@ -81,7 +81,7 @@ export default class Renderer {
   private async setupCanvasLayers (browser: Browser): Promise<void> {
     for (let i = 0; i < Renderer.LAYERS_COUNT; i++) {
       const layerName = Browser.debug ? this.getLayerTypeName(i).toLowerCase() : null;
-      this._layers[i] = await browser.initializeRendererCanvas(layerName);
+      this._layers[i] = browser.initializeRendererCanvas(layerName);
     }
   }
 
@@ -226,7 +226,8 @@ export default class Renderer {
     const canvas = new Canvas(imageData.width, imageData.height);
 
     canvas.ctx.imageSmoothingEnabled = false;
-    canvas.ctx.putImageData(imageData, 0, 0);
+    canvas.ctx.putImageData(imageData, 0, 0, 0, 0, size.x, size.y);
+    
     const img = await canvas.image;
 
     // Image doesn't need to be resized and is immediately resolved
