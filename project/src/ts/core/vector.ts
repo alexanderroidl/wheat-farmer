@@ -19,9 +19,14 @@ export default class Vector {
      * @param x - Initial x coordinate
      * @param y - Initial y coordinate
      */
-    constructor (x: number, y?: number) {
-      this.x = x;
-      this.y = y == null ? x : y;
+    constructor (x: number | Vector, y?: number) {
+      if (x instanceof Vector) {
+        this.x = x.x;
+        this.y = x.y;
+      } else {
+        this.x = x;
+        this.y = y ?? x;
+      }
     }
 
     /**
@@ -31,7 +36,10 @@ export default class Vector {
      * @param y - Added to y coordinate
      * @returns Vector with added coordinates
      */
-    public add (x: number, y?: number): Vector {
+    public add (x: number | Vector, y?: number): Vector {
+      if (x instanceof Vector) {
+        return new Vector(this.x + x.x, this.y + x.y);
+      }
       return new Vector(this.x + x, this.y + (y != null ? y : x));
     }
 
@@ -60,6 +68,10 @@ export default class Vector {
      */
     public ceil (): Vector {
       return new Vector(BitMath.ceil(this.x), BitMath.ceil(this.y));
+    }
+
+    public multiply (multiply: number): Vector {
+      return new Vector(this.x * multiply, this.y * multiply);
     }
 
     /**

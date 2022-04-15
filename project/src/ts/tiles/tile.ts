@@ -1,18 +1,13 @@
-import TileInterface, { TileDamageTextureInterface } from "../interfaces/tile-interface";
-import Vector from "../core/vector";
-import Texture from "../base/texture";
-import Renderer, { RendererLayer } from "../base/renderer";
-import BitMath from "../core/bit-math";
-import Easings from "../core/easings";
+import ITile from "../interfaces/tile";
+import MoveableSprite from "../core/moveable-sprite";
+import { DisplayObject, FrameObject, Texture } from "pixi.js";
 
-export default class Tile implements TileInterface {
+export default class Tile extends MoveableSprite implements ITile {
   public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
   public static readonly COLOR: string = "";
 
-  public name: string = "";
-  public timeCreated: number = Date.now();
-  public damageTextures: TileDamageTextureInterface[] = [];
-
+  public age: number = 0;
+  protected _damageSprites: DisplayObject[] = [];
   private _damage: number = 0;
 
   public get damage (): number {
@@ -20,33 +15,26 @@ export default class Tile implements TileInterface {
   }
 
   public set damage (damage: number) {
-    damage = damage > 1 ? 1 : damage < 0 ? 0 : damage;
-
-    if (damage === 0) {
-      this.damageTextures = [];
-    }
-    if (damage > this._damage) {
-      this.createDamageTextures(damage);
-    }
-    this._damage = damage;
+    this._damage = damage < 0 ? 0 : damage;
   }
 
-  public get textureId (): number | null {
-    return null;
+  public get textureId (): number {
+    return 0;
   }
 
-  private createDamageTextures (damage: number): void {
-    const damageTextureCount = BitMath.floor(damage * 3) + 1;
+  constructor (textures: Texture[] | FrameObject[]) {
+    super(textures);
+  }
 
-    for (let damageTextureNr = 0; damageTextureNr < damageTextureCount; damageTextureNr++) {
-      this.damageTextures.push({
-        textureIdOffset: BitMath.floor(Math.random() * 3),
-        worldOffset: new Vector(Math.random() - 0.5, Math.random() - 0.5),
-        angle: Math.random() * Math.PI * 2,
-        opacity: Math.random() * 0.65 * damage,
-        size: (1 + Easings.easeInCubic(Math.random()) * 2)
-      });
+  public addDamageSprite (...damageSprites: DisplayObject[]): void {
+    if (damageSprites.length) {
+      this._damageSprites.push(...damageSprites);
+      this.addChild(...damageSprites);
     }
+  }
+
+  public getDamageSprites (): DisplayObject[] {
+    return this._damageSprites;
   }
 
   public hasCollision (): boolean {
@@ -57,69 +45,24 @@ export default class Tile implements TileInterface {
     return null;
   }
 
-  public onClicked (): void {
-    // TODO: Implement logic
-  }
+  public updateTile (deltaTime: number): void {
+    super.updateSprite(deltaTime);
 
-  public render (renderer: Renderer, params: {
-    ctx: CanvasRenderingContext2D,
-    layer: RendererLayer,
-    worldPosition: Vector,
-    isHovered?: boolean
-  }): void {
-    if (params.layer === RendererLayer.GroundEffects) {
-      for (const damageTexture of this.damageTextures) {
-        const texture = renderer.getTextureById(24 + damageTexture.textureIdOffset);
-        if (!texture) {
-          continue;
-        }
-  
-        renderer.paintTexture(params.ctx, {
-          worldPosition: params.worldPosition.add(damageTexture.worldOffset.x, damageTexture.worldOffset.y),
-          texture: texture,
-          opacity: damageTexture.opacity * this.damage,
-          rotate: damageTexture.angle,
-          size: damageTexture.size
-        });
+    this.age += deltaTime;
+    this.damage -= deltaTime / (Tile.DAMAGE_HEAL_TIME * 100);
+
+    // Iterate damage tiles
+    for (const damageSprite of this._damageSprites) {
+      damageSprite.alpha -= this.damage / deltaTime / 100;
+
+      // Remove damage sprite as child if alpha is zero
+      if (damageSprite.alpha <= 0) {
+        this.removeChild(damageSprite);
       }
     }
 
-    if (params.layer === RendererLayer.Tiles) {
-      if (this.textureId === null) {
-        return;
-      }
-      
-      const texture = renderer.getTextureById(this.textureId);
-      if (!(texture instanceof Texture)) {
-        return;
-      }
-  
-      renderer.paintTexture(params.ctx, {
-        worldPosition: params.worldPosition,
-        texture: texture
-      });
-    }
-
-    if (params.layer === RendererLayer.GUI) {
-      // Is hovered and has damage
-      if (params.isHovered && this.damage > 0) {
-        // Calculate world position for progress bar
-        const damageProgressWorldPos = new Vector(
-          params.worldPosition.x + 0.25 / 2,
-          params.worldPosition.y + 0.10
-        );
-
-        // Render damage progress bar
-        renderer.paintProgressBar(params.ctx, {
-          worldPosition: damageProgressWorldPos,
-          progress: this.damage,
-          color: "red"
-        });
-      }
-    }
-  }
-
-  public update (delta: number): void {
-    this.damage -= delta / Tile.DAMAGE_HEAL_TIME;
+    this._damageSprites = this._damageSprites.filter((sprite: DisplayObject) => {
+      return Boolean(this.parent);
+    });
   }
 }

@@ -1,11 +1,11 @@
-import SlideInterface from "../interfaces/slide-interface";
-import Renderer from "../base/renderer";
+import ISlide from "../interfaces/slide";
+import Graphics from "../base/graphics";
 import Vector from "../core/vector";
 import Sound from "../base/sound"; // TODO: Resolve issue for importing from base URL
 import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
 import Color from "../core/color";
 
-export default class TitleScreenLogoSlide implements SlideInterface {
+export default class TitleScreenLogoSlide implements ISlide {
   // Generated with "Text To ASCII Art Generator (TAAG)" by patorjk.com
   // https://patorjk.com/software/taag/#p=display&f=Sub-Zero&t=Wheat%20Farmer%0A
   private static readonly LOGO: string[] = [
@@ -34,16 +34,16 @@ export default class TitleScreenLogoSlide implements SlideInterface {
   private static readonly COLOR_TEXT_HEX: string = "#f3bc3c";
   private static readonly COLOR_TEXT_SHADOW_HEX?: string = Color.fromHex(TitleScreenLogoSlide.COLOR_TEXT_HEX)?.lightenDarken(20)?.toHex();
 
-  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+  public render (graphics: Graphics, ctx: CanvasRenderingContext2D): void {
     const targetLogoWidth = 0.75; // 75 % screen width
 
     // Calculate font size based off target logo screen size
-    let fontSize = (renderer.width / (20 * TitleScreenLogoSlide.LONGEST_LINE_WIDTH) * 1.65) * targetLogoWidth;
+    let fontSize = (graphics.width / (20 * TitleScreenLogoSlide.LONGEST_LINE_WIDTH) * 1.65) * targetLogoWidth;
     let lineHeight = 1;
 
     // Paint black background
     ctx.fillStyle = TitleScreenLogoSlide.COLOR_BACKGROUND_HEX;
-    ctx.fillRect(0, 0, renderer.width, renderer.height);
+    ctx.fillRect(0, 0, graphics.width, graphics.height);
 
     // Setup basic text effects
     ctx.fillStyle = TitleScreenLogoSlide.COLOR_TEXT_HEX;
@@ -67,8 +67,8 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     for (let logoLineIndex = 0; logoLineIndex < TitleScreenLogoSlide.LOGO.length; logoLineIndex++) {
       const logoLineOffset = 20 * lineHeight * fontSize * (logoLineIndex - TitleScreenLogoSlide.LOGO.length);
 
-      const logoTextX = BitMath.floor(renderer.width / 2);
-      const logoTextY = BitMath.floor(renderer.height / 2 + logoLineOffset + yShift);
+      const logoTextX = BitMath.floor(graphics.width / 2);
+      const logoTextY = BitMath.floor(graphics.height / 2 + logoLineOffset + yShift);
 
       ctx.fillText(TitleScreenLogoSlide.LOGO[logoLineIndex], logoTextX, logoTextY);
     }
@@ -86,8 +86,8 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     for (let descriptionLineIndex = 0; descriptionLineIndex < TitleScreenLogoSlide.DESCRIPTION.length; descriptionLineIndex++) {
       const descriptionLineOffset = lineHeight * fontSize * (descriptionLineIndex + DESCRIPTION_MARGIN_LINES);
 
-      const descriptionTextX = BitMath.floor(renderer.width / 2);
-      const descriptionTextY = BitMath.floor(renderer.height / 2 + descriptionLineOffset);
+      const descriptionTextX = BitMath.floor(graphics.width / 2);
+      const descriptionTextY = BitMath.floor(graphics.height / 2 + descriptionLineOffset);
 
       ctx.fillText(TitleScreenLogoSlide.DESCRIPTION[descriptionLineIndex], descriptionTextX, descriptionTextY);
     }
@@ -103,7 +103,7 @@ export default class TitleScreenLogoSlide implements SlideInterface {
     // Iterate and output credit lines
     for (let cLine = 0; cLine < TitleScreenLogoSlide.CREDITS.length; cLine++) {
       const creditsOffset = lineHeight * fontSize * (cLine);
-      ctx.fillText(TitleScreenLogoSlide.CREDITS[cLine], renderer.width / 2, renderer.height - (1.5 * 3 * fontSize) + creditsOffset);
+      ctx.fillText(TitleScreenLogoSlide.CREDITS[cLine], graphics.width / 2, graphics.height - (1.5 * 3 * fontSize) + creditsOffset);
     }
 
     // Reset shadow

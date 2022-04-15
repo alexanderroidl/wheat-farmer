@@ -1,10 +1,11 @@
-import GameLoop from "./core/game-loop";
+import * as PIXI from "pixi.js";
 import Browser from "./browser/browser";
-import World from "./base/world";
-import Renderer from "./base/renderer";
+import { World } from "./base/world";
+import Graphics from "./base/graphics";
 import Vector from "./core/vector";
 import TitleScreen from "./title-screen/title-screen";
 import Sound from "./base/sound";
+import RobotEntity from "./entities/robot";
 
 declare global {
   interface Window {
@@ -15,17 +16,21 @@ declare global {
 }
 
 export default class Game {
+  public static readonly clickCooldownMs = 350;
   private static _instance: Game;
 
-  private _loop: GameLoop = new GameLoop();
-  private _world: World = new World();
+  private _graphics: Graphics;
+  private _pixi: PIXI.Application;
+  private _world?: World;
   private _browser: Browser = new Browser();
-  private _renderer: Renderer = new Renderer(this._browser);
   private _titleScreen: TitleScreen = new TitleScreen();
   private _mouseDown: boolean = false;
-  private _lastClickAt: number = Date.now();
+  private _timeSinceLastClick: number = 0;
   private _paused: boolean = false;
   private _titleScreenHiddenBefore: boolean | null = null;
+  private _lastUpdateRun: number = 0;
+  private _keysPressed: string[] = [];
+  private _clickedAt: Vector | null = null;
 
   public static get instance (): Game {
     if (!Game._instance) {
@@ -36,20 +41,89 @@ export default class Game {
   }
 
   constructor () {
-    this.setupLoop();
+    this._pixi = this.setupPIXI();
+    Browser.addPixi(this._pixi);
+
+    this._graphics = new Graphics(() => {
+      this._world = this.setupWorld();
+    });
     this.setupMouse();
     this.setupKeyboard();
     this.setupTouchScreen();
-    this.setupWindow();
     this.setupCLI();
+  }
 
-    this._renderer.camera.setup(this._world.SIZE);
+  private setupWorld (): World {
+    const world = new World(this._graphics);
+
+    // Create and add background tile sprite
+    const bgSprite = this.createBackgroundSprite();
+    this._pixi.stage.addChild(bgSprite);
+
+    const debug = new PIXI.Text("", {
+      fontSize: 10
+    });
+    debug.scale.set(1.0 / Graphics.SQUARE_SIZE);
+    debug.anchor.set(0.5, 0.5);
+      
+    // World has added sprite
+    world.on("spriteAdded", (sprite: PIXI.Sprite) => {
+      this._pixi.stage.addChild(sprite);
+    });
+
+    // World has removed sprite
+    world.on("spriteRemoved", (sprite: PIXI.Sprite) => {
+      this._pixi.stage.removeChild(sprite);
+    });
+
+    // Setup camera for world size
+    this._graphics.camera.setup(world.SIZE);
+
+    this._graphics.camera.on("moved", (position: Vector) => {
+      bgSprite.pivot.set(position.x - position.x % Graphics.SQUARE_SIZE, position.y - position.y % Graphics.SQUARE_SIZE);
+      debug.text = `Camera: ${position}`;
+    });
+
+    this._graphics.camera.on("zoomed", (e) => {
+      // DO NOTHING
+    });
+
+    // Graphics finished loading -> add ticker
+    this._pixi.ticker.add((delta: number) => {
+      this.update(delta, world);
+    });
+
+    // Fill world with empty squares
+    world.fillWithEmpty();
+    world.create(RobotEntity, RobotEntity.textureNames, new Vector(-3));
+
+    this._graphics.camera.position = new Vector(-3, -3);
+
+    this._pixi.stage.addChild(debug);
+
+    return world;
+  }
+
+  private setupPIXI (): PIXI.Application {
+    const pixi = new PIXI.Application({
+      resizeTo: window,
+      backgroundColor: 0x1099bb,
+      resolution: window.devicePixelRatio || 1
+    });
+
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+
+    return pixi;
   }
 
   private setupCLI (): void {
     if (Browser.debug) {
       window.wheatFarmer = {
         spawnEnemy: (count: number = 1): void => {
+          if (!this._world) {
+            console.error("World not ready yet");
+            return;
+          }
           console.log(`Scheduled ${count} enemies to spawn`);
           this._world.scheduleEnemySpawn(count);
         }
@@ -58,67 +132,73 @@ export default class Game {
   }
 
   private setupMouse (): void {
-    // On browser scroll
     this._browser.onScroll = (delta: number) => {
-      this._renderer.camera.zoom(-delta / 5);
+      this._graphics.camera.zoom(-delta / 5);
     };
 
-    // On browser mouse down
     this._browser.onMouseDown = (pos: Vector) => {
       this._mouseDown = true;
     };
 
-    // On browser mouse up
     this._browser.onMouseUp = (pos: Vector) => {
       this._mouseDown = false;
     };
 
-    // On browser mouse move
     this._browser.onMouseMove = (pos: Vector) => {
-      this._renderer.mousePos = new Vector(pos.x, pos.y);
+      this._graphics.mousePos = new Vector(pos.x, pos.y);
     };
 
-    // On browser mouse click
     this._browser.onMouseClick = (pos: Vector) => {
+      this._clickedAt = pos;
+
       // Title screen was clicked
       if (!this._titleScreen.hidden) {
         this._titleScreen.onClick(pos);
-        this._lastClickAt = Date.now();
+        this._timeSinceLastClick = 0;
         return;
       }
     };
   }
 
   private setupKeyboard (): void {
+    this._browser.onKeyDown = (keyCode: number, code: string) => {
+      if (!this._keysPressed.includes(code)) {
+        this._keysPressed.push(code);
+      }
+    };
+
     // On browser key up
     this._browser.onKeyUp = (keyCode: number, code: string) => {
-      if (this._titleScreen.hidden) {
-        // "Escape" pressed
-        if (code === "Escape") {
-          this._titleScreen.hidden = false;
-          return;
-        }
-
-        // "S" pressed
-        if (code === "KeyS") {
-          this._paused = true;
-
-          // Open shop
-          this._browser.gui.openShop(this._world.player.items, () => {
-            this._paused = false;
-          });
-        }
-
-        // "E" pressed
-        if (code === "KeyE") {
-          this._paused = true;
-
-          // Open inventory
-          this._browser.gui.openInventory(this._world.player, this._world.player.items, () => {
-            this._paused = false;
-          });
-        }
+      const codeIndex = this._keysPressed.indexOf(code);
+      if (codeIndex !== -1) {
+        delete this._keysPressed[codeIndex];
       }
+
+      // // "Escape" pressed
+      // if (code === "Escape") {
+      //   this._titleScreen.hidden = false;
+      //   return;
+      // }
+
+      // // "S" pressed
+      // if (code === "KeyS" && this._world) {
+      //   this._paused = true;
+
+      //   // Open shop
+      //   this._browser.gui.openShop(this._world.player.items, () => {
+      //     this._paused = false;
+      //   });
+      // }
+
+      // // "E" pressed
+      // if (code === "KeyE" && this._world) {
+      //   this._paused = true;
+
+      //   // Open inventory
+      //   this._browser.gui.openInventory(this._world.player, this._world.player.items, () => {
+      //     this._paused = false;
+      //   });
+      // }
     };
   }
 
@@ -129,24 +209,35 @@ export default class Game {
     };
   }
 
-  private setupWindow (): void {
-    // On browser window resize
-    this._browser.onResize = (size: Vector, oldSize: Vector) => {
-      const deltaWidth = oldSize.x - size.x;
-      const deltaHeight = oldSize.y - size.y;
+  private update (d: number, world: World): void {
+    const delta = Date.now() - this._lastUpdateRun;
+    this._lastUpdateRun = Date.now();
 
-      // Move camera to be centered again
-      this._renderer.camera.move(
-        deltaWidth / 2,
-        deltaHeight / 2
-      );
-    };
-  }
+    Browser.toggleTitleScreen(!this._titleScreen.hidden);
+
+    const cameraMove = new Vector(0);
+    if (this._keysPressed.includes("KeyW")) {
+      cameraMove.y -= 0.1;
+    }
+
+    if (this._keysPressed.includes("KeyA")) {
+      cameraMove.x -= 0.1;
+    }
+
+    if (this._keysPressed.includes("KeyD")) {
+      cameraMove.x += 0.1;
+    }
+
+    if (this._keysPressed.includes("KeyS")) {
+      cameraMove.y += 0.1;
+    }
+    this._graphics.camera.position.add(cameraMove.multiply(d * this._graphics.z));
 
 
-  private onUpdate (delta: number): void {
-    // TODO: Move to Browser class
-    document.body.classList.toggle("titlescreen", !this._titleScreen.hidden);
+    this._pixi.stage.scale.set(Graphics.SQUARE_SIZE * this._graphics.z);
+    this._pixi.stage.pivot.set(this._graphics.camera.position.x, this._graphics.camera.position.y);
+    this._pixi.stage.x = this._pixi.screen.width / 2;
+    this._pixi.stage.y = this._pixi.screen.height / 2;
 
     if (this._titleScreenHiddenBefore !== this._titleScreen.hidden) {
       if (this._titleScreen.hidden) {
@@ -161,74 +252,49 @@ export default class Game {
     // Update title screen if it's not hidden
     if (!this._titleScreen.hidden) {
       this._titleScreen.update(delta);
-      return;
+      // return;
     }
 
-    // Stop here if game is currently paused
-    if (this._paused) {
-      return;
-    }
+    // // Stop here if game is currently paused
+    // if (this._paused) {
+    //   return;
+    // }
 
     // Update world
-    this._world.update(delta);
-
-    // Trigger click on tile if mouse is down
-    if (this._mouseDown) {
-      // 500ms have passed since last click
-      if ((Date.now() - this._lastClickAt) > 500) {
-        this._lastClickAt = Date.now();
-
-        const worldPos = this._renderer.camera.worldPosFromScreen(this._renderer.mousePos);
-        if (!this._world.onWorldClicked(worldPos)) {
-          this._world.onTileClicked(worldPos.floor());
-        }
-      }
-    }
-  }
-
-  private onRender (interpolation: number) {
-    this._renderer.size = this._browser.windowSize;
-
-    // Render title screen if it's not hidden and canvas context is given
-    if (!this._titleScreen.hidden) {
-      this._renderer.renderTitleScreen(this._titleScreen);
-      return;
-    }
-
-    // Stop here if game is currently paused
-    if (this._paused) {
-      return;
-    }
-
-    // Render world
-    this._renderer.render(this._world);
+    world.update(delta);
 
     // Render stats
-    this._browser.gui.renderWorldStatsHTML(this._world);
+    this._browser.gui.renderWorldStatsHTML(world);
 
     // Debug GET parameter provided
     if (Browser.debug) {
       // Render debug info
-      this._browser.gui.renderDebug(this._renderer.camera, this._renderer, this._world, this._loop.fps);
+      this._browser.gui.renderDebug(this._graphics.camera, this._graphics, world, 42); // TODO: Set PIXI.js fps
     }
+
+    // Trigger click on tile if mouse is down
+    let clicked = false;
+    if (this._clickedAt !== null) {
+      if (this._timeSinceLastClick > Game.clickCooldownMs) {
+        clicked = true;
+
+        const worldPos = this._graphics.camera.worldPosFromScreen(this._clickedAt ?? this._graphics.mousePos);
+        this._clickedAt = null;
+
+        if (!world.onWorldClicked(worldPos)) {
+          world.onTileClicked(worldPos.floor());
+        }
+      }
+    }
+
+    this._timeSinceLastClick = clicked ? 0 : this._timeSinceLastClick + delta;
   }
 
-
-  /**
-   * Setup and start game update and render loops
-   */
-  private setupLoop (): void {
-    // Update loop
-    this._loop.update = (delta: number) => {
-      this.onUpdate(delta);
-    };
-
-    // Render loop
-    this._loop.render = (interpolation: number) => {
-      this.onRender(interpolation);
-    };
-
-    // Start game update and render loops
-    this._loop.start();
+  public createBackgroundSprite (): PIXI.Sprite {
+    const bgTexture = this._graphics.getTexture("bg 0");
+    const bg = new PIXI.TilingSprite(bgTexture);
+    bg.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
+    bg.anchor.set(0.5);
+    return bg;
   }
 }

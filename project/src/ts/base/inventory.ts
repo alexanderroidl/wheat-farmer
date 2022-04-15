@@ -1,12 +1,10 @@
-import TradeableInterface from "../interfaces/tradeable-interface";
-import WallTile from "../tiles/wall-tile";
-import WheatTile from "../tiles/wheat-tile";
+import ITradeable from "../interfaces/tradeable";
 
 export class InventoryItem {
   public amount: number = 0;
-  public type: TradeableInterface;
+  public type: ITradeable;
 
-  constructor (type: TradeableInterface) {
+  constructor (type: ITradeable) {
     this.type = type;
   }
 }
@@ -16,10 +14,12 @@ export class Inventory {
 
   public wheat: number = 0;
   public money: number = 0;
-  public items: InventoryItem[] = [
-    new InventoryItem(new WheatTile()),
-    new InventoryItem(new WallTile())
-  ];
+  public items: InventoryItem[];
+
+  constructor () {
+    this.items = [
+    ];
+  }
 
   public getItemAmount (name: string): number {
     for (const item of this.items) {

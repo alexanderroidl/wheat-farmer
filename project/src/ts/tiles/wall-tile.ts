@@ -1,7 +1,7 @@
-import TradeableInterface from "interfaces/tradeable-interface";
+import ITradeable from "interfaces/tradeable";
 import Tile from "./tile";
 
-export default class WallTile extends Tile implements TradeableInterface {
+export default class WallTile extends Tile implements ITradeable {
     public readonly buyPrice: number = 10;
     public readonly sellPrice: number = 4;
 
@@ -16,17 +16,5 @@ export default class WallTile extends Tile implements TradeableInterface {
         return "🚫";
       }
       return null;
-    }
-
-    public getBackgroundColor (): string | null {
-      return "#111111";
-    }
-
-    public getTextColor (): string | null {
-      return null;
-    }
-
-    public onClicked (): void {
-      // TODO: Implement logic
     }
 }
