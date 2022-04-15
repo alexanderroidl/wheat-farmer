@@ -1,67 +1,51 @@
+// import events from "events";
+import { Container, ObservablePoint } from "pixi.js";
 import Vector from "../core/vector";
+import Graphics from "./graphics";
 
-export default class Camera {
-  public readonly DEFAULT_ZOOM = 1;
-  public readonly MIN_ZOOM = 0.25;
+// export declare interface Camera {
+//   on(event: "moved", listener: (position: Vector) => void): this;
+//   on(event: "zoomed", listener: (zoom: number) => void): this;
+//   on(event: string, listener: () => void): this;
+// }
 
-  private _position: Vector = new Vector(0);
-  private _zoomAmount: number = this.DEFAULT_ZOOM;
-  private _worldSquareSize: number;
+export class Camera extends Container {
+  public readonly defaultZoom = 1;
+  public readonly minZoom = 0.25;
 
-  public get position (): Vector {
-    return this._position;
+  private _zoom: number = this.defaultZoom;
+
+  public get zoom (): number {
+    return this._zoom;
   }
 
-  public get zoomAmount (): number {
-    return this._zoomAmount;
-  }
-
-  public get worldSquareSize (): number {
-    return this._worldSquareSize;
-  }
-
-  constructor (worldSquareSize: number) {
-    this._worldSquareSize = worldSquareSize;
-  }
-
-  public setup (worldSize: number): void {
-    const renderedWorldSize = worldSize * this._worldSquareSize * this._zoomAmount;
-
-    this._position = new Vector(
-      -window.innerWidth / 2 + renderedWorldSize / 2,
-      -window.innerHeight / 2 + renderedWorldSize / 2
-    );
-  }
-
-  public move (x: number, y: number): void {
-    this._position = this._position.add(x, y);
-  }
-
-  public zoom (zoom: number): void {
-    // Never let zoom go below minimum
-    if (this._zoomAmount + zoom < this.MIN_ZOOM) {
+  public set zoom (zoom: number) {
+    if (this._zoom < this.minZoom) {
       return;
     }
 
-    // Get window center coordinates
-    const halfWindowSize = new Vector(window.innerWidth / 2, window.innerHeight / 2);
+    this._zoom = zoom;
+    this.scale.set(Graphics.SQUARE_SIZE * zoom);
+  }
 
-    const oldPos = this.worldPosFromScreen(halfWindowSize);
-    this._zoomAmount += zoom;
+  constructor (screenSize: Vector) {
+    super();
 
-    const newPos = this.worldPosFromScreen(halfWindowSize);
+    this.position = new ObservablePoint(() => {
+      this.pivot.set(this.x, this.y);
+    }, this);
 
-    // Calculate delta for same center position as before
-    const camerDeltaX = -(newPos.x - oldPos.x) * this.worldSquareSize * this.zoomAmount;
-    const cameraDeltaY = -(newPos.y - oldPos.y) * this.worldSquareSize * this.zoomAmount;
+    this.screenResized(screenSize);
+  }
 
-    this.move(camerDeltaX, cameraDeltaY);
+  public screenResized (size: Vector) {
+    this.position.set(size.x / 2, size.y / 2);
   }
 
   public worldPosFromScreen (screenPos: Vector): Vector {
     return new Vector(
-      (screenPos.x + this.position.x) / this.worldSquareSize / this._zoomAmount,
-      (screenPos.y + this.position.y) / this.worldSquareSize / this._zoomAmount
+      (screenPos.x - window.innerWidth / 2) / this.scale.x + this.position.x,
+      (screenPos.y - window.innerHeight / 2) / this.scale.y + this.position.y
     );
   }
 }

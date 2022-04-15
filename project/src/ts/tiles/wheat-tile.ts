@@ -1,74 +1,41 @@
 import Tile from "./tile";
-import Renderer, { RendererLayer } from "../base/renderer";
 import BitMath from "../core/bit-math";
-import Vector from "../core/vector";
-import TradeableInterface from "interfaces/tradeable-interface";
+import ITradeable from "../interfaces/tradeable";
+import { FrameObject, Texture } from "pixi.js";
+import MoveableSprite from "../core/moveable-sprite";
 
-export default class WheatTile extends Tile implements TradeableInterface {
-    public readonly buyPrice: number = 0;
-    public readonly sellPrice: number = 0;
+export default class WheatTile extends Tile implements ITradeable {
+  public static readonly textureNames: string[] = [...Array(11)].map((_v, i) => `wheat ${i}`);
+  public static readonly growthTime = 25 * 1000;
+  public static readonly frameTime: number = WheatTile.growthTime / WheatTile.textureNames.length;
 
-    public readonly GROWTH_TIME = 25 * 1000;
-    public readonly MIN_SEED_DROP = 0;
-    public readonly MAX_SEED_DROP = 3;
+  public readonly buyPrice: number = 0;
+  public readonly sellPrice: number = 0;
+  public readonly minSeedDrop = 0;
+  public readonly maxSeedDrop = 3;
+  
+  public name: string = "Wheat";
+  public loop: boolean = false;
 
-    public name: string = "Wheat";
+  public get growthState (): number {
+    return this.currentFrame / (this.totalFrames - 1);
+  }
 
-    public get textureId (): number {
-      return BitMath.floor(this.growthState * 10) + 1;
-    }
+  public static getFrameObjects (textures: Texture[]): FrameObject[] {
+    return MoveableSprite.getFrameObjects(textures, WheatTile.frameTime);
+  }
+  
+  constructor (textures: Texture[]) {
+    super(WheatTile.getFrameObjects(textures));
 
-    public get growthState (): number {
-      const growth = (Date.now() - this.timeCreated) / this.GROWTH_TIME * (1 - this.damage);
-      return growth > 1 ? 1 : growth;
-    }
-
-    public getChar (preview: boolean = false): string | null {
-      return preview ? "🌱" : null;
-    }
-
-    public onClicked (): void {
-      // TODO: Implement logic
-    }
-
-    public dropSeeds (): number {
-      return BitMath.floor(Math.random() * (this.MAX_SEED_DROP - this.MIN_SEED_DROP + 1)) + this.MIN_SEED_DROP;
-    }
-
-    public render (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D,
-      layer: RendererLayer,
-      worldPosition: Vector,
-      isHovered?: boolean
-    }): void {
-      if (params.layer === RendererLayer.Background) {
-        const backgroundTexture = renderer.getTextureById(0);
-
-        if (backgroundTexture) {
-          // Render background tile
-          renderer.paintTexture(params.ctx, {
-            worldPosition: params.worldPosition,
-            texture: backgroundTexture
-          });
-        }
-      }
-
-      if (params.layer === RendererLayer.GUI) {
-        // Is hovered and has not fully grown yet
-        if (params.isHovered && this.growthState < 1) {
-          // Calculate world position for progress bar
-          const growthProgressWorldPos = new Vector(
-            params.worldPosition.x + 0.25 / 2,
-            params.worldPosition.y + 0.75
-          );
-          
-          renderer.paintProgressBar(params.ctx, {
-            worldPosition: growthProgressWorldPos,
-            progress: this.growthState
-          });
-        }
-      }
-
-      super.render(renderer, params);
-    }
+    this.play();
+  }
+  
+  public getChar (preview: boolean = false): string | null {
+    return preview ? "🌱" : null;
+  }
+  
+  public dropSeeds (): number {
+    return BitMath.floor(Math.random() * (this.maxSeedDrop - this.minSeedDrop + 1)) + this.minSeedDrop;
+  }
 }

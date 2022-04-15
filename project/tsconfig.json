@@ -5,7 +5,7 @@
 	"compilerOptions": {
 		"target": "es2018",
 		"lib": ["es5", "es6", "es2018", "dom", "dom.iterable"],
-		"moduleResolution": "classic",
+		"moduleResolution": "node",
 		"allowJs": true,
 		"noEmit": false,
 		"strict": true,

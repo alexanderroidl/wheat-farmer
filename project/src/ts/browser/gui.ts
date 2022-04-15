@@ -1,9 +1,9 @@
 import { BrowserMouse } from "./browser";
-import Camera from "../base/camera";
+import { Camera } from "../base/camera";
 import { Inventory, InventoryItem } from "../base/inventory";
 import Player from "../base/player";
-import Renderer from "../base/renderer";
-import World from "../base/world";
+import Graphics from "../base/graphics";
+import { World } from "../base/world";
 import Util from "../core/util";
 import Tile from "../tiles/tile";
 import BitMath from "../core/bit-math";
@@ -137,16 +137,16 @@ export default class Gui {
     `;
   }
 
-  private getRendererDebugHTML (renderer: Renderer, fps: number): string {
-    const camera = renderer.camera;
+  private getGraphicsDebugHTML (graphics: Graphics, fps: number): string {
+    const camera = graphics.camera;
 
-    const xStart = BitMath.floor(camera.position.x / (Renderer.SQUARE_SIZE * camera.zoomAmount));
-    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (Renderer.SQUARE_SIZE * camera.zoomAmount));
-    const yStart = BitMath.floor(camera.position.y / (Renderer.SQUARE_SIZE * camera.zoomAmount));
-    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (Renderer.SQUARE_SIZE * camera.zoomAmount));
+    const xStart = BitMath.floor(camera.position.x / (Graphics.SQUARE_SIZE * camera.zoomAmount));
+    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (Graphics.SQUARE_SIZE * camera.zoomAmount));
+    const yStart = BitMath.floor(camera.position.y / (Graphics.SQUARE_SIZE * camera.zoomAmount));
+    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (Graphics.SQUARE_SIZE * camera.zoomAmount));
 
     return `
-      <strong>Renderer:</strong><br>
+      <strong>graphics:</strong><br>
       <strong>X:</strong> (${xStart}, ${xEnd})<br> 
       <strong>Y:</strong> (${yStart}, ${yEnd})<br>
       <strong>FPS:</strong> ${fps.toFixed(1)}
@@ -159,11 +159,11 @@ export default class Gui {
         `;
   }
 
-  public renderDebug (camera: Camera, renderer: Renderer, world: World, fps: number): void {
+  public renderDebug (camera: Camera, graphics: Graphics, world: World, fps: number): void {
     const debugHTMLParts = [
       this.getCameraDebugHTML(camera),
       this.getMouseDebugHTML(camera),
-      this.getRendererDebugHTML(renderer, fps),
+      this.getGraphicsDebugHTML(graphics, fps),
       this.getMiscDebugHTML(world)
     ];
 

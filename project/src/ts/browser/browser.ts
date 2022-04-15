@@ -1,4 +1,5 @@
 
+import * as PIXI from "pixi.js";
 import Canvas from "../core/canvas";
 import Vector from "../core/vector";
 import Gui from "./gui";
@@ -350,5 +351,13 @@ export default class Browser {
     return toMatch.some((toMatchItem) => {
       return navigator.userAgent.match(toMatchItem);
     });
+  }
+
+  public static addPixi (pixi: PIXI.Application): void {
+    document.body.append(pixi.view);
+  }
+
+  public static toggleTitleScreen (toggle: boolean): void {
+    document.body.classList.toggle("titlescreen", toggle);
   }
 }

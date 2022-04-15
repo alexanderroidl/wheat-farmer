@@ -10,7 +10,8 @@
     "docker:development": "cross-env DOCKER_BUILD_ENV=development docker-compose -f docker-compose.yml -f docker-compose.dev.yml up",
     "docker:production": "bash ./scripts/pre-build_production.sh && DOCKER_BUILD_ENV=production docker-compose up",
     "pre-commit": "node scripts/git-pre-commit-hook.js",
-    "lint": "eslint . --ext .js"
+    "lint": "eslint . --ext .js",
+    "aseprite": "aseprite -b spritesheet.ase --sheet project/src/static/spritesheet/sheet.png --filename-format \"{tag} {tagframe}\" --data project/src/static/spritesheet/sheet.json"
   },
   "devDependencies": {
     "chai": "^4.3.4",

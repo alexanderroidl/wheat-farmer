@@ -4,7 +4,7 @@ module.exports = {
     "brace-style": ["error", "1tbs"],
     "callback-return": 0,
     "camelcase": ["error", { "properties": "always" }],
-    "capitalized-comments": ["error", "always"],
+    "capitalized-comments": ["off", "always"],
     "comma-dangle": ["error", "never"],
     "comma-spacing": ["error", { "before": false, "after": true }],
     "eqeqeq": ["error", "always", { "null": "ignore" }],

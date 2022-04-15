@@ -1,5 +1,5 @@
-import Renderer from "../base/renderer";
-import SlideInterface from "interfaces/slide-interface";
+import Graphics from "../base/graphics";
+import ISlide from "interfaces/slide";
 import Vector from "core/vector";
 import TitleScreenLogoSlide from "./title-screen-logo-slide";
 import TitleScreenLoadSlide from "./title-screen-load-slide";
@@ -8,7 +8,7 @@ export default class TitleScreen {
   public hidden: boolean = false;
   public slideId: number = 0;
   private _clickedAt: number | null = null;
-  private _slides: SlideInterface[] = [
+  private _slides: ISlide[] = [
     new TitleScreenLoadSlide(),
     new TitleScreenLogoSlide()
   ];
@@ -42,13 +42,13 @@ export default class TitleScreen {
     }
   }
 
-  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+  public render (graphics: Graphics, ctx: CanvasRenderingContext2D): void {
     if (this.hidden) {
       return;
     }
 
     if (this._slides[this.slideId]) {
-      this._slides[this.slideId].render(renderer, ctx);
+      this._slides[this.slideId].render(graphics, ctx);
     }
   }
 }

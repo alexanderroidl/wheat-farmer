@@ -1,19 +1,19 @@
-import SlideInterface from "interfaces/slide-interface";
+import ISlide from "interfaces/slide";
 import Vector from "../core/vector";
 import Color from "../core/color";
-import Renderer from "../base/renderer";
+import Graphics from "../base/graphics";
 
-export default class TitleScreenLoadSlide implements SlideInterface {
+export default class TitleScreenLoadSlide implements ISlide {
   private static readonly TEXT = "Click to load";
   private static readonly TRANSFORMED_TEXT: string = TitleScreenLoadSlide.TEXT.toUpperCase().split("").join(" ");
   private static readonly COLOR_BACKGROUND_HEX: string = "#111111";
   private static readonly COLOR_TEXT_HEX: string = "#f3bc3c";
   private static readonly COLOR_TEXT_SHADOW_HEX?: string = Color.fromHex(TitleScreenLoadSlide.COLOR_TEXT_HEX)?.lightenDarken(20)?.toHex();
 
-  public render (renderer: Renderer, ctx: CanvasRenderingContext2D): void {
+  public render (graphics: Graphics, ctx: CanvasRenderingContext2D): void {
     // Paint black background
     ctx.fillStyle = TitleScreenLoadSlide.COLOR_BACKGROUND_HEX;
-    ctx.fillRect(0, 0, renderer.width, renderer.height);
+    ctx.fillRect(0, 0, graphics.width, graphics.height);
 
     // Setup basic text effects
     ctx.fillStyle = TitleScreenLoadSlide.COLOR_TEXT_HEX;
@@ -30,7 +30,7 @@ export default class TitleScreenLoadSlide implements SlideInterface {
     }
 
     // Fill actual text
-    ctx.fillText(TitleScreenLoadSlide.TRANSFORMED_TEXT, renderer.width / 2, renderer.height / 2);
+    ctx.fillText(TitleScreenLoadSlide.TRANSFORMED_TEXT, graphics.width / 2, graphics.height / 2);
 
     // Reset glowing text effect
     ctx.shadowBlur = 0;

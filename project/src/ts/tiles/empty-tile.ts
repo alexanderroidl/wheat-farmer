@@ -1,32 +1,26 @@
-import Renderer, { RendererLayer } from "../base/renderer";
-import Vector from "../core/vector";
+import { Text, Texture } from "pixi.js";
 import Tile from "./tile";
 
 export default class EmptyTile extends Tile {
-    public static readonly COLOR = "#ebb434";
     public name: string = "Empty";
-    public timeCreated: number = Date.now();
 
-    public get textureId (): number {
-      return 0;
+    public text: Text;
+
+    constructor (textures: Texture[]) {
+      super(textures);
+
+      this.text = new Text("", {
+        fontFamily: "Arial",
+        fontSize: 10,
+        fill: 0xff1010,
+        align: "center"
+      });
+
+      this.addChild(this.text);
     }
 
-    public render (renderer: Renderer, params: {
-      ctx: CanvasRenderingContext2D,
-      layer: RendererLayer,
-      worldPosition: Vector,
-      isHovered?: boolean
-    }): void {
-      const texture = renderer.getTextureById(this.textureId);
-      if (params.layer === RendererLayer.Background && texture != null) {
-        renderer.paintTexture(params.ctx, {
-          worldPosition: params.worldPosition,
-          texture: texture
-        });
-      }
-
-      if (params.layer !== RendererLayer.Tiles) {
-        super.render(renderer, params);
-      }
+    public updateTile (deltaTime: number): void {
+      super.updateTile(deltaTime);
+      this.text.text = `(${this.x}, ${this.y})`;
     }
 }
