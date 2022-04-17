@@ -24,7 +24,6 @@ export default class Game {
   private _world?: World;
   private _browser: Browser = new Browser();
   private _titleScreen: TitleScreen = new TitleScreen();
-  private _mouseDown: boolean = false;
   private _timeSinceLastClick: number = 0;
   private _paused: boolean = false;
   private _titleScreenHiddenBefore: boolean | null = null;
@@ -75,10 +74,7 @@ export default class Game {
     world.on("spriteRemoved", (sprite: PIXI.Sprite) => {
       this._pixi.stage.removeChild(sprite);
     });
-
-    // Setup camera for world size
-    this._graphics.camera.setup(world.SIZE);
-
+    
     this._graphics.camera.on("moved", (position: Vector) => {
       bgSprite.pivot.set(position.x - position.x % Graphics.SQUARE_SIZE, position.y - position.y % Graphics.SQUARE_SIZE);
       debug.text = `Camera: ${position}`;
@@ -97,7 +93,7 @@ export default class Game {
     world.fillWithEmpty();
     world.create(RobotEntity, RobotEntity.textureNames, new Vector(-3));
 
-    this._graphics.camera.position = new Vector(-3, -3);
+    this._graphics.camera.move(world.SIZE / 2);
 
     this._pixi.stage.addChild(debug);
 
@@ -133,15 +129,11 @@ export default class Game {
 
   private setupMouse (): void {
     this._browser.onScroll = (delta: number) => {
-      this._graphics.camera.zoom(-delta / 5);
-    };
-
-    this._browser.onMouseDown = (pos: Vector) => {
-      this._mouseDown = true;
-    };
-
-    this._browser.onMouseUp = (pos: Vector) => {
-      this._mouseDown = false;
+      const getMouseWorldPos = () => this._graphics.camera.worldPosFromScreen(this._browser.mouse.position);
+      const oldMouseWorldPos = getMouseWorldPos();
+      this._graphics.camera.zoom -= delta / 5;
+      const mouseDelta = oldMouseWorldPos.add(getMouseWorldPos().multiply(-1));
+      this._graphics.camera.move(mouseDelta);
     };
 
     this._browser.onMouseMove = (pos: Vector) => {
@@ -217,24 +209,26 @@ export default class Game {
 
     const cameraMove = new Vector(0);
     if (this._keysPressed.includes("KeyW")) {
-      cameraMove.y -= 0.1;
+      cameraMove.y -= 0.1 * d;
     }
 
     if (this._keysPressed.includes("KeyA")) {
-      cameraMove.x -= 0.1;
+      cameraMove.x -= 0.1 * d;
     }
 
     if (this._keysPressed.includes("KeyD")) {
-      cameraMove.x += 0.1;
+      cameraMove.x += 0.1 * d;
     }
 
     if (this._keysPressed.includes("KeyS")) {
-      cameraMove.y += 0.1;
+      cameraMove.y += 0.1 * d;
     }
-    this._graphics.camera.position.add(cameraMove.multiply(d * this._graphics.z));
+
+    const cameraMoveDelta = cameraMove.multiply(d * this._graphics.camera.z);
+    this._graphics.camera.move(cameraMoveDelta);
 
 
-    this._pixi.stage.scale.set(Graphics.SQUARE_SIZE * this._graphics.z);
+    this._pixi.stage.scale.set(Graphics.SQUARE_SIZE * this._graphics.camera.z);
     this._pixi.stage.pivot.set(this._graphics.camera.position.x, this._graphics.camera.position.y);
     this._pixi.stage.x = this._pixi.screen.width / 2;
     this._pixi.stage.y = this._pixi.screen.height / 2;

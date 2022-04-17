@@ -1,4 +1,4 @@
-import { BrowserMouse } from "./browser";
+import Browser, { BrowserMouse } from "./browser";
 import { Camera } from "../base/camera";
 import { Inventory, InventoryItem } from "../base/inventory";
 import Player from "../base/player";
@@ -123,7 +123,7 @@ export default class Gui {
     return `
       <strong>Camera:</strong><br>
       <strong>Position:</strong> ${camera.position}<br>
-      <strong>Zoom:</strong> ${camera.zoomAmount.toFixed(3)}
+      <strong>Zoom:</strong> ${camera.zoom.toFixed(3)}
     `;
   }
 
@@ -140,10 +140,10 @@ export default class Gui {
   private getGraphicsDebugHTML (graphics: Graphics, fps: number): string {
     const camera = graphics.camera;
 
-    const xStart = BitMath.floor(camera.position.x / (Graphics.SQUARE_SIZE * camera.zoomAmount));
-    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (Graphics.SQUARE_SIZE * camera.zoomAmount));
-    const yStart = BitMath.floor(camera.position.y / (Graphics.SQUARE_SIZE * camera.zoomAmount));
-    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (Graphics.SQUARE_SIZE * camera.zoomAmount));
+    const xStart = BitMath.floor(camera.position.x / (Graphics.SQUARE_SIZE * camera.z));
+    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (Graphics.SQUARE_SIZE * camera.z));
+    const yStart = BitMath.floor(camera.position.y / (Graphics.SQUARE_SIZE * camera.z));
+    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (Graphics.SQUARE_SIZE * camera.z));
 
     return `
       <strong>graphics:</strong><br>
@@ -216,7 +216,7 @@ export default class Gui {
   public sellDialog (value: number, onSuccess: (amount: number) => void): void {
     const amount = window.prompt("How many?", String(value));
     if (amount === null || !BitMath.isInt(amount)) {
-      window.alert("Aborted.");
+      Browser.alert("Aborted.");
       return;
     }
 
