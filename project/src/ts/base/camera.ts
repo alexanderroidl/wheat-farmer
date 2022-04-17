@@ -1,45 +1,41 @@
-// import events from "events";
 import { Container, ObservablePoint } from "pixi.js";
 import Vector from "../core/vector";
 import Graphics from "./graphics";
-
-// export declare interface Camera {
-//   on(event: "moved", listener: (position: Vector) => void): this;
-//   on(event: "zoomed", listener: (zoom: number) => void): this;
-//   on(event: string, listener: () => void): this;
-// }
 
 export class Camera extends Container {
   public readonly defaultZoom = 1;
   public readonly minZoom = 0.25;
 
-  private _zoom: number = this.defaultZoom;
+  private _zoom!: number;
+
+  public get z (): number {
+    return this._zoom;
+  }
 
   public get zoom (): number {
     return this._zoom;
   }
 
   public set zoom (zoom: number) {
-    if (this._zoom < this.minZoom) {
-      return;
-    }
-
+    zoom = zoom < this.minZoom ? this.minZoom : zoom;
     this._zoom = zoom;
     this.scale.set(Graphics.SQUARE_SIZE * zoom);
   }
 
-  constructor (screenSize: Vector) {
+  constructor () {
     super();
+
+    this.zoom = this.defaultZoom;
 
     this.position = new ObservablePoint(() => {
       this.pivot.set(this.x, this.y);
     }, this);
-
-    this.screenResized(screenSize);
   }
 
-  public screenResized (size: Vector) {
-    this.position.set(size.x / 2, size.y / 2);
+  public move (x: number | Vector, y?: number): void {
+    let position = new Vector(this.position.x, this.position.y);
+    position = position.add(x, y);
+    this.position.set(position.x, position.y);
   }
 
   public worldPosFromScreen (screenPos: Vector): Vector {

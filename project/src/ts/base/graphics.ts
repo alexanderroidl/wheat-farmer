@@ -34,13 +34,6 @@ export default class Graphics {
     return this.size.y;
   }
 
-  /**
-   * Camera zoom shorthand
-   */
-  public get z (): number {
-    return this.camera.zoomAmount;
-  }
-
   public get mouseWorldPos (): Vector {
     return this.camera.worldPosFromScreen(this.mousePos);
   }
