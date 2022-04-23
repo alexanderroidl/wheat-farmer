@@ -1,17 +1,11 @@
-import Entity from "./entity";
-import { FrameObject, Texture } from "pixi.js";
+import { FrameObject } from "pixi.js";
+import { Textures } from "../base/textures";
 import MoveableSprite from "../core/moveable-sprite";
+import Entity from "./entity";
 
 export default class BombEntity extends Entity {
   public static readonly explodeTime = 1000;
   public static readonly maxExplosionRadius = 2;
-  public static readonly textureNames: string[] = [
-    "bomb 0",
-    "bomb 1",
-    "bomb 2",
-    "bomb 3"
-  ];
-  public static readonly frameTime: number = BombEntity.explodeTime / BombEntity.textureNames.length;
 
   public name: string = "Bomb";
 
@@ -27,12 +21,13 @@ export default class BombEntity extends Entity {
     return this.explosionProgress === 1;
   }
 
-  public static getFrameObjects (textures: Texture[]): FrameObject[] {
-    return MoveableSprite.getFrameObjects(textures, BombEntity.frameTime);
+  public static getFrameObjects (): FrameObject[] {
+    const frameTime = BombEntity.explodeTime / Textures.bomb.length;
+    return MoveableSprite.getFrameObjects(Textures.bomb, frameTime);
   }
 
-  constructor (textures: Texture[]) {
-    super(BombEntity.getFrameObjects(textures));
+  constructor () {
+    super(BombEntity.getFrameObjects());
   }
 
   public updateEntity (delta: number): void {

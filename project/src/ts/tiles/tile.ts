@@ -1,6 +1,6 @@
-import ITile from "../interfaces/tile";
-import MoveableSprite from "../core/moveable-sprite";
 import { DisplayObject, FrameObject, Texture } from "pixi.js";
+import MoveableSprite from "../core/moveable-sprite";
+import ITile from "../interfaces/tile";
 
 export default class Tile extends MoveableSprite implements ITile {
   public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
@@ -22,13 +22,26 @@ export default class Tile extends MoveableSprite implements ITile {
     return 0;
   }
 
-  constructor (textures: Texture[] | FrameObject[]) {
-    super(textures);
+  public get zIndex (): number {
+    return 999;
   }
 
-  public addDamageSprite (...damageSprites: DisplayObject[]): void {
+  constructor (textures: Texture[] | FrameObject[]) {
+    super(textures);
+
+    // const bg = new MoveableSprite([Textures.background]);
+    // bg.filters = [new AdjustmentFilter({
+    //   red: 1.5
+    // })];
+    // this.addChild(bg);
+  }
+
+  public addDamageSprites (...damageSprites: DisplayObject[]): void {
     if (damageSprites.length) {
       this._damageSprites.push(...damageSprites);
+      for (const damageSprite of damageSprites) {
+        damageSprite.zIndex = 5555;
+      }
       this.addChild(...damageSprites);
     }
   }

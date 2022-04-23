@@ -1,25 +1,14 @@
-import Entity from "./entity";
-import Vector from "../core/vector";
+import { Texture } from "pixi.js";
+import { Textures } from "../base/textures";
 import Easings from "../core/easings";
-import BombEntity from "./bomb";
-import { FrameObject, Texture } from "pixi.js";
 import MoveableSprite from "../core/moveable-sprite";
+import Vector from "../core/vector";
+import BombEntity from "./bomb";
+import Entity from "./entity";
 
 export default class RobotEntity extends Entity {
   public static readonly movementWaveLength = new Vector(10).length;
   public static readonly bombPlantTime = 2000;
-  public static readonly typeNames: string[] = [
-    "red", "yellow", "green", "hawaii"
-  ];
-  public static readonly hatTextures: string[] = ["robot extras 1"];
-  public static get textureNames (): string[] {
-    const random = Easings.easeInCubic(Math.random());
-    const robotType = RobotEntity.typeNames[Math.floor(random * RobotEntity.typeNames.length)];
-
-    return [...Array(4)].map((_v, i) => {
-      return `robot ${robotType} ${i}`;
-    });
-  }
 
   public name: string = "Robot";
   public speed: number = 1.75 + Math.random() * 0.75;
@@ -48,7 +37,11 @@ export default class RobotEntity extends Entity {
     return this.bombPlantProgress === 1;
   }
 
-  constructor (textures: Texture[] | FrameObject[]) {
+  constructor () {
+    const randomTextureGroupMultiplier = Easings.easeInCubic(Math.random());
+    const textureGroups: Texture[][] = Object.values(Textures.robot);
+    const textures = textureGroups[Math.floor(textureGroups.length * randomTextureGroupMultiplier)];
+
     super(textures);
 
     this.on("click", (e) => {

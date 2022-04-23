@@ -1,13 +1,12 @@
-import Tile from "./tile";
+import { FrameObject } from "pixi.js";
+import { Textures } from "../base/textures";
 import BitMath from "../core/bit-math";
-import ITradeable from "../interfaces/tradeable";
-import { FrameObject, Texture } from "pixi.js";
 import MoveableSprite from "../core/moveable-sprite";
+import ITradeable from "../interfaces/tradeable";
+import Tile from "./tile";
 
 export default class WheatTile extends Tile implements ITradeable {
-  public static readonly textureNames: string[] = [...Array(11)].map((_v, i) => `wheat ${i}`);
   public static readonly growthTime = 25 * 1000;
-  public static readonly frameTime: number = WheatTile.growthTime / WheatTile.textureNames.length;
 
   public readonly buyPrice: number = 0;
   public readonly sellPrice: number = 0;
@@ -21,12 +20,14 @@ export default class WheatTile extends Tile implements ITradeable {
     return this.currentFrame / (this.totalFrames - 1);
   }
 
-  public static getFrameObjects (textures: Texture[]): FrameObject[] {
-    return MoveableSprite.getFrameObjects(textures, WheatTile.frameTime);
+  public static getFrameObjects (): FrameObject[] {
+    const frameTime = WheatTile.growthTime / Textures.wheat.length;
+    return MoveableSprite.getFrameObjects(Textures.wheat, frameTime);
   }
   
-  constructor (textures: Texture[]) {
-    super(WheatTile.getFrameObjects(textures));
+  constructor () {
+    super(WheatTile.getFrameObjects());
+    
 
     this.play();
   }

@@ -1,7 +1,11 @@
+import { ColorMatrixFilter } from "@pixi/filter-color-matrix";
+import { AdjustmentFilter } from "pixi-filters";
+import * as PIXI from "pixi.js";
 import { Loader, Spritesheet, Texture } from "pixi.js";
+import Vector from "../core/vector";
 import { Camera } from "./camera";
 import { InventoryItem } from "./inventory";
-import Vector from "../core/vector";
+import { Textures } from "./textures";
 
 export default class Graphics {
   public static readonly FONT_SIZE = 12;
@@ -9,15 +13,17 @@ export default class Graphics {
   public static readonly SQUARE_SIZE = 64;
   public static readonly SPRITESHEET_PATH = "spritesheet/sheet.json";
 
-  private _spriteSheet: Spritesheet | null = null;
+  private static _spriteSheet: Spritesheet | null = null;
 
   public readonly camera: Camera = new Camera();
   public size: Vector = new Vector(0, 0);
   public mousePos: Vector = new Vector(0, 0);
   public equippedItem: InventoryItem | null = null;
+  public bgSprite!: PIXI.Sprite;
+  public debugText: PIXI.Text;
 
   public get loading (): boolean {
-    return this._spriteSheet == null;
+    return Graphics._spriteSheet == null;
   }
 
   /**
@@ -42,6 +48,8 @@ export default class Graphics {
    * Setup canvas for rendering
    */
   constructor (cb?: () => void) {
+    this.debugText = this.createDebugText();
+
     Loader.shared.add(Graphics.SPRITESHEET_PATH).load(() => {
       this.setupSpritesheet(cb);
     });
@@ -53,15 +61,46 @@ export default class Graphics {
       throw new Error(`File "${Graphics.SPRITESHEET_PATH} is not a valid spritesheet JSON file`);
     }
     
-    this._spriteSheet = sheet;
+    Graphics._spriteSheet = sheet;
 
-    if (cb) {
-      cb();
-    }
+    this.bgSprite = this.createBackgroundSprite();
+
+    this.camera.on("moved", (position: Vector) => {
+      if (this.bgSprite) {
+        this.bgSprite.position.set(position.x - position.x % Graphics.SQUARE_SIZE, position.y - position.y % Graphics.SQUARE_SIZE);
+        this.bgSprite.position.set(0, 0);
+      }
+      this.debugText.text = `Camera: ${position}`;
+    });
+
+    Textures.instance;
+
+    cb?.call(null);
+  }
+  
+  private createBackgroundSprite (): PIXI.Sprite {
+    const bgTexture = Graphics.getTexture("bg 0");
+    const bg = new PIXI.TilingSprite(bgTexture);
+    bg.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
+    bg.anchor.set(0.5);
+    bg.filters = [new AdjustmentFilter({
+      brightness: 0.5
+    })];
+    bg.filters = [this.darkenFilter()];
+    return bg;
   }
 
-  public getTexture (index: string | number): Texture {
-    const spriteSheet = this._spriteSheet;
+  private createDebugText (): PIXI.Text {
+    const debugText = new PIXI.Text("", {
+      fontSize: 10
+    });
+    debugText.scale.set(1.0 / Graphics.SQUARE_SIZE);
+    debugText.anchor.set(0.5, 0.5);
+    return debugText;
+  }
+
+  public static getTexture (index: string | number): Texture {
+    const spriteSheet = Graphics._spriteSheet;
     if (!spriteSheet) {
       throw new Error("Spritesheet not ready yet");
     }
@@ -71,7 +110,18 @@ export default class Graphics {
     return spriteSheet.textures[index];
   }
 
-  public getTextures (indexes: string[] | number[]): Texture[] {
-    return indexes.map((i: string | number) => this.getTexture(i));
+  public static getTextures (indexes: string[] | number[]): Texture[] {
+    return indexes.map((i: string | number) => Graphics.getTexture(i));
+  }
+
+  public darkenFilter (): ColorMatrixFilter {
+    const filter = new PIXI.filters.ColorMatrixFilter();
+    filter.matrix = [
+      1, 0, 0, 0, 0,
+      0, 1, 0, 0, 0,
+      0, 0, 1, 0, 0,
+      0, 0, 0, 1, 0
+    ];
+    return filter;
   }
 }

@@ -1,12 +1,12 @@
-import Browser, { BrowserMouse } from "./browser";
 import { Camera } from "../base/camera";
+import Graphics from "../base/graphics";
 import { Inventory, InventoryItem } from "../base/inventory";
 import Player from "../base/player";
-import Graphics from "../base/graphics";
 import { World } from "../base/world";
+import BitMath from "../core/bit-math";
 import Util from "../core/util";
 import Tile from "../tiles/tile";
-import BitMath from "../core/bit-math";
+import Browser, { BrowserMouse } from "./browser";
 
 export default class Gui {
   private _mouse: BrowserMouse;
@@ -122,8 +122,8 @@ export default class Gui {
   private getCameraDebugHTML (camera: Camera): string {
     return `
       <strong>Camera:</strong><br>
-      <strong>Position:</strong> ${camera.position}<br>
-      <strong>Zoom:</strong> ${camera.zoom.toFixed(3)}
+      <strong>Position:</strong> ${camera.x.toFixed(3)}, ${camera.y.toFixed(3)}<br>
+      <strong>Zoom:</strong> ${camera.z.toFixed(3)}
     `;
   }
 
@@ -140,10 +140,10 @@ export default class Gui {
   private getGraphicsDebugHTML (graphics: Graphics, fps: number): string {
     const camera = graphics.camera;
 
-    const xStart = BitMath.floor(camera.position.x / (Graphics.SQUARE_SIZE * camera.z));
-    const xEnd = BitMath.ceil((camera.position.x + window.innerWidth) / (Graphics.SQUARE_SIZE * camera.z));
-    const yStart = BitMath.floor(camera.position.y / (Graphics.SQUARE_SIZE * camera.z));
-    const yEnd = BitMath.ceil((camera.position.y + window.innerHeight) / (Graphics.SQUARE_SIZE * camera.z));
+    const xStart = BitMath.floor(camera.x / (Graphics.SQUARE_SIZE * camera.z));
+    const xEnd = BitMath.ceil((camera.x + window.innerWidth) / (Graphics.SQUARE_SIZE * camera.z));
+    const yStart = BitMath.floor(camera.y / (Graphics.SQUARE_SIZE * camera.z));
+    const yEnd = BitMath.ceil((camera.y + window.innerHeight) / (Graphics.SQUARE_SIZE * camera.z));
 
     return `
       <strong>graphics:</strong><br>
