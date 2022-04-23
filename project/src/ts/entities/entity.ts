@@ -1,7 +1,7 @@
+import { FrameObject, Texture } from "pixi.js";
+import MoveableSprite from "../core/moveable-sprite";
 import Vector from "../core/vector";
 import IRenderable from "../interfaces/renderable";
-import MoveableSprite from "../core/moveable-sprite";
-import { FrameObject, Texture } from "pixi.js";
 
 export default class Entity extends MoveableSprite implements IRenderable {
   protected _target: Vector | null = null;
@@ -9,6 +9,9 @@ export default class Entity extends MoveableSprite implements IRenderable {
   public interactive: boolean = true;
   public speed: number = 1;
   public isHostile: boolean = false;
+  public get zIndex (): number {
+    return 9999;
+  }
 
   constructor (textures: Texture[] | FrameObject[]) {
     super(textures);
