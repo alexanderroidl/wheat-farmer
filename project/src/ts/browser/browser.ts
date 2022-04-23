@@ -1,4 +1,5 @@
 
+import events from "events";
 import * as PIXI from "pixi.js";
 import Canvas from "../core/canvas";
 import Vector from "../core/vector";
@@ -9,14 +10,31 @@ export class BrowserMouse {
   public pressed: boolean = false;
 }
 
-export default class Browser {
+export declare interface Browser {
+  on(event: "scroll", listener: (delta: number) => void): this;
+  on(event: "mouseDown", listener: (pos: Vector) => void): this;
+  on(event: "mouseUp", listener: (pos: Vector) => void): this;
+  on(event: "mouseMove", listener: (pos: Vector) => void): this;
+  on(event: "mouseClick", listener: (pos: Vector) => void): this;
+  on(event: "loaded", listener: () => void): this;
+  on(event: "resize", listener: (size: Vector, oldSize: Vector) => void): this;
+  on(event: "keyDown", listener: (keyCode: number, code: string) => void): this;
+  on(event: "keyUp", listener: (keyCode: number, code: string) => void): this;
+  on(event: "touchStart", listener: (pos: Vector) => void): this;
+  on(event: "touchMove", listener: (pos: Vector) => void): this;
+  on(event: "touchCancel", listener: (pos: Vector) => void): this;
+  on(event: "touchEnd", listener: (pos: Vector) => void): this;
+  on(event: string, listener: () => void): this;
+}
+
+export class Browser extends events.EventEmitter {
   private _canvas: Canvas[] = [];
   private _mouse: BrowserMouse = new BrowserMouse();
   private _gui: Gui = new Gui(this._mouse);
   private _windowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
 
   public static get debug (): boolean {
-    return Boolean(Browser.getParameter("debug"));
+    return Boolean(Browser.getURLParameter("debug"));
   }
 
   public get gui (): Gui {
@@ -31,27 +49,11 @@ export default class Browser {
     return this._windowSize;
   }
 
-  // ESLint rule for empty functions is disabled here because these are meant to be overwritten later on
-  /* eslint-disable @typescript-eslint/no-empty-function */
-  public onScroll = (delta: number): void => {};
-  public onMouseDown = (pos: Vector): void => {};
-  public onMouseUp = (pos: Vector): void => {};
-  public onMouseMove = (pos: Vector): void => {};
-  public onMouseClick = (pos: Vector): void => {};
-  public onLoaded = (): void => {};
-  public onResize = (size: Vector, oldSize: Vector): void => {};
-  public onKeyDown = (keyCode: number, code: string): void => {};
-  public onKeyUp = (keyCode: number, code: string): void => {};
-  public onTouchStart = (pos: Vector): void => {};
-  public onTouchMove = (pos: Vector): void => {};
-  public onTouchCancel = (pos: Vector): void => {};
-  public onTouchEnd = (pos: Vector): void => {};
-  /* eslint-enable @typescript-eslint/no-empty-function */
-
   /**
    * Constructor
    */
   constructor () {
+    super();
     this.setupEvents();
   }
 
@@ -60,7 +62,7 @@ export default class Browser {
    * @param delta Scrolling delta value
    */
   private _onScroll (delta: number): void {
-    this.onScroll(delta);
+    this.emit("scroll", delta);
   }
 
   /**
@@ -70,7 +72,7 @@ export default class Browser {
   private _onMouseDown (pos: Vector): void {
     this._mouse.pressed = true;
 
-    this.onMouseDown(pos);
+    this.emit("mouseDown", pos);
   }
 
   /**
@@ -80,7 +82,7 @@ export default class Browser {
   private _onMouseUp (pos: Vector): void {
     this._mouse.pressed = false;
 
-    this.onMouseUp(pos);
+    this.emit("mouseUp", pos);
   }
 
   /**
@@ -91,7 +93,7 @@ export default class Browser {
     this._mouse.position.x = pos.x;
     this._mouse.position.y = pos.y;
 
-    this.onMouseMove(pos);
+    this.emit("mouseMove", pos);
   }
 
   /**
@@ -99,7 +101,7 @@ export default class Browser {
    * @param {Vector} pos Screen coordinates
    */
   private _onMouseClick (pos: Vector): void {
-    this.onMouseClick(pos);
+    this.emit("mouseClick", pos);
   }
 
   /**
@@ -109,7 +111,7 @@ export default class Browser {
     this._windowSize = new Vector(window.innerWidth, window.innerHeight);
     this.updateRendererCanvasSize();
 
-    this.onLoaded();
+    this.emit("loaded");
   }
 
   /**
@@ -122,7 +124,7 @@ export default class Browser {
 
     this.updateRendererCanvasSize();
 
-    this.onResize(newSize, oldSize);
+    this.emit("resize", newSize, oldSize);
   }
 
   /**
@@ -131,7 +133,7 @@ export default class Browser {
    * @param {string} code
    */
   private _onKeyDown (keyCode: number, code: string): void {
-    this.onKeyDown(keyCode, code);
+    this.emit("keyDown", keyCode, code);
   }
 
   /**
@@ -140,7 +142,7 @@ export default class Browser {
    * @param {string} code
    */
   private _onKeyUp (keyCode: number, code: string): void {
-    this.onKeyUp(keyCode, code);
+    this.emit("keyUp", keyCode, code);
   }
 
   /**
@@ -148,7 +150,7 @@ export default class Browser {
    * @param {Vector} pos Screen coordinates
    */
   private _onTouchStart (pos: Vector): void {
-    this.onTouchStart(pos);
+    this.emit("touchStart", pos);
   }
 
   /**
@@ -156,7 +158,7 @@ export default class Browser {
    * @param {Vector} pos Screen coordinates
    */
   private _onTouchMove (pos: Vector): void {
-    this.onTouchMove(pos);
+    this.emit("touchMove", pos);
   }
 
   /**
@@ -164,7 +166,7 @@ export default class Browser {
    * @param {Vector} pos Screen coordinates
    */
   private _onTouchCancel (pos: Vector): void {
-    this.onTouchCancel(pos);
+    this.emit("touchCancel", pos);
   }
 
   /**
@@ -172,7 +174,7 @@ export default class Browser {
    * @param {Vector} pos Screen coordinates
    */
   private _onTouchEnd (pos: Vector): void {
-    this.onTouchEnd(pos);
+    this.emit("touchEnd", pos);
   }
 
   /**
@@ -317,7 +319,7 @@ export default class Browser {
    * @param {string} name GET parameter name
    * @returns {string|null}
    */
-  public static getParameter (name: string): string | null {
+  public static getURLParameter (name: string): string | null {
     let result: string | null = null;
     let tmp = [];
 
