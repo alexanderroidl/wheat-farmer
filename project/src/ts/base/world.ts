@@ -28,8 +28,8 @@ export interface QueuedTile {
 }
 
 export declare interface World {
-  on(event: "entityAdded", listener: (sprite: Sprite) => void): this;
-  on(event: "entityRemoved", listener: (sprite: Sprite) => void): this;
+  on(event: "spriteAdded", listener: (sprite: Sprite) => void): this;
+  on(event: "spriteRemoved", listener: (sprite: Sprite) => void): this;
   on(event: string, listener: () => void): this;
 }
 
@@ -106,12 +106,12 @@ export class World extends events.EventEmitter {
       return;
     }
     if (this._tiles[pos.y][pos.x] instanceof Sprite) {
-      this.emit("entityRemoved", this._tiles[pos.y][pos.x]);
+      this.emit("spriteRemoved", this._tiles[pos.y][pos.x]);
     }
     this._tiles[pos.y][pos.x] = content;
 
     if (content instanceof Sprite) {
-      this.emit("entityAdded", content);
+      this.emit("spriteAdded", content);
     }
   }
 
@@ -188,7 +188,7 @@ export class World extends events.EventEmitter {
         this._player.items.setItemAmount("Wheat", playerWheatTiles + seedDrops);
         this._player.items.wheat += 1;
 
-        this.emit("entityRemoved", tile);
+        this.emit("spriteRemoved", tile);
 
         // Replace with empty tile
         this._tiles[pos.y][pos.x] = null;
@@ -268,7 +268,7 @@ export class World extends events.EventEmitter {
 
     if (newSprite instanceof Entity) {
       this._entities.push(newSprite);
-      this.emit("entityAdded", newSprite);
+      this.emit("spriteAdded", newSprite);
     }
 
     if (newSprite instanceof Tile) {
@@ -289,7 +289,7 @@ export class World extends events.EventEmitter {
 
   public removeEntity (entity: Entity): void {
     this._entities = this._entities.filter((e) => e !== entity);
-    this.emit("entityRemoved", entity);
+    this.emit("spriteRemoved", entity);
   }
 
   public createExplosion (pos: Vector, radius: number, maxRadius: number): void {

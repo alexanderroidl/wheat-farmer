@@ -1,11 +1,11 @@
 import { DisplayObject } from "pixi.js";
 import MoveableSprite from "../core/moveable-sprite";
-import ITile from "../interfaces/tile";
 
-export default class Tile extends MoveableSprite implements ITile {
+export default abstract class Tile extends MoveableSprite {
   public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
   public static readonly COLOR: string = "";
 
+  public abstract readonly name: string;
   public age: number = 0;
   protected _damageSprites: DisplayObject[] = [];
   private _damage: number = 0;
@@ -16,10 +16,6 @@ export default class Tile extends MoveableSprite implements ITile {
 
   public set damage (damage: number) {
     this._damage = damage < 0 ? 0 : damage;
-  }
-
-  public get textureId (): number {
-    return 0;
   }
 
   public get zIndex (): number {
