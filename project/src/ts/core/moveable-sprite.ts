@@ -1,6 +1,6 @@
+import { AnimatedSprite, FrameObject, Texture } from "pixi.js";
 import Graphics from "../base/graphics";
 import IRenderable from "../interfaces/renderable";
-import { Texture, AnimatedSprite, FrameObject } from "pixi.js";
 import Easings from "./easings";
 import Vector from "./vector";
 
@@ -35,7 +35,7 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
     if (!this.moveStartPosition) {
       return 0;
     }
-    return new Vector(this.moveStartPosition.x - this.x, this.moveStartPosition.y - this.y).length;
+    return this.moveStartPosition.substract(this.x, this.y).length;
   }
 
   public set moveTarget (moveTarget: Vector | null) {
@@ -43,7 +43,7 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
 
     if (moveTarget instanceof Vector) {
       this.moveStartPosition = new Vector(this.x, this.y);
-      this.moveStartDistance = new Vector(moveTarget.x - this.x, moveTarget.y - this.y).length;
+      this.moveStartDistance = moveTarget.substract(this.x, this.y).length;
     } else {
       this.moveStartPosition = null;
       this.moveStartDistance = null;
@@ -73,7 +73,7 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
     }
 
     let entitySpeed = this.speed * (delta / 1000);
-    let distance = new Vector(this.moveTarget.x - this.x, this.moveTarget.y - this.y).length;
+    let distance = this.moveTarget.substract(this.x, this.y).length;
 
     const distanceProgress = distance / this.moveStartDistance;
 
@@ -83,15 +83,13 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
       distance = entitySpeed;
     }
 
-    return new Vector(
-      entitySpeed * (this.moveTarget.x - this.x) / distance,
-      entitySpeed * (this.moveTarget.y - this.y) / distance
-    );
+    return this.moveTarget.substract(this.x, this.y).multiply(entitySpeed / distance);
   }
 
   public updateSprite (deltaTime: number): void {
     if (this.isMoving) {
       const moveDelta = this.move(deltaTime);
+      
       this.x += moveDelta.x;
       this.y += moveDelta.y;
     }
