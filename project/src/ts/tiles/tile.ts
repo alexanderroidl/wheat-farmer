@@ -1,4 +1,4 @@
-import { DisplayObject, FrameObject, Texture } from "pixi.js";
+import { DisplayObject } from "pixi.js";
 import MoveableSprite from "../core/moveable-sprite";
 import ITile from "../interfaces/tile";
 
@@ -24,16 +24,6 @@ export default class Tile extends MoveableSprite implements ITile {
 
   public get zIndex (): number {
     return 999;
-  }
-
-  constructor (textures: Texture[] | FrameObject[]) {
-    super(textures);
-
-    // const bg = new MoveableSprite([Textures.background]);
-    // bg.filters = [new AdjustmentFilter({
-    //   red: 1.5
-    // })];
-    // this.addChild(bg);
   }
 
   public addDamageSprites (...damageSprites: DisplayObject[]): void {
