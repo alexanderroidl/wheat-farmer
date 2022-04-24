@@ -8,12 +8,11 @@ import Tile from "./tile";
 export default class WheatTile extends Tile implements ITradeable {
   public static readonly growthTime = 25 * 1000;
 
+  public readonly name: string = "Wheat";
   public readonly buyPrice: number = 0;
   public readonly sellPrice: number = 0;
   public readonly minSeedDrop = 0;
   public readonly maxSeedDrop = 3;
-  
-  public name: string = "Wheat";
   public loop: boolean = false;
 
   public get growthState (): number {
@@ -28,7 +27,6 @@ export default class WheatTile extends Tile implements ITradeable {
   constructor () {
     super(WheatTile.getFrameObjects());
     
-
     this.play();
   }
   

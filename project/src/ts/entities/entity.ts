@@ -3,7 +3,7 @@ import MoveableSprite from "../core/moveable-sprite";
 import Vector from "../core/vector";
 import IRenderable from "../interfaces/renderable";
 
-export default class Entity extends MoveableSprite implements IRenderable {
+export default abstract class Entity extends MoveableSprite implements IRenderable {
   protected _target: Vector | null = null;
 
   public interactive: boolean = true;

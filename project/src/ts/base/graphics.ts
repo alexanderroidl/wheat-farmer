@@ -1,13 +1,21 @@
-import { ColorMatrixFilter } from "@pixi/filter-color-matrix";
-import { AdjustmentFilter } from "pixi-filters";
+import { Layer } from "@pixi/layers";
 import * as PIXI from "pixi.js";
-import { Loader, Spritesheet, Texture } from "pixi.js";
+import { DisplayObject, Loader, Point, Spritesheet, Texture } from "pixi.js";
+import { Browser } from "../browser/browser";
 import Vector from "../core/vector";
+import Entity from "../entities/entity";
+import Tile from "../tiles/tile";
 import { Camera } from "./camera";
 import { InventoryItem } from "./inventory";
 import { Textures } from "./textures";
 
-export default class Graphics {
+export enum GraphicsLayer {
+  Background,
+  Tiles,
+  Entities
+}
+
+export default class Graphics extends PIXI.Application {
   public static readonly FONT_SIZE = 12;
   public static readonly FONT_EMOJI_SIZE = 16;
   public static readonly SQUARE_SIZE = 64;
@@ -19,8 +27,12 @@ export default class Graphics {
   public size: Vector = new Vector(0, 0);
   public mousePos: Vector = new Vector(0, 0);
   public equippedItem: InventoryItem | null = null;
-  public bgSprite!: PIXI.Sprite;
-  public debugText: PIXI.Text;
+  public debugText!: PIXI.Text;
+  public layers: Layer[] = [
+    new Layer(),
+    new Layer(),
+    new Layer()
+  ];
 
   public get loading (): boolean {
     return Graphics._spriteSheet == null;
@@ -48,7 +60,18 @@ export default class Graphics {
    * Setup canvas for rendering
    */
   constructor (cb?: () => void) {
-    this.debugText = this.createDebugText();
+    super({
+      resizeTo: window,
+      backgroundColor: 0x1099bb,
+      resolution: window.devicePixelRatio
+    });
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+    this.stage.sortableChildren = true;
+    Browser.addPixi(this);
+
+    this.layers.forEach((layer) => {
+      this.stage.addChild(layer);
+    });
 
     Loader.shared.add(Graphics.SPRITESHEET_PATH).load(() => {
       this.setupSpritesheet(cb);
@@ -60,34 +83,18 @@ export default class Graphics {
     if (!sheet) {
       throw new Error(`File "${Graphics.SPRITESHEET_PATH} is not a valid spritesheet JSON file`);
     }
-    
-    Graphics._spriteSheet = sheet;
 
-    this.bgSprite = this.createBackgroundSprite();
+    this.debugText = this.createDebugText();
+    this.stage.addChild(this.debugText);
 
     this.camera.on("moved", (position: Vector) => {
-      if (this.bgSprite) {
-        this.bgSprite.position.set(position.x - position.x % Graphics.SQUARE_SIZE, position.y - position.y % Graphics.SQUARE_SIZE);
-        this.bgSprite.position.set(0, 0);
-      }
       this.debugText.text = `Camera: ${position}`;
     });
 
+    Graphics._spriteSheet = sheet;
     Textures.instance;
 
     cb?.call(null);
-  }
-  
-  private createBackgroundSprite (): PIXI.Sprite {
-    const bgTexture = Graphics.getTexture("bg 0");
-    const bg = new PIXI.TilingSprite(bgTexture);
-    bg.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
-    bg.anchor.set(0.5);
-    bg.filters = [new AdjustmentFilter({
-      brightness: 0.5
-    })];
-    bg.filters = [this.darkenFilter()];
-    return bg;
   }
 
   private createDebugText (): PIXI.Text {
@@ -107,21 +114,49 @@ export default class Graphics {
     if (!spriteSheet.textures[index]) {
       throw Error(`Texture "${index}" could not be found in spritesheet`);
     }
-    return spriteSheet.textures[index];
+    const texture = spriteSheet.textures[index].clone();
+    texture.defaultAnchor = new Point(0, 0.5);
+    return texture;
   }
 
   public static getTextures (indexes: string[] | number[]): Texture[] {
     return indexes.map((i: string | number) => Graphics.getTexture(i));
   }
 
-  public darkenFilter (): ColorMatrixFilter {
-    const filter = new PIXI.filters.ColorMatrixFilter();
-    filter.matrix = [
-      1, 0, 0, 0, 0,
-      0, 1, 0, 0, 0,
-      0, 0, 1, 0, 0,
-      0, 0, 0, 1, 0
-    ];
-    return filter;
+  public update (d: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
+    this.camera.move(cameraMoveDelta);
+    this.camera.z += cameraZoomDelta;
+
+    this.stage.scale.set(Graphics.SQUARE_SIZE * this.camera.z / window.devicePixelRatio);
+    this.stage.pivot.set(this.camera.x, this.camera.y);
+    this.stage.x = this.screen.width / (2 * window.devicePixelRatio);
+    this.stage.y = this.screen.height / (2 * window.devicePixelRatio);
+  }
+
+  public getObjectLayer (child: DisplayObject): Layer {
+    if (child instanceof Tile) {
+      return this.layers[GraphicsLayer.Tiles];
+    }
+    
+    if (child instanceof Entity) {
+      return this.layers[GraphicsLayer.Entities];
+    }
+    
+    return this.layers[GraphicsLayer.Background];
+  }
+
+  public addChild<T extends DisplayObject[]> (...children: T): T[0] {
+    for (const child of children) {
+      child.parentLayer = this.getObjectLayer(child);
+    }
+    return this.stage.addChild(...children);
+  }
+
+  public removeChild<T extends DisplayObject[]> (...children: T): T[0] {
+    for (const child of children) {
+      child.parentLayer = undefined;
+      this.stage.removeChild(child);
+    }
+    return this.stage.removeChild(...children);
   }
 }
