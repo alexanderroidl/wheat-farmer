@@ -43,6 +43,13 @@ export default class Vector {
       return new Vector(this.x + x, this.y + (y != null ? y : x));
     }
 
+    public substract (x: number | Vector, y?: number): Vector {
+      if (x instanceof Vector) {
+        return new Vector(this.x - x.x, this.y - x.y);
+      }
+      return new Vector(this.x - x, this.y - (y != null ? y : x));
+    }
+
     /**
      * Floor coordinates
      *
@@ -70,8 +77,18 @@ export default class Vector {
       return new Vector(BitMath.ceil(this.x), BitMath.ceil(this.y));
     }
 
-    public multiply (multiply: number): Vector {
-      return new Vector(this.x * multiply, this.y * multiply);
+    public multiply (x: number | Vector, y?: number): Vector {
+      if (x instanceof Vector) {
+        return new Vector(this.x * x.x, this.y * x.y);
+      }
+      return new Vector(this.x * x, this.y * (y != null ? y : x));
+    }
+
+    public divide (x: number | Vector, y?: number): Vector {
+      if (x instanceof Vector) {
+        return new Vector(this.x / x.x, this.y / x.y);
+      }
+      return new Vector(this.x / x, this.y / (y != null ? y : x));
     }
 
     /**

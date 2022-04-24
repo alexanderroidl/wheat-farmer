@@ -63,7 +63,7 @@ export default class RobotEntity extends Entity {
     super.updateEntity(delta);
 
     // Calculate moved distance
-    const moveDelta = new Vector(this.x, this.y).add(position.multiply(-1));
+    const moveDelta = new Vector(this.x, this.y).substract(position);
 
     // Has moved
     if (moveDelta.length > 0) {

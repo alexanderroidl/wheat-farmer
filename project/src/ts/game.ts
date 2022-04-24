@@ -53,7 +53,6 @@ export default class Game {
     // Create and add background tile sprite
     this._pixi.stage.addChild(this._graphics.bgSprite);
     this._pixi.stage.addChild(this._graphics.debugText);
-    this._pixi.stage.addChild(this._graphics.graphics);
 
     this._pixi.stage.sortableChildren = true;
       
@@ -108,10 +107,18 @@ export default class Game {
 
   private setupMouse (): void {
     this._browser.on("scroll", (delta: number) => {
-      const getMouseWorldPos = () => this._graphics.camera.worldPosFromScreen(this._browser.mouse.position);
-      const oldMouseWorldPos = getMouseWorldPos();
+      const oldZoom = this._graphics.camera.z;
+
+      // Zoom out
       this._graphics.camera.z -= delta / 5;
-      const mouseDelta = oldMouseWorldPos.add(getMouseWorldPos().multiply(-1));
+
+      // Calculate delta for pointed at ingame coordinates before and after zoom
+      const mouseDelta = this._browser.mouse.position
+        .substract(new Vector(window.innerWidth, window.innerHeight).divide(2))
+        .divide(Graphics.SQUARE_SIZE)
+        .multiply(1 / oldZoom - 1 / this._graphics.camera.z);
+
+      // Move camera by using ingame mouse delta
       this._graphics.camera.move(mouseDelta);
     });
 

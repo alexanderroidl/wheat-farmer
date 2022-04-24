@@ -6,7 +6,7 @@ import { World } from "../base/world";
 import BitMath from "../core/bit-math";
 import Util from "../core/util";
 import Tile from "../tiles/tile";
-import Browser, { BrowserMouse } from "./browser";
+import { Browser, BrowserMouse } from "./browser";
 
 export default class Gui {
   private _mouse: BrowserMouse;
