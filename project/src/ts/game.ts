@@ -151,32 +151,6 @@ export default class Game {
       if (codeIndex !== -1) {
         delete this._keysPressed[codeIndex];
       }
-
-      // // "Escape" pressed
-      // if (code === "Escape") {
-      //   this._titleScreen.hidden = false;
-      //   return;
-      // }
-
-      // // "S" pressed
-      // if (code === "KeyS" && this._world) {
-      //   this._paused = true;
-
-      //   // Open shop
-      //   this._browser.gui.openShop(this._world.player.items, () => {
-      //     this._paused = false;
-      //   });
-      // }
-
-      // // "E" pressed
-      // if (code === "KeyE" && this._world) {
-      //   this._paused = true;
-
-      //   // Open inventory
-      //   this._browser.gui.openInventory(this._world.player, this._world.player.items, () => {
-      //     this._paused = false;
-      //   });
-      // }
     });
   }
 
@@ -187,55 +161,80 @@ export default class Game {
     });
   }
 
-  private update (d: number): void {
-    const delta = Date.now() - this._lastUpdateRun;
-    this._lastUpdateRun = Date.now();
-    
-    Browser.toggleTitleScreen(!this._titleScreen.hidden);
+  private handleUserInput (d: number): {
+    cameraMoveDelta: Vector;
+    cameraZoomDelta: number;
+  } {
+    let cameraMoveDelta = new Vector(0);
+    let cameraZoomDelta = 0;
 
-    const cameraMove = new Vector(0);
     if (this._keysPressed.includes("KeyW")) {
-      cameraMove.y -= 0.1 * d;
+      cameraMoveDelta.y -= 0.1 * d;
     }
 
     if (this._keysPressed.includes("KeyA")) {
-      cameraMove.x -= 0.1 * d;
+      cameraMoveDelta.x -= 0.1 * d;
     }
 
     if (this._keysPressed.includes("KeyD")) {
-      cameraMove.x += 0.1 * d;
+      cameraMoveDelta.x += 0.1 * d;
     }
 
     if (this._keysPressed.includes("KeyS")) {
-      cameraMove.y += 0.1 * d;
+      cameraMoveDelta.y += 0.1 * d;
     }
 
     if (this._keysPressed.includes("BracketRight")) {
-      this._graphics.camera.z += 0.01 * d;
+      cameraZoomDelta = 0.01 * d;
     }
 
     if (this._keysPressed.includes("Slash")) {
-      this._graphics.camera.z -= 0.01 * d;
+      cameraZoomDelta = -0.01 * d;
     }
 
-    if (cameraMove.length) {
-      let cameraMoveDelta = cameraMove.multiply(d * this._graphics.camera.z);
+    // // "Escape" pressed
+    // if (code === "Escape") {
+    //   this._titleScreen.hidden = false;
+    //   return;
+    // }
 
-      if (this._keysPressed.includes("ShiftLeft") || this._keysPressed.includes("ShiftRight")) {
-        cameraMoveDelta = cameraMoveDelta.multiply(2);
-      }
-      this._graphics.camera.move(cameraMoveDelta);
+    // // "S" pressed
+    // if (code === "KeyS" && this._world) {
+    //   this._paused = true;
+
+    //   // Open shop
+    //   this._browser.gui.openShop(this._world.player.items, () => {
+    //     this._paused = false;
+    //   });
+    // }
+
+    // // "E" pressed
+    // if (code === "KeyE" && this._world) {
+    //   this._paused = true;
+
+    //   // Open inventory
+    //   this._browser.gui.openInventory(this._world.player, this._world.player.items, () => {
+    //     this._paused = false;
+    //   });
+    // }
+
+    if (this._keysPressed.includes("ShiftLeft") || this._keysPressed.includes("ShiftRight")) {
+      cameraMoveDelta = cameraMoveDelta.multiply(2);
+    }
+
+    if (cameraMoveDelta.length) {
+      cameraMoveDelta = cameraMoveDelta.multiply(this._graphics.camera.z);
     }
     
     if (this._browser.mouse.pressed) {
       let mouseMoveDelta: Vector = new Vector(0);
 
       if (this._lastMousePosition) {
-        mouseMoveDelta = this._browser.mouse.position.add(this._lastMousePosition.multiply(-1));
+        mouseMoveDelta = this._browser.mouse.position.substract(this._lastMousePosition);
 
         if (mouseMoveDelta.length > Game.MOUSE_DRAG_TRESHOLD) {
-          const mouseDeltaWorld = mouseMoveDelta.multiply(-1 / (Graphics.SQUARE_SIZE * this._graphics.camera.z));
-          this._graphics.camera.move(mouseDeltaWorld);
+          const mouseDeltaWorld = mouseMoveDelta.divide(Graphics.SQUARE_SIZE * this._graphics.camera.z);
+          cameraMoveDelta = cameraMoveDelta.add(mouseDeltaWorld.multiply(-1));
           this._draggingMouse = true;
         }
       }
@@ -247,47 +246,16 @@ export default class Game {
       this._lastMousePosition = null;
     }
 
-    this._pixi.stage.scale.set(Graphics.SQUARE_SIZE * this._graphics.camera.z * (1 / window.devicePixelRatio));
-    this._pixi.stage.pivot.set(this._graphics.camera.x, this._graphics.camera.y);
-    this._pixi.stage.x = this._pixi.screen.width / (2 * window.devicePixelRatio);
-    this._pixi.stage.y = this._pixi.screen.height / (2 * window.devicePixelRatio);
+    return {
+      cameraMoveDelta,
+      cameraZoomDelta
+    };
+  }
 
-    if (this._titleScreenHiddenBefore !== this._titleScreen.hidden) {
-      if (this._titleScreen.hidden) {
-        this._paused = false;
-      } else {
-        this._paused = true;
-      }
-
-      this._titleScreenHiddenBefore = this._titleScreen.hidden;
-    }
-
-    // Update title screen if it's not hidden
-    if (!this._titleScreen.hidden) {
-      this._titleScreen.update(delta);
-      // return;
-    }
-
-    // // Stop here if game is currently paused
-    // if (this._paused) {
-    //   return;
-    // }
-
-    // Update world
-    this._world.update(delta);
-
-    // Render stats
-    this._browser.gui.renderWorldStatsHTML(this._world);
-
-    // Debug GET parameter provided
-    if (Browser.debug) {
-      // Render debug info
-      this._browser.gui.renderDebug(this._graphics.camera, this._graphics, this._world, 42); // TODO: Set PIXI.js fps
-    }
-
+  private handleUserClickAndDrag (d: number): boolean {
     // Trigger click on tile if mouse is down
     let clicked = false;
-    
+
     // Stopped dragging mouse
     if (this._draggingMouse && !this._lastMousePosition) {
       this._clickedAt = null;
@@ -307,6 +275,66 @@ export default class Game {
       }
     }
 
-    this._timeSinceLastClick = clicked ? 0 : this._timeSinceLastClick + delta;
+    return clicked;
+  }
+
+  private updateTitleScreen (dMs: number): void {
+    Browser.toggleTitleScreen(!this._titleScreen.hidden);
+
+    if (this._titleScreenHiddenBefore !== this._titleScreen.hidden) {
+      if (this._titleScreen.hidden) {
+        this._paused = false;
+      } else {
+        this._paused = true;
+      }
+
+      this._titleScreenHiddenBefore = this._titleScreen.hidden;
+    }
+
+    // Update title screen if it's not hidden
+    if (!this._titleScreen.hidden) {
+      this._titleScreen.update(dMs);
+      // return;
+    }
+  }
+
+  private updateDebug (d: number): void {
+    // Render stats
+    this._browser.gui.renderWorldStatsHTML(this._world);
+
+    // Debug GET parameter provided
+    if (Browser.debug) {
+      // Render debug info
+      this._browser.gui.renderDebug(this._graphics.camera, this._graphics, this._world, 42); // TODO: Set PIXI.js fps
+    }
+  }
+
+  private update (d: number): void {
+    const delta = Date.now() - this._lastUpdateRun;
+    this._lastUpdateRun = Date.now();
+    
+    const { cameraMoveDelta, cameraZoomDelta } = this.handleUserInput(d);
+    this._graphics.camera.move(cameraMoveDelta);
+    this._graphics.camera.z += cameraZoomDelta;
+
+    this._pixi.stage.scale.set(Graphics.SQUARE_SIZE * this._graphics.camera.z / window.devicePixelRatio);
+    this._pixi.stage.pivot.set(this._graphics.camera.x, this._graphics.camera.y);
+    this._pixi.stage.x = this._pixi.screen.width / (2 * window.devicePixelRatio);
+    this._pixi.stage.y = this._pixi.screen.height / (2 * window.devicePixelRatio);
+
+    this.updateTitleScreen(delta);
+
+    // // // Stop here if game is currently paused
+    // if (this._paused) {
+    //   return;
+    // }
+
+    // Update world
+    this._world.update(delta);
+    this.updateDebug(d);
+
+    // Trigger click on tile if mouse is down
+    const userIsClicking = this.handleUserClickAndDrag(d);
+    this._timeSinceLastClick = userIsClicking ? 0 : this._timeSinceLastClick + delta;
   }
 }
