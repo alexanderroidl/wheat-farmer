@@ -20,7 +20,6 @@ export default class Game {
   public static readonly MOUSE_DRAG_TRESHOLD = 50;
 
   private _graphics: Graphics;
-  private _pixi: PIXI.Application;
   private _world: World = new World();
   private _browser: Browser = new Browser();
   private _titleScreen: TitleScreen = new TitleScreen();
@@ -39,9 +38,6 @@ export default class Game {
     }
     this._graphics = graphics;
 
-    this._pixi = this.setupPIXI();
-    Browser.addPixi(this._pixi);
-
     this.setupWorld();
     this.setupMouse();
     this.setupKeyboard();
@@ -51,23 +47,19 @@ export default class Game {
 
   private setupWorld (): void {
     // Create and add background tile sprite
-    this._pixi.stage.addChild(this._graphics.bgSprite);
-    this._pixi.stage.addChild(this._graphics.debugText);
-
-    this._pixi.stage.sortableChildren = true;
       
     // World has added sprite
-    this._world.on("entityAdded", (sprite: PIXI.Sprite) => {
-      this._pixi.stage.addChild(sprite);
+    this._world.on("spriteAdded", (sprite: PIXI.Sprite) => {
+      this._graphics.addChild(sprite);
     });
 
     // World has removed sprite
-    this._world.on("entityRemoved", (sprite: PIXI.Sprite) => {
-      this._pixi.stage.removeChild(sprite);
+    this._world.on("spriteRemoved", (sprite: PIXI.Sprite) => {
+      this._graphics.removeChild(sprite);
     });
 
     // Graphics finished loading -> add ticker
-    this._pixi.ticker.add((delta: number) => {
+    this._graphics.ticker.add((delta: number) => {
       this.update(delta);
     });
 
@@ -76,18 +68,6 @@ export default class Game {
     this._world.create(RobotEntity, new Vector(-3));
 
     this._graphics.camera.move(this._world.SIZE / 2);
-  }
-
-  private setupPIXI (): PIXI.Application {
-    const pixi = new PIXI.Application({
-      resizeTo: window,
-      backgroundColor: 0x1099bb,
-      resolution: window.devicePixelRatio
-    });
-
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-
-    return pixi;
   }
 
   private setupCLI (): void {
@@ -314,13 +294,7 @@ export default class Game {
     this._lastUpdateRun = Date.now();
     
     const { cameraMoveDelta, cameraZoomDelta } = this.handleUserInput(d);
-    this._graphics.camera.move(cameraMoveDelta);
-    this._graphics.camera.z += cameraZoomDelta;
-
-    this._pixi.stage.scale.set(Graphics.SQUARE_SIZE * this._graphics.camera.z / window.devicePixelRatio);
-    this._pixi.stage.pivot.set(this._graphics.camera.x, this._graphics.camera.y);
-    this._pixi.stage.x = this._pixi.screen.width / (2 * window.devicePixelRatio);
-    this._pixi.stage.y = this._pixi.screen.height / (2 * window.devicePixelRatio);
+    this._graphics.update(d, cameraMoveDelta, cameraZoomDelta);
 
     this.updateTitleScreen(delta);
 
