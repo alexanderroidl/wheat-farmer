@@ -1,7 +1,6 @@
 import events from "events";
 import { ObservablePoint } from "pixi.js";
 import Vector from "../core/vector";
-import Graphics from "./graphics";
 
 export declare interface Camera {
   on(event: "moved", listener: (position: Vector) => void): this;
@@ -61,12 +60,5 @@ export class Camera extends events.EventEmitter {
   public move (x: number | Vector, y?: number): void {
     const position = new Vector(this.x, this.y).add(new Vector(x, y));
     this._position.set(position.x, position.y);
-  }
-
-  public worldPosFromScreen (screenPos: Vector): Vector {
-    return new Vector(
-      (screenPos.x - window.innerWidth / 2) / (Graphics.SQUARE_SIZE * this.z) + this.x,
-      (screenPos.y - window.innerHeight / 2) / (Graphics.SQUARE_SIZE * this.z) + this.y
-    );
   }
 }

@@ -1,3 +1,4 @@
+import Vector from "core/vector";
 import { Camera } from "../base/camera";
 import Graphics from "../base/graphics";
 import { Inventory, InventoryItem } from "../base/inventory";
@@ -127,13 +128,11 @@ export default class Gui {
     `;
   }
 
-  private getMouseDebugHTML (camera: Camera): string {
-    const worldPos = camera.worldPosFromScreen(this._mouse.position);
-
+  private getMouseDebugHTML (mouseWorldPos: Vector): string {
     return `
       <strong>Mouse${(this._mouse.pressed ? " (down)" : "")}:</strong><br>
       <strong>Screen:</strong> ${this._mouse.position}<br>
-      <strong>World:</strong> ${worldPos}
+      <strong>World:</strong> ${mouseWorldPos}
     `;
   }
 
@@ -162,7 +161,7 @@ export default class Gui {
   public renderDebug (camera: Camera, graphics: Graphics, world: World, fps: number): void {
     const debugHTMLParts = [
       this.getCameraDebugHTML(camera),
-      this.getMouseDebugHTML(camera),
+      this.getMouseDebugHTML(graphics.getWorldPosFromScreen(this._mouse.position)),
       this.getGraphicsDebugHTML(graphics, fps),
       this.getMiscDebugHTML(world)
     ];

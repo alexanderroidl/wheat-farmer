@@ -49,7 +49,7 @@ export default class Sound {
    * Start/resume playback
    */
   public play (): void {
-    this._audio.play();
+    // this._audio.play();
   }
 
 

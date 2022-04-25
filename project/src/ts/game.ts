@@ -64,10 +64,10 @@ export default class Game {
     });
 
     // Fill world with empty squares
-    this._world.fillWithEmpty();
-    this._world.create(RobotEntity, new Vector(-3));
-
-    this._graphics.camera.move(this._world.SIZE / 2);
+    // this._world.initChunks();
+    this._world.create(RobotEntity, new Vector(0));
+    this._world.create(RobotEntity, new Vector(0, 9));
+    this._world.create(RobotEntity, new Vector(9, 9));
   }
 
   private setupCLI (): void {
@@ -246,12 +246,10 @@ export default class Game {
       if (this._timeSinceLastClick > Game.CLICK_COOLDOWN_MS) {
         clicked = true;
 
-        const worldPos = this._graphics.camera.worldPosFromScreen(this._clickedAt);
+        const worldPos = this._graphics.getWorldPosFromScreen(this._clickedAt);
         this._clickedAt = null;
 
-        if (!this._world.onWorldClicked(worldPos)) {
-          this._world.onTileClicked(worldPos.floor());
-        }
+        this._world.onTileClicked(worldPos.floor());
       }
     }
 
