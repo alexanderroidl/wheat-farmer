@@ -12,7 +12,8 @@ import { Textures } from "./textures";
 export enum GraphicsLayer {
   Background,
   Tiles,
-  Entities
+  Entities,
+  GUI
 }
 
 export default class Graphics extends PIXI.Application {
@@ -27,7 +28,8 @@ export default class Graphics extends PIXI.Application {
   public size: Vector = new Vector(0, 0);
   public mousePos: Vector = new Vector(0, 0);
   public equippedItem: InventoryItem | null = null;
-  public debugText!: PIXI.Text;
+  public debugText?: PIXI.Text;
+  public background?: PIXI.TilingSprite;
   public layers: Layer[] = [
     new Layer(),
     new Layer(),
@@ -53,48 +55,103 @@ export default class Graphics extends PIXI.Application {
   }
 
   public get mouseWorldPos (): Vector {
-    return this.camera.worldPosFromScreen(this.mousePos);
+    return this.getWorldPosFromScreen(this.mousePos);
   }
 
   /**
    * Setup canvas for rendering
    */
-  constructor (cb?: () => void) {
+  constructor (cb: () => void) {
     super({
       resizeTo: window,
       backgroundColor: 0x1099bb,
       resolution: window.devicePixelRatio
     });
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-    this.stage.sortableChildren = true;
-    Browser.addPixi(this);
+    this.setupPIXI();
+    this.setupLayers();
+    this.setupCameraEvents();
+    this.setupLoader(cb);
+  }
 
+  private setupLayers (): void {
     this.layers.forEach((layer) => {
       this.stage.addChild(layer);
     });
+  }
 
+  private setupCameraEvents (): void {
+    this.camera.on("moved", (position: Vector) => {
+      if (this.debugText) {
+        this.debugText.text = `Camera: ${position}`;
+      }
+
+      this.updateBackgroundSprite();
+    });
+
+    this.camera.on("zoomed", (zoom: number) => {
+      this.updateBackgroundSprite();
+    });
+  }
+
+  private setupLoader (cb: () => void): void {
     Loader.shared.add(Graphics.SPRITESHEET_PATH).load(() => {
       this.setupSpritesheet(cb);
     });
   }
 
-  private setupSpritesheet (cb?: () => void): void {
+  private setupPIXI (): void {
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+    this.stage.sortableChildren = true;
+    Browser.addPixi(this);
+  }
+
+  private createBackgroundSprite (): PIXI.TilingSprite {
+    const bgTexture = Textures.background.clone();
+    bgTexture.frame = new PIXI.Rectangle(bgTexture.orig.x, bgTexture.orig.height / 2, bgTexture.orig.width, bgTexture.orig.height / 2);
+    
+    const backgroundSprite = new PIXI.TilingSprite(bgTexture);
+    backgroundSprite.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
+
+    backgroundSprite.anchor.set(0, 0);
+    return backgroundSprite;
+  }
+
+  public updateBackgroundSprite (): void {
+    if (!this.background) {
+      return;
+    }
+
+    const screenLeft = this.camera.x - this.screen.width / 2 / Graphics.SQUARE_SIZE / this.camera.z;
+    const screenTop = this.camera.y - this.screen.height / 2 / Graphics.SQUARE_SIZE / this.camera.z;
+
+    
+    this.background.width = this.screen.width / Graphics.SQUARE_SIZE / this.camera.z + 1;
+    this.background.height = this.screen.height / Graphics.SQUARE_SIZE / this.camera.z + 1;
+
+
+    this.background.pivot.set(
+      -(Math.ceil(screenLeft) + screenLeft % (this.camera.z / Graphics.SQUARE_SIZE) - 1),
+      -(Math.ceil(screenTop) + screenTop % (this.camera.z / Graphics.SQUARE_SIZE) - 1)
+    );
+  }
+
+  private setupSpritesheet (cb: () => void): void {
     const sheet = Loader.shared.resources[Graphics.SPRITESHEET_PATH].spritesheet;
     if (!sheet) {
       throw new Error(`File "${Graphics.SPRITESHEET_PATH} is not a valid spritesheet JSON file`);
     }
 
-    this.debugText = this.createDebugText();
-    this.stage.addChild(this.debugText);
-
-    this.camera.on("moved", (position: Vector) => {
-      this.debugText.text = `Camera: ${position}`;
-    });
-
     Graphics._spriteSheet = sheet;
     Textures.instance;
 
-    cb?.call(null);
+    this.background = this.createBackgroundSprite();
+    this.addChild(this.background);
+    this.updateBackgroundSprite();
+
+    this.debugText = this.createDebugText();
+    this.stage.addChild(this.debugText);
+
+    cb.call(null);
   }
 
   private createDebugText (): PIXI.Text {
@@ -103,6 +160,7 @@ export default class Graphics extends PIXI.Application {
     });
     debugText.scale.set(1.0 / Graphics.SQUARE_SIZE);
     debugText.anchor.set(0.5, 0.5);
+    debugText.parentLayer = this.layers[GraphicsLayer.GUI];
     return debugText;
   }
 
@@ -158,5 +216,12 @@ export default class Graphics extends PIXI.Application {
       this.stage.removeChild(child);
     }
     return this.stage.removeChild(...children);
+  }
+
+  public getWorldPosFromScreen (screenPos: Vector): Vector {
+    return new Vector(
+      (screenPos.x - this.screen.width / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.x,
+      (screenPos.y - this.screen.height / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.y
+    );
   }
 }

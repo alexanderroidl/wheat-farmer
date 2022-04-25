@@ -13,19 +13,9 @@ import EmptyTile from "../tiles/empty-tile";
 import Tile from "../tiles/tile";
 import WallTile from "../tiles/wall-tile";
 import WheatTile from "../tiles/wheat-tile";
+import { Chunk, Chunks } from "./chunk";
 import Graphics from "./graphics";
 import Player from "./player";
-
-export interface WorldTileInfo {
-  isHovered: boolean,
-  tile: Tile | null,
-  worldPos: Vector
-}
-
-export interface QueuedTile {
-  tile: Tile,
-  position: Vector
-}
 
 export declare interface World {
   on(event: "spriteAdded", listener: (sprite: Sprite) => void): this;
@@ -34,20 +24,13 @@ export declare interface World {
 }
 
 export class World extends events.EventEmitter {
-  public readonly SIZE: number = 20; // 20x20 world size
-  public readonly CENTER: Vector = new Vector(this.SIZE / 2).floor();
-
-  private _tiles: (Tile|null)[][];
+  private _chunks: Chunks = {};
   private _createdAt: number = Date.now();
   private _player: Player = new Player();
   private _entities: Entity[] = [];
   private _plantedTilesPerMin: number[] = [];
   private _enemyGroupsPerMin: number[] = [];
   private _enemiesScheduledToSpawn: number = 0;
-
-  public get tiles (): (Tile|null)[][] {
-    return this._tiles;
-  }
 
   public get createdAt (): number {
     return this._createdAt;
@@ -69,79 +52,99 @@ export class World extends events.EventEmitter {
     return this._enemyGroupsPerMin.length;
   }
 
-  public get randomPosition (): Vector {
-    return new Vector(Math.random() * this.SIZE, Math.random() * this.SIZE).floor();
-  }
-
   constructor () {
     super();
-
-    this._tiles = Array(this.SIZE).fill([]).map(() => {
-      return Array(this.SIZE).fill(null);
-    });
   }
 
-  public fillWithEmpty (): void {
-    for (let y = 0; y < this.SIZE; y++) {
-      for (let x = 0; x < this.SIZE; x++) {
-        this.create(EmptyTile, new Vector(x, y));
+  public initChunks (): void {
+    for (let y = -1; y < 2; y++) {
+      for (let x = -1; x < 2; x++) {
+        this.newChunkAt(new Vector(x, y));
       }
     }
   }
 
-  public isValidTilePos (pos: Vector): boolean {
-    return (pos.y in this._tiles) && (pos.x in this._tiles[pos.y]);
+  private newChunkAt (chunkPos: Vector): Chunk {
+    if (!this._chunks[chunkPos.y]) {
+      this._chunks[chunkPos.y] = {};
+    }
+    const chunk = new Chunk(chunkPos);
+    chunk.position = new Vector(chunkPos);
+    for (const tile of chunk.tiles) {
+      this.emit("spriteAdded", tile);
+    }
+    this._chunks[chunkPos.y][chunkPos.x] = chunk;
+    return chunk;
   }
 
-  public onWorldClicked (pos: Vector): boolean {
-    return false;
+  private getChunk (chunkPos: Vector): Chunk | null {
+    if (!this._chunks[chunkPos.y]) {
+      this._chunks[chunkPos.y] = {};
+    }
+    return this._chunks[chunkPos.y][chunkPos.x] ?? null;
+  }
+
+  private getChunkPos (pos: Vector): Vector {
+    return pos.divide(new Vector(Chunk.WIDTH, Chunk.HEIGHT)).floor();
+  }
+
+  public getRandomLoadedPosition (): Vector {
+    const chunks = this.getChunks(true);
+    const randomChunk = chunks[Math.floor(chunks.length * Math.random())];
+    const randomPosition = Math.floor(Chunk.SIZE * Math.random());
+
+    return new Vector(
+      randomChunk.position.x * Chunk.WIDTH + randomPosition % Chunk.WIDTH,
+      randomChunk.position.y * Chunk.HEIGHT + Math.floor(randomPosition / Chunk.WIDTH)
+    );
   }
 
   public scheduleEnemySpawn (count: number = 1): void {
     this._enemiesScheduledToSpawn += count;
   }
 
-  public setTile (pos: Vector, content: Tile | null): void {
-    if (!this.isValidTilePos(pos)) {
-      return;
-    }
-    if (this._tiles[pos.y][pos.x] instanceof Sprite) {
-      this.emit("spriteRemoved", this._tiles[pos.y][pos.x]);
-    }
-    this._tiles[pos.y][pos.x] = content;
-
-    if (content instanceof Sprite) {
-      this.emit("spriteAdded", content);
-    }
-  }
-
-  public getTileInfo (x: number, y: number, mouseWorldPos?: Vector): WorldTileInfo {
-    let isHovered = false;
-    if (mouseWorldPos instanceof Vector) {
-      isHovered = BitMath.floor(mouseWorldPos.x) === x && BitMath.floor(mouseWorldPos.y) === y;
-    }
-
-    // Get tile from current world coordinates
-    const tile = this.tiles[y][x];
-    const worldPos = new Vector(x, y);
-
-    return { tile, worldPos, isHovered };
-  }
-
-  public iterateTiles (callback: (params: WorldTileInfo) => void, mouseWorldPos?: Vector): void {
-    for (let y = 0; y < this.tiles.length; y++) {
-      for (let x = 0; x < this.tiles[y].length; x++) {
-        const tileInfo = this.getTileInfo(x, y, mouseWorldPos);
-        callback(tileInfo);
+  private getChunks (loadedOnly: boolean = false): Chunk[] {
+    const chunks = [];
+    for (const chunkY in this._chunks) {
+      for (const chunkX in this._chunks[chunkY]) {
+        const chunk = this._chunks[chunkY][chunkX];
+        if (!chunk || loadedOnly && !chunk.loaded) {
+          continue;
+        }
+        chunks.push(chunk);
       }
+    }
+    return chunks;
+  }
+
+  public getTile (pos: Vector): Tile | null {
+    const chunkPos = this.getChunkPos(pos);
+    const chunk = this.getChunk(chunkPos) ?? this.newChunkAt(chunkPos);
+    return chunk.getTile(chunk.getTilePosChunkPos(pos));
+  }
+
+  public setTile (pos: Vector, tile: Tile | null): void {
+    const chunkPos = pos.divide(new Vector(Chunk.WIDTH, Chunk.HEIGHT)).floor();
+    const chunk = this.getChunk(chunkPos);
+    if (!chunk) {
+      throw `Chunk ${chunkPos} not found`;
+    }
+
+    const chunkTilePos = chunk.getTilePosChunkPos(pos);
+    const existingTile = chunk.getTile(chunkTilePos);
+
+    if (existingTile) {
+      this.emit("spriteRemoved", existingTile);
+    }
+    chunk.setTile(chunkTilePos, tile);
+
+    if (tile instanceof Sprite) {
+      this.emit("spriteAdded", tile);
     }
   }
 
   public onTileClicked (pos: Vector): void {
-    if (!this.isValidTilePos(pos)) {
-      return;
-    }
-    const tile = this._tiles[pos.y][pos.x];
+    const tile = this.getTile(pos);
 
     const playerWheatTiles = this._player.items.getItemAmount("Wheat");
     // const playerWallTiles = this._player.items.getItemAmount("Wall");
@@ -191,7 +194,7 @@ export class World extends events.EventEmitter {
         this.emit("spriteRemoved", tile);
 
         // Replace with empty tile
-        this._tiles[pos.y][pos.x] = null;
+        this.setTile(pos, null);
       }
     }
 
@@ -200,7 +203,7 @@ export class World extends events.EventEmitter {
       this._player.items.increaseItemAmount("Wall");
 
       // Replace with empty tile
-      this._tiles[pos.y][pos.x] = null;
+      this.setTile(pos, null);
     }
   }
 
@@ -208,13 +211,8 @@ export class World extends events.EventEmitter {
     const tiles: Vector[] = [];
 
     for (let y = v.y - BitMath.ceil(radius); y <= v.y + BitMath.ceil(radius); y++) {
-      if (!this._tiles[y]) {
-        continue;
-      }
-
       for (let x = v.x - BitMath.ceil(radius); x <= v.x + BitMath.ceil(radius); x++) {
-        if (!(x in this._tiles[y]) ||
-          (x === v.x && y === v.y && !includeSelf) ||
+        if ((x === v.x && y === v.y && !includeSelf) ||
           new Vector(v.x - x, v.y - y).length > BitMath.ceil(radius)) {
           continue;
         }
@@ -227,23 +225,23 @@ export class World extends events.EventEmitter {
   }
 
   public getRandomOutsidePos (radiusMultiplier: number = 3): Vector {
-    const spawnRadius = this.CENTER.length * radiusMultiplier;
+    // TODO: Replace static values
+    const spawnRadius = Math.sqrt(Math.pow(10, 2) + Math.pow(10, 2)) * radiusMultiplier;
 
     // Set position randomly around the game area
     return new Vector(spawnRadius, 0)
       .rotate(Math.random() * 2 * Math.PI)
-      .add(this.CENTER.x, this.CENTER.y);
+      .add(10, 10);
   }
 
   public getRandomWheatPosition (): Vector | null {
     const wheatTilePositions = [];
+    const loadedChunks = this.getChunks(true);
 
-    for (let y = 0; y < this._tiles.length; y++) {
-      for (let x = 0; x < this._tiles[y].length; x++) {
-        const tile = this._tiles[y][x];
-       
+    for (const chunk of loadedChunks) {
+      for (const tile of chunk.tiles) {
         if (tile instanceof WheatTile) {
-          wheatTilePositions.push(new Vector(x, y));
+          wheatTilePositions.push(new Vector(tile.position.x, tile.position.y));
         }
       }
     }
@@ -256,7 +254,6 @@ export class World extends events.EventEmitter {
   }
   public create <A extends MoveableSprite> (moveableSprite: { new(): A }, pos: Vector): A {
     const newSprite = new moveableSprite();
-    newSprite.position.set(pos.x, pos.y);
 
     newSprite.on("mouseover", () => {
       newSprite.filters = [new OutlineFilter(2, 0xffffff)];
@@ -272,7 +269,8 @@ export class World extends events.EventEmitter {
     }
 
     if (newSprite instanceof Tile) {
-      const oldTile = this.tiles[pos.y][pos.x];
+      const oldTile = this.getTile(pos);
+      
       if (oldTile) {
         newSprite.damage = oldTile.damage;
 
@@ -282,6 +280,8 @@ export class World extends events.EventEmitter {
   
       this._plantedTilesPerMin.push(newSprite.age);
       this.setTile(pos, newSprite);
+    } else {
+      newSprite.position.set(pos.x, pos.y);
     }
 
     return newSprite;
@@ -314,7 +314,7 @@ export class World extends events.EventEmitter {
       // Calculate damage and restrict to values between 0-1
       const damage = 1 - (distance / (maxRadius + 1));
       const tileDestroyed = Math.random() * maxRadius / (distance + 1) > 0.5;
-      const existingTile = this._tiles[tilePos.y][tilePos.x];
+      const existingTile = this.getTile(tilePos);
       const totalDamage = (existingTile?.damage ?? 0) + damage;
       const damageSprites = this.createDamageSprites(damage);
 
@@ -375,18 +375,9 @@ export class World extends events.EventEmitter {
     });
 
     // Iterate through world
-    for (let y = 0; y < this._tiles.length; y++) {
-      for (let x = 0; x < this._tiles[y].length; x++) {
-        const tile = this._tiles[y][x];
-        if (tile) {
-          tile.updateTile(delta);
-
-          // Remove empty tile instances once they are fully recovered from damage
-          // if (tile instanceof EmptyTile && tile.damage === 0) {
-          //   this.setTile(new Vector(x, y), null);
-          // }
-        }
-      }
+    const chunks = this.getChunks(true);
+    for (const chunk of chunks) {
+      chunk.update(delta);
     }
 
     // Iterate existing entities
@@ -450,7 +441,7 @@ export class World extends events.EventEmitter {
       // }
 
       const wheatTilePosition = this.getRandomWheatPosition();
-      robotEntity.moveTarget = wheatTilePosition ? wheatTilePosition : this.randomPosition;
+      robotEntity.moveTarget = wheatTilePosition ? wheatTilePosition : this.getRandomLoadedPosition();
     }
 
     // Start spawning enemies at more than 50 planted tiles/min
