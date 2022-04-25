@@ -91,6 +91,10 @@ export default class Vector {
       return new Vector(this.x / x, this.y / (y != null ? y : x));
     }
 
+    public abs (): Vector {
+      return new Vector(Math.abs(this.x), Math.abs(this.y));
+    }
+
     /**
      * Rotate clockwise by degrees
      *

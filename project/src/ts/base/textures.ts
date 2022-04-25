@@ -2,6 +2,7 @@ import { Texture } from "pixi.js";
 import Graphics from "./graphics";
 
 class TextureSources {
+  public static readonly empty: string = "notfound 0";
   public static readonly background: string = "bg 0";
   public static readonly wheat: string[] = [
     "wheat 0",
@@ -71,12 +72,17 @@ export interface RobotTextureGroups {
 }
 
 export class Textures {
+  empty: Texture;
   background: Texture;
   wheat: Texture[];
   explosion: Texture[];
   robot: RobotTextureGroups;
   bomb: Texture[];
   hats: Texture[];
+
+  public static get empty (): Texture {
+    return Textures.instance.empty;
+  }
 
   public static get background (): Texture {
     return Textures.instance.background;
@@ -111,6 +117,7 @@ export class Textures {
   }
 
   constructor () {
+    this.empty = Graphics.getTexture(TextureSources.empty);
     this.background = Graphics.getTexture(TextureSources.background);
     this.wheat = Graphics.getTextures(TextureSources.wheat);
     this.explosion = Graphics.getTextures(TextureSources.explosion);

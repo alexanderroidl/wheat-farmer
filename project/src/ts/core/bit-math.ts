@@ -5,7 +5,7 @@ export default class BitMath {
    * @returns {number}
    */
   public static floor (n: number): number {
-    return n + (n < 0 ? -1 : 0) >> 0;
+    return n + (n < 0 && !Number.isInteger(n) ? -1 : 0) >> 0;
   }
     
   /**
