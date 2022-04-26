@@ -7,25 +7,27 @@ import BombEntity from "./bomb";
 import Entity from "./entity";
 
 export default class RobotEntity extends Entity {
-  public static readonly movementWaveLength = new Vector(10).length;
-  public static readonly bombPlantTime = 2000;
+  public static readonly MOVEMENT_WAVE_LENGTH = new Vector(10).length;
+  public static readonly BOMB_PLANT_TIME = 2000;
+  public static readonly CHANCE_TO_SPAWN_WITH_HAT = 0.25;
 
   public readonly name: string = "Robot";
   public speed: number = 1.75 + Math.random() * 0.75;
   public isHostile: boolean = true;
   public bomb: BombEntity | null = null;
   public clicked: boolean = false;
+  public hatSprite?: MoveableSprite;
 
   private _bombPlantedAt: number | null = null;
   private _sinAmplifier: number = Math.random() * 0.75;
-  private _sinShiftDistanceOffset: number = Math.random() * RobotEntity.movementWaveLength;
+  private _sinShiftDistanceOffset: number = Math.random() * RobotEntity.MOVEMENT_WAVE_LENGTH;
 
   public get bombPlantProgress (): number {
     if (this._bombPlantedAt === null) {
       return 0;
     }
       
-    const progress = (Date.now() - this._bombPlantedAt) / RobotEntity.bombPlantTime;
+    const progress = (Date.now() - this._bombPlantedAt) / RobotEntity.BOMB_PLANT_TIME;
     return progress > 1 ? 1 : progress;
   }
 
@@ -43,15 +45,16 @@ export default class RobotEntity extends Entity {
     const textures = textureGroups[Math.floor(textureGroups.length * randomTextureGroupMultiplier)];
 
     super(textures);
-
-    this.on("click", (e) => {
-      this.play();
-    });
+      
+    if (Math.random() > (1 - RobotEntity.CHANCE_TO_SPAWN_WITH_HAT)) {
+      this.giveHat();
+    }
   }
 
-  public giveHat (texture: Texture): void {
-    const hat = new MoveableSprite([texture]);
-    this.addChild(hat);
+  public giveHat (): void {
+    this.hatSprite = new MoveableSprite([Textures.hats[0]]);
+    this.hatSprite.scale.set(1);
+    this.addChild(this.hatSprite);
   }
 
   public plantBomb (): void {
@@ -70,7 +73,7 @@ export default class RobotEntity extends Entity {
       const moveDirectionRad = Math.atan2(moveDelta.y, moveDelta.x);
       const movedDistance = this.movedDistance + this._sinShiftDistanceOffset;
 
-      const shift = (movedDistance % RobotEntity.movementWaveLength) / RobotEntity.movementWaveLength;
+      const shift = (movedDistance % RobotEntity.MOVEMENT_WAVE_LENGTH) / RobotEntity.MOVEMENT_WAVE_LENGTH;
 
       const sinShiftY = (0.5 + this._sinAmplifier) * Math.sin(shift * 2 * Math.PI);
       this.renderOffset = new Vector(0, sinShiftY).rotate(moveDirectionRad);

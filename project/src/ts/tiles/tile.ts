@@ -1,4 +1,5 @@
 import { DisplayObject } from "pixi.js";
+import { GraphicsLayer } from "../base/graphics";
 import MoveableSprite from "../core/moveable-sprite";
 
 export default abstract class Tile extends MoveableSprite {
@@ -6,8 +7,9 @@ export default abstract class Tile extends MoveableSprite {
   public static readonly COLOR: string = "";
 
   public abstract readonly name: string;
+  public layer: GraphicsLayer = GraphicsLayer.Tiles;
   public age: number = 0;
-  protected _damageSprites: DisplayObject[] = [];
+  protected _damageSprites: MoveableSprite[] = [];
   private _damage: number = 0;
 
   public get damage (): number {
@@ -18,30 +20,23 @@ export default abstract class Tile extends MoveableSprite {
     this._damage = damage < 0 ? 0 : damage;
   }
 
-  public get zIndex (): number {
-    return 999;
+  public get char (): string | null {
+    return null;
   }
 
-  public addDamageSprites (...damageSprites: DisplayObject[]): void {
+  public addDamageSprites (...damageSprites: MoveableSprite[]): void {
     if (damageSprites.length) {
       this._damageSprites.push(...damageSprites);
-      for (const damageSprite of damageSprites) {
-        damageSprite.zIndex = 5555;
-      }
       this.addChild(...damageSprites);
     }
   }
 
-  public getDamageSprites (): DisplayObject[] {
+  public getDamageSprites (): MoveableSprite[] {
     return this._damageSprites;
   }
 
   public hasCollision (): boolean {
     return false;
-  }
-
-  public getChar (preview: boolean = false): string | null {
-    return null;
   }
 
   public updateTile (deltaTime: number): void {
