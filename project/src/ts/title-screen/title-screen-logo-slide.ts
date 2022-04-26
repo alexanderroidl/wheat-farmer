@@ -1,9 +1,9 @@
-import ISlide from "../interfaces/slide";
 import Graphics from "../base/graphics";
-import Vector from "../core/vector";
 import Sound from "../base/sound"; // TODO: Resolve issue for importing from base URL
 import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
 import Color from "../core/color";
+import Vector from "../core/vector";
+import ISlide from "../interfaces/slide";
 
 export default class TitleScreenLogoSlide implements ISlide {
   // Generated with "Text To ASCII Art Generator (TAAG)" by patorjk.com
@@ -38,12 +38,12 @@ export default class TitleScreenLogoSlide implements ISlide {
     const targetLogoWidth = 0.75; // 75 % screen width
 
     // Calculate font size based off target logo screen size
-    let fontSize = (graphics.width / (20 * TitleScreenLogoSlide.LONGEST_LINE_WIDTH) * 1.65) * targetLogoWidth;
+    let fontSize = (graphics.screen.width / (20 * TitleScreenLogoSlide.LONGEST_LINE_WIDTH) * 1.65) * targetLogoWidth;
     let lineHeight = 1;
 
     // Paint black background
     ctx.fillStyle = TitleScreenLogoSlide.COLOR_BACKGROUND_HEX;
-    ctx.fillRect(0, 0, graphics.width, graphics.height);
+    ctx.fillRect(0, 0, graphics.screen.width, graphics.screen.height);
 
     // Setup basic text effects
     ctx.fillStyle = TitleScreenLogoSlide.COLOR_TEXT_HEX;
@@ -67,8 +67,8 @@ export default class TitleScreenLogoSlide implements ISlide {
     for (let logoLineIndex = 0; logoLineIndex < TitleScreenLogoSlide.LOGO.length; logoLineIndex++) {
       const logoLineOffset = 20 * lineHeight * fontSize * (logoLineIndex - TitleScreenLogoSlide.LOGO.length);
 
-      const logoTextX = BitMath.floor(graphics.width / 2);
-      const logoTextY = BitMath.floor(graphics.height / 2 + logoLineOffset + yShift);
+      const logoTextX = BitMath.floor(graphics.screen.width / 2);
+      const logoTextY = BitMath.floor(graphics.screen.height / 2 + logoLineOffset + yShift);
 
       ctx.fillText(TitleScreenLogoSlide.LOGO[logoLineIndex], logoTextX, logoTextY);
     }
@@ -86,8 +86,8 @@ export default class TitleScreenLogoSlide implements ISlide {
     for (let descriptionLineIndex = 0; descriptionLineIndex < TitleScreenLogoSlide.DESCRIPTION.length; descriptionLineIndex++) {
       const descriptionLineOffset = lineHeight * fontSize * (descriptionLineIndex + DESCRIPTION_MARGIN_LINES);
 
-      const descriptionTextX = BitMath.floor(graphics.width / 2);
-      const descriptionTextY = BitMath.floor(graphics.height / 2 + descriptionLineOffset);
+      const descriptionTextX = BitMath.floor(graphics.screen.width / 2);
+      const descriptionTextY = BitMath.floor(graphics.screen.height / 2 + descriptionLineOffset);
 
       ctx.fillText(TitleScreenLogoSlide.DESCRIPTION[descriptionLineIndex], descriptionTextX, descriptionTextY);
     }
@@ -103,7 +103,7 @@ export default class TitleScreenLogoSlide implements ISlide {
     // Iterate and output credit lines
     for (let cLine = 0; cLine < TitleScreenLogoSlide.CREDITS.length; cLine++) {
       const creditsOffset = lineHeight * fontSize * (cLine);
-      ctx.fillText(TitleScreenLogoSlide.CREDITS[cLine], graphics.width / 2, graphics.height - (1.5 * 3 * fontSize) + creditsOffset);
+      ctx.fillText(TitleScreenLogoSlide.CREDITS[cLine], graphics.screen.width / 2, graphics.screen.height - (1.5 * 3 * fontSize) + creditsOffset);
     }
 
     // Reset shadow

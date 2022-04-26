@@ -1,7 +1,7 @@
 import ISlide from "interfaces/slide";
-import Vector from "../core/vector";
-import Color from "../core/color";
 import Graphics from "../base/graphics";
+import Color from "../core/color";
+import Vector from "../core/vector";
 
 export default class TitleScreenLoadSlide implements ISlide {
   private static readonly TEXT = "Click to load";
@@ -13,7 +13,7 @@ export default class TitleScreenLoadSlide implements ISlide {
   public render (graphics: Graphics, ctx: CanvasRenderingContext2D): void {
     // Paint black background
     ctx.fillStyle = TitleScreenLoadSlide.COLOR_BACKGROUND_HEX;
-    ctx.fillRect(0, 0, graphics.width, graphics.height);
+    ctx.fillRect(0, 0, graphics.screen.width, graphics.screen.height);
 
     // Setup basic text effects
     ctx.fillStyle = TitleScreenLoadSlide.COLOR_TEXT_HEX;
@@ -30,7 +30,7 @@ export default class TitleScreenLoadSlide implements ISlide {
     }
 
     // Fill actual text
-    ctx.fillText(TitleScreenLoadSlide.TRANSFORMED_TEXT, graphics.width / 2, graphics.height / 2);
+    ctx.fillText(TitleScreenLoadSlide.TRANSFORMED_TEXT, graphics.screen.width / 2, graphics.screen.height / 2);
 
     // Reset glowing text effect
     ctx.shadowBlur = 0;
