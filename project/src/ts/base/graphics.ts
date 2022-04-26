@@ -123,11 +123,9 @@ export default class Graphics extends PIXI.Application {
 
     const screenLeft = this.camera.x - this.screen.width / 2 / Graphics.SQUARE_SIZE / this.camera.z;
     const screenTop = this.camera.y - this.screen.height / 2 / Graphics.SQUARE_SIZE / this.camera.z;
-
     
     this.background.width = this.screen.width / Graphics.SQUARE_SIZE / this.camera.z + 1;
     this.background.height = this.screen.height / Graphics.SQUARE_SIZE / this.camera.z + 1;
-
 
     this.background.pivot.set(
       -(Math.ceil(screenLeft) + screenLeft % (this.camera.z / Graphics.SQUARE_SIZE) - 1),

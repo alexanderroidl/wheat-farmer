@@ -1,5 +1,4 @@
 import events from "events";
-import { ObservablePoint } from "pixi.js";
 import Vector from "../core/vector";
 
 export declare interface Camera {
@@ -9,11 +8,11 @@ export declare interface Camera {
 }
 
 export class Camera extends events.EventEmitter {
-  public readonly defaultZoom = 1;
-  public readonly minZoom = 0.25;
+  public static readonly DEFAULT_ZOOM = 1;
+  public static readonly MIN_ZOOM = 0.25;
 
-  private _position: ObservablePoint;
-  private _zoom: number;
+  private _position: Vector = new Vector(0);
+  private _zoom: number = Camera.DEFAULT_ZOOM;
 
   public get x (): number {
     return this._position.x;
@@ -36,29 +35,25 @@ export class Camera extends events.EventEmitter {
   }
 
   public set z (zoom: number) {
-    zoom = zoom < this.minZoom ? this.minZoom : zoom;
+    zoom = zoom < Camera.MIN_ZOOM ? Camera.MIN_ZOOM : zoom;
     if (this.z !== zoom) {
       this.emit("zoomed", zoom);
     }
     this._zoom = zoom;
   }
 
-  public get position (): ObservablePoint {
+  public get position (): Vector {
     return this._position;
   }
 
-  constructor () {
-    super();
-
-    this._zoom = this.defaultZoom;
-
-    this._position = new ObservablePoint(() => {
-      this.emit("moved", new Vector(this._position.x, this.position.y));
-    }, this);
+  public set position (position: Vector) {
+    if (this._position.x !== position.x || this._position.y !== position.y) {
+      this.emit("moved", position);
+    }
+    this._position = position;
   }
 
   public move (x: number | Vector, y?: number): void {
-    const position = new Vector(this.x, this.y).add(new Vector(x, y));
-    this._position.set(position.x, position.y);
+    this.position = this.position.add(x, y);
   }
 }
