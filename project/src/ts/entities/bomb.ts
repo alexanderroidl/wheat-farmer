@@ -7,7 +7,7 @@ export default class BombEntity extends Entity {
   public static readonly explodeTime = 1000;
   public static readonly maxExplosionRadius = 2;
 
-  public name: string = "Bomb";
+  public readonly name: string = "Bomb";
 
   public get explosionProgress (): number {
     return this.currentFrame / (this.totalFrames - 1);

@@ -10,7 +10,7 @@ export default class RobotEntity extends Entity {
   public static readonly movementWaveLength = new Vector(10).length;
   public static readonly bombPlantTime = 2000;
 
-  public name: string = "Robot";
+  public readonly name: string = "Robot";
   public speed: number = 1.75 + Math.random() * 0.75;
   public isHostile: boolean = true;
   public bomb: BombEntity | null = null;
