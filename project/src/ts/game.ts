@@ -1,4 +1,4 @@
-import * as PIXI from "pixi.js";
+import MoveableSprite from "core/moveable-sprite";
 import Graphics from "./base/graphics";
 import Sound from "./base/sound";
 import { World } from "./base/world";
@@ -49,12 +49,12 @@ export default class Game {
     // Create and add background tile sprite
       
     // World has added sprite
-    this._world.on("spriteAdded", (sprite: PIXI.Sprite) => {
+    this._world.on("spriteAdded", (sprite: MoveableSprite) => {
       this._graphics.addChild(sprite);
     });
 
     // World has removed sprite
-    this._world.on("spriteRemoved", (sprite: PIXI.Sprite) => {
+    this._world.on("spriteRemoved", (sprite: MoveableSprite) => {
       this._graphics.removeChild(sprite);
     });
 
@@ -100,10 +100,6 @@ export default class Game {
 
       // Move camera by using ingame mouse delta
       this._graphics.camera.move(mouseDelta);
-    });
-
-    this._browser.on("mouseMove", (pos: Vector) => {
-      this._graphics.mousePos = new Vector(pos.x, pos.y);
     });
 
     this._browser.on("mouseClick", (pos: Vector) => {

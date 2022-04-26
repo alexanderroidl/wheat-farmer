@@ -89,9 +89,8 @@ export default class Gui {
     this._worldStats.innerHTML = "";
 
     let equippedChar = "";
-    if (world.player.equipped &&
-      world.player.equipped.type instanceof Tile) {
-      const char = world.player.equipped.type.getChar(true);
+    if (world.player.equipped?.type instanceof Tile) {
+      const char = world.player.equipped?.type.char;
 
       if (char) {
         equippedChar = char;

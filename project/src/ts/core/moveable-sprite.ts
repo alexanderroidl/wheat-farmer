@@ -1,16 +1,19 @@
 import { AnimatedSprite, FrameObject, Texture } from "pixi.js";
-import Graphics from "../base/graphics";
+import Graphics, { GraphicsLayer } from "../base/graphics";
 import IRenderable from "../interfaces/renderable";
 import Easings from "./easings";
 import Vector from "./vector";
 
 export default class MoveableSprite extends AnimatedSprite implements IRenderable {
+  public static readonly OUTLINE_WIDTH = 0.5;
+  
   public interactive: boolean = true;
   public outlineOnHover: boolean = false;
   public speed: number = 0;
   public moveStartPosition: Vector | null = null;
   public moveStartDistance: number | null = null;
   public sourceFrames: string[] = [];
+  public layer: GraphicsLayer = GraphicsLayer.Background;
   private _hovered: boolean = false;
   private _moveTarget: Vector | null = null;
 

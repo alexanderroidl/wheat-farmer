@@ -1,5 +1,4 @@
 import events from "events";
-import { OutlineFilter } from "pixi-filters";
 import { Sprite } from "pixi.js";
 import BitMath from "../core/bit-math";
 import Easings from "../core/easings";
@@ -18,8 +17,8 @@ import Graphics from "./graphics";
 import Player from "./player";
 
 export declare interface World {
-  on(event: "spriteAdded", listener: (sprite: Sprite) => void): this;
-  on(event: "spriteRemoved", listener: (sprite: Sprite) => void): this;
+  on(event: "spriteAdded", listener: (sprite: MoveableSprite) => void): this;
+  on(event: "spriteRemoved", listener: (sprite: MoveableSprite) => void): this;
   on(event: string, listener: () => void): this;
 }
 
@@ -180,7 +179,7 @@ export class World extends events.EventEmitter {
     // Clicked tile is wheat tile
     if (tile instanceof WheatTile) {
       // Wheat is fully grown
-      if (tile.growthState >= 1) {
+      if (tile.growthRate >= 1) {
         let seedDrops: number | null = null;
 
         // If player has no seeds left, always drop
@@ -255,14 +254,6 @@ export class World extends events.EventEmitter {
   public create <A extends MoveableSprite> (moveableSprite: { new(): A }, pos: Vector): A {
     const newSprite = new moveableSprite();
 
-    newSprite.on("mouseover", () => {
-      newSprite.filters = [new OutlineFilter(2, 0xffffff)];
-    });
-
-    newSprite.on("mouseout", () => {
-      newSprite.filters = [];
-    });
-
     if (newSprite instanceof Entity) {
       this._entities.push(newSprite);
       this.emit("spriteAdded", newSprite);
@@ -277,8 +268,11 @@ export class World extends events.EventEmitter {
         const damageSprites = oldTile.getDamageSprites();
         newSprite.addDamageSprites(...damageSprites);
       }
+
+      if (!(newSprite instanceof EmptyTile)) {
+        this._plantedTilesPerMin.push(newSprite.age);
+      }
   
-      this._plantedTilesPerMin.push(newSprite.age);
       this.setTile(pos, newSprite);
     } else {
       newSprite.position.set(pos.x, pos.y);
@@ -340,7 +334,7 @@ export class World extends events.EventEmitter {
     this.create(ExplosionEntity, pos);
   }
 
-  public createDamageSprites (damage: number): Sprite[] {
+  public createDamageSprites (damage: number): MoveableSprite[] {
     const sprites = [];
     const damageTextureCount = BitMath.floor(damage * 3) + 1;
 
@@ -433,13 +427,6 @@ export class World extends events.EventEmitter {
       const randomPos = this.getRandomOutsidePos().add(shiftVector);
 
       const robotEntity = this.create(RobotEntity, randomPos);
-      
-      // if (Math.random() > 0.25) {
-      //   const hatTextureName = RobotEntity.hatTextures[BitMath.floor(Math.random() * RobotEntity.hatTextures.length)];
-      //   const hatTexture = Graphics.getTexture(hatTextureName);
-      //   robotEntity.giveHat(hatTexture);
-      // }
-
       const wheatTilePosition = this.getRandomWheatPosition();
       robotEntity.moveTarget = wheatTilePosition ? wheatTilePosition : this.getRandomLoadedPosition();
     }

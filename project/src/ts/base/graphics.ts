@@ -1,10 +1,11 @@
 import { Layer } from "@pixi/layers";
+import { OutlineFilter } from "pixi-filters";
 import * as PIXI from "pixi.js";
-import { DisplayObject, Loader, Point, Spritesheet, Texture } from "pixi.js";
+import { Loader, Point, Spritesheet, Texture } from "pixi.js";
 import { Browser } from "../browser/browser";
+import MoveableSprite from "../core/moveable-sprite";
 import Vector from "../core/vector";
-import Entity from "../entities/entity";
-import Tile from "../tiles/tile";
+import WheatTile from "../tiles/wheat-tile";
 import { Camera } from "./camera";
 import { InventoryItem } from "./inventory";
 import { Textures } from "./textures";
@@ -25,12 +26,12 @@ export default class Graphics extends PIXI.Application {
   private static _spriteSheet: Spritesheet | null = null;
 
   public readonly camera: Camera = new Camera();
-  public size: Vector = new Vector(0, 0);
-  public mousePos: Vector = new Vector(0, 0);
   public equippedItem: InventoryItem | null = null;
   public debugText?: PIXI.Text;
   public background?: PIXI.TilingSprite;
-  public layers: Layer[] = [
+  private _spriteOutlineFilter: OutlineFilter = new OutlineFilter(undefined, 0xFFFFFF, 1);
+  private _layers: Layer[] = [
+    new Layer(),
     new Layer(),
     new Layer(),
     new Layer()
@@ -40,27 +41,23 @@ export default class Graphics extends PIXI.Application {
     return Graphics._spriteSheet == null;
   }
 
-  /**
-   * Canvas width
-   */
-  public get width (): number {
-    return this.size.x;
+  public static getTexture (index: string | number): Texture {
+    const spriteSheet = Graphics._spriteSheet;
+    if (!spriteSheet) {
+      throw new Error("Spritesheet not ready yet");
+    }
+    if (!spriteSheet.textures[index]) {
+      throw Error(`Texture "${index}" could not be found in spritesheet`);
+    }
+    const texture = spriteSheet.textures[index].clone();
+    texture.defaultAnchor = new Point(0, 0.5);
+    return texture;
   }
 
-  /**
-   * Canvas height
-   */
-  public get height (): number {
-    return this.size.y;
+  public static getTextures (indexes: string[] | number[]): Texture[] {
+    return indexes.map((i: string | number) => Graphics.getTexture(i));
   }
-
-  public get mouseWorldPos (): Vector {
-    return this.getWorldPosFromScreen(this.mousePos);
-  }
-
-  /**
-   * Setup canvas for rendering
-   */
+  
   constructor (cb: () => void) {
     super({
       resizeTo: window,
@@ -74,7 +71,7 @@ export default class Graphics extends PIXI.Application {
   }
 
   private setupLayers (): void {
-    this.layers.forEach((layer) => {
+    this._layers.forEach((layer) => {
       this.stage.addChild(layer);
     });
   }
@@ -111,12 +108,13 @@ export default class Graphics extends PIXI.Application {
     
     const backgroundSprite = new PIXI.TilingSprite(bgTexture);
     backgroundSprite.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
-
     backgroundSprite.anchor.set(0, 0);
+
+    backgroundSprite.parentLayer = this._layers[GraphicsLayer.Background];
     return backgroundSprite;
   }
 
-  public updateBackgroundSprite (): void {
+  private updateBackgroundSprite (): void {
     if (!this.background) {
       return;
     }
@@ -143,8 +141,7 @@ export default class Graphics extends PIXI.Application {
     Textures.instance;
 
     this.background = this.createBackgroundSprite();
-    this.addChild(this.background);
-    this.updateBackgroundSprite();
+    this.stage.addChild(this.background);
 
     this.debugText = this.createDebugText();
     this.stage.addChild(this.debugText);
@@ -158,60 +155,20 @@ export default class Graphics extends PIXI.Application {
     });
     debugText.scale.set(1.0 / Graphics.SQUARE_SIZE);
     debugText.anchor.set(0.5, 0.5);
-    debugText.parentLayer = this.layers[GraphicsLayer.GUI];
+    debugText.parentLayer = this._layers[GraphicsLayer.GUI];
     return debugText;
   }
 
-  public static getTexture (index: string | number): Texture {
-    const spriteSheet = Graphics._spriteSheet;
-    if (!spriteSheet) {
-      throw new Error("Spritesheet not ready yet");
-    }
-    if (!spriteSheet.textures[index]) {
-      throw Error(`Texture "${index}" could not be found in spritesheet`);
-    }
-    const texture = spriteSheet.textures[index].clone();
-    texture.defaultAnchor = new Point(0, 0.5);
-    return texture;
-  }
-
-  public static getTextures (indexes: string[] | number[]): Texture[] {
-    return indexes.map((i: string | number) => Graphics.getTexture(i));
-  }
-
-  public update (d: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
-    this.camera.move(cameraMoveDelta);
-    this.camera.z += cameraZoomDelta;
-
-    this.stage.scale.set(Graphics.SQUARE_SIZE * this.camera.z / window.devicePixelRatio);
-    this.stage.pivot.set(this.camera.x, this.camera.y);
-    this.stage.x = this.screen.width / (2 * window.devicePixelRatio);
-    this.stage.y = this.screen.height / (2 * window.devicePixelRatio);
-  }
-
-  public getObjectLayer (child: DisplayObject): Layer {
-    if (child instanceof Tile) {
-      return this.layers[GraphicsLayer.Tiles];
-    }
-    
-    if (child instanceof Entity) {
-      return this.layers[GraphicsLayer.Entities];
-    }
-    
-    return this.layers[GraphicsLayer.Background];
-  }
-
-  public addChild<T extends DisplayObject[]> (...children: T): T[0] {
+  public addChild<T extends MoveableSprite[]> (...children: T): T[0] {
     for (const child of children) {
-      child.parentLayer = this.getObjectLayer(child);
+      child.parentLayer = this._layers[child.layer];
     }
     return this.stage.addChild(...children);
   }
 
-  public removeChild<T extends DisplayObject[]> (...children: T): T[0] {
+  public removeChild<T extends MoveableSprite[]> (...children: T): T[0] {
     for (const child of children) {
       child.parentLayer = undefined;
-      this.stage.removeChild(child);
     }
     return this.stage.removeChild(...children);
   }
@@ -221,5 +178,30 @@ export default class Graphics extends PIXI.Application {
       (screenPos.x - this.screen.width / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.x,
       (screenPos.y - this.screen.height / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.y
     );
+  }
+
+  public update (d: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
+    this.camera.move(cameraMoveDelta);
+    this.camera.z += cameraZoomDelta;
+
+    this._spriteOutlineFilter.thickness = MoveableSprite.OUTLINE_WIDTH * this.camera.z;
+    const sprites: MoveableSprite[] = this.stage.children.filter(child => child instanceof MoveableSprite) as MoveableSprite[];
+    for (const sprite of sprites) {
+      if (sprite instanceof WheatTile && sprite.hovered) {
+        console.log(sprite.outlineOnHover);
+      }
+      if (sprite.hovered && sprite.outlineOnHover) {
+        sprite.filters = [this._spriteOutlineFilter];
+      } else {
+        sprite.filters = [];
+      }
+    }
+
+    this.stage.scale.set(Graphics.SQUARE_SIZE * this.camera.z / window.devicePixelRatio);
+    this.stage.pivot.set(this.camera.x, this.camera.y);
+    this.stage.x = this.screen.width / (2 * window.devicePixelRatio);
+    this.stage.y = this.screen.height / (2 * window.devicePixelRatio);
+
+    this.updateBackgroundSprite();
   }
 }
