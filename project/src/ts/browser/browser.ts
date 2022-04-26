@@ -1,7 +1,6 @@
 
 import events from "events";
 import * as PIXI from "pixi.js";
-import Canvas from "../core/canvas";
 import Vector from "../core/vector";
 import Gui from "./gui";
 
@@ -28,7 +27,6 @@ export declare interface Browser {
 }
 
 export class Browser extends events.EventEmitter {
-  private _canvas: Canvas[] = [];
   private _mouse: BrowserMouse = new BrowserMouse();
   private _gui: Gui = new Gui(this._mouse);
   private _windowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
@@ -109,8 +107,6 @@ export class Browser extends events.EventEmitter {
    */
   private _onLoaded (): void {
     this._windowSize = new Vector(window.innerWidth, window.innerHeight);
-    this.updateRendererCanvasSize();
-
     this.emit("loaded");
   }
 
@@ -121,9 +117,6 @@ export class Browser extends events.EventEmitter {
    */
   private _onResize (newSize: Vector, oldSize: Vector): void {
     this._windowSize = new Vector(window.innerWidth, window.innerHeight);
-
-    this.updateRendererCanvasSize();
-
     this.emit("resize", newSize, oldSize);
   }
 
@@ -266,43 +259,6 @@ export class Browser extends events.EventEmitter {
         // TODO: Implement screen coordinates
         this._onTouchCancel(new Vector(0, 0));
       });
-    }
-  }
-
-  /**
-   * Initially setup renderer canvas
-   * @returns {CanvasRenderingContext2D}
-   */
-  public initializeRendererCanvas (id: string | null = null): CanvasRenderingContext2D {
-    const canvas = new Canvas();
-    this._canvas.push(canvas);
-    
-    this.updateRendererCanvasSize();
-
-    const canvases = document.body.querySelectorAll("canvas");
-    if (canvases.length) {
-      const lastCanvas = canvases[canvases.length - 1];
-      lastCanvas.parentNode?.insertBefore(canvas.element, lastCanvas.nextSibling);
-    } else {
-      document.body.prepend(canvas.element);
-    }
-
-    if (id != null) {
-      canvas.element.id = id;
-    }
-    
-    return canvas.ctx;
-  }
-
-  /**
-   * Update renderer's canvas size to current window dimensions
-   */
-  private updateRendererCanvasSize (): void {
-    this._canvas = this._canvas.filter(c => Boolean(c.element));
-
-    for (const canvas of this._canvas) {
-      canvas.width = this.windowSize.x;
-      canvas.height = this.windowSize.y;
     }
   }
 
