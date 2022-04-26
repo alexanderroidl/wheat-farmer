@@ -81,7 +81,7 @@ export class Chunk {
     }
 
     for (const tile of this._tiles) {
-      tile.update(deltaTime);
+      tile.updateTile(deltaTime);
     }
   }
 }

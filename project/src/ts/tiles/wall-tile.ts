@@ -10,10 +10,7 @@ export default class WallTile extends Tile implements ITradeable {
     return true;
   }
   
-  public getChar (preview: boolean = false): string | null {
-    if (preview) {
-      return "🚫";
-    }
-    return null;
+  public get char (): string | null {
+    return "🚫";
   }
 }

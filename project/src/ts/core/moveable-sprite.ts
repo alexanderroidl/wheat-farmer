@@ -5,10 +5,13 @@ import Easings from "./easings";
 import Vector from "./vector";
 
 export default class MoveableSprite extends AnimatedSprite implements IRenderable {
+  public interactive: boolean = true;
+  public outlineOnHover: boolean = false;
   public speed: number = 0;
   public moveStartPosition: Vector | null = null;
   public moveStartDistance: number | null = null;
   public sourceFrames: string[] = [];
+  private _hovered: boolean = false;
   private _moveTarget: Vector | null = null;
 
   public get textureId (): number {
@@ -54,6 +57,10 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
     return this._moveTarget;
   }
 
+  public get hovered (): boolean {
+    return this._hovered;
+  }
+
   public static getFrameObjects (textures: Texture[], time: number): FrameObject[] {
     return textures.map((texture: Texture): FrameObject => {
       return { texture, time };
@@ -64,6 +71,14 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
     super(textures);
 
     this.scale.set(1.0 / Graphics.SQUARE_SIZE);
+
+    this.on("mouseover", () => {
+      this._hovered = true;
+    });
+
+    this.on("mouseout", () => {
+      this._hovered = false;
+    });
   }
 
   protected move (delta: number): Vector {
