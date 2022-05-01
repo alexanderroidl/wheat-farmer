@@ -21,7 +21,7 @@ const tsify = require("tsify");
 const uglify = require("gulp-uglify");
 const stripDebug = require("gulp-strip-debug");
 // Gulp styles
-const sass = require("gulp-sass");
+const sass = require("gulp-sass")(require("node-sass"));
 const csso = require("gulp-csso");
 const autoPrefixer = require("gulp-autoprefixer");
 // Gulp HTML
@@ -162,7 +162,7 @@ function styles () {
 /**
  * Static task
  */
-function static () {
+function copy () {
   return gulp.src("**/*", {
     cwd: "src/static",
     dot: true
@@ -248,7 +248,7 @@ function watch () {
   // Launch pug, styles and static tasks upon file changes
   gulp.watch("**/*.pug", { cwd: "src/pug" }, gulp.series(html, restartExpressServer));
   gulp.watch("**/*.scss", { cwd: "src/scss" }, gulp.series(styles, restartExpressServer));
-  gulp.watch("**/*", { cwd: "src/static" }, gulp.series(static, restartExpressServer));
+  gulp.watch("**/*", { cwd: "src/static" }, gulp.series(copy, restartExpressServer));
 
   // When TS source files or ESLint rules change, lint and compile afterwards (if successful)
   gulp.watch([
@@ -265,7 +265,7 @@ function watch () {
  * Export tasks
  */
 module.exports = {
-  default: gulp.parallel(gulp.series(lint, scripts), html, styles, static),
+  default: gulp.parallel(gulp.series(lint, scripts), html, styles, copy),
   clearBuild,
   watch
 };
