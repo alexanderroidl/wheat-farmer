@@ -29,31 +29,31 @@ class TextureSources {
     green: string[];
     hawaii: string[];
   } = {
-    red: [
-      "robot red 0",
-      "robot red 1",
-      "robot red 2",
-      "robot red 3"
-    ],
-    yellow: [
-      "robot yellow 0",
-      "robot yellow 1",
-      "robot yellow 2",
-      "robot yellow 3"
-    ],
-    green: [
-      "robot green 0",
-      "robot green 1",
-      "robot green 2",
-      "robot green 3"
-    ],
-    hawaii: [
-      "robot hawaii 0",
-      "robot hawaii 1",
-      "robot hawaii 2",
-      "robot hawaii 3"
-    ]
-  };
+      red: [
+        "robot red 0",
+        "robot red 1",
+        "robot red 2",
+        "robot red 3"
+      ],
+      yellow: [
+        "robot yellow 0",
+        "robot yellow 1",
+        "robot yellow 2",
+        "robot yellow 3"
+      ],
+      green: [
+        "robot green 0",
+        "robot green 1",
+        "robot green 2",
+        "robot green 3"
+      ],
+      hawaii: [
+        "robot hawaii 0",
+        "robot hawaii 1",
+        "robot hawaii 2",
+        "robot hawaii 3"
+      ]
+    };
   public static readonly bomb: string[] = [
     "bomb 0",
     "bomb 1",
