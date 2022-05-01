@@ -64,7 +64,7 @@ export class Chunk {
     ).floor();
   }
 
-  public setTile (pos: Vector, tile: Tile | null): void {
+  public setTile (pos: Vector, tile: Tile | null): Tile {
     const index = pos.x + pos.y * Chunk.WIDTH;
     if (!(index in this._tiles)) {
       throw `Tile at ${pos} not found`;
@@ -73,6 +73,7 @@ export class Chunk {
     this._tiles[index] = tile;
     tile.visible = this.loaded;
     tile.position.set(this.x * Chunk.WIDTH + pos.x, this.y * Chunk.HEIGHT + pos.y);
+    return tile;
   }
 
   public update (deltaTime: number): void {

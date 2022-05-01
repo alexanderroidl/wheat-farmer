@@ -11,10 +11,12 @@
 
 html, body {
     height: 100%;
+    overflow: hidden;
 }
 
 body {
     font: 12pt "Courier New";
+    overscroll-behavior-x: none;
 }
 
 strong, b {

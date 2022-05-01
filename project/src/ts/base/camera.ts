@@ -10,6 +10,7 @@ export declare interface Camera {
 export class Camera extends events.EventEmitter {
   public static readonly DEFAULT_ZOOM = 1;
   public static readonly MIN_ZOOM = 0.25;
+  public static readonly MAX_ZOOM = 4;
 
   private _position: Vector = new Vector(0);
   private _zoom: number = Camera.DEFAULT_ZOOM;
@@ -36,6 +37,8 @@ export class Camera extends events.EventEmitter {
 
   public set z (zoom: number) {
     zoom = zoom < Camera.MIN_ZOOM ? Camera.MIN_ZOOM : zoom;
+    zoom = zoom > Camera.MAX_ZOOM ? Camera.MAX_ZOOM : zoom;
+    
     if (this.z !== zoom) {
       this.emit("zoomed", zoom);
     }

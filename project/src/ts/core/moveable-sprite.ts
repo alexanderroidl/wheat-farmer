@@ -1,12 +1,12 @@
-import { AnimatedSprite, FrameObject, Texture } from "pixi.js";
+import { AnimatedSprite, Filter, FrameObject, Texture } from "pixi.js";
 import Graphics, { GraphicsLayer } from "../base/graphics";
-import IRenderable from "../interfaces/renderable";
 import Easings from "./easings";
 import Vector from "./vector";
 
-export default class MoveableSprite extends AnimatedSprite implements IRenderable {
-  public static readonly OUTLINE_WIDTH = 0.5;
+export default class MoveableSprite extends AnimatedSprite {
+  public static readonly HOVER_OUTLINE_WIDTH = 0.5;
   
+  protected dimensions: Vector = new Vector(1, 1);
   public interactive: boolean = true;
   public outlineOnHover: boolean = false;
   public speed: number = 0;
@@ -16,10 +16,6 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
   public layer: GraphicsLayer = GraphicsLayer.Background;
   private _hovered: boolean = false;
   private _moveTarget: Vector | null = null;
-
-  public get textureId (): number {
-    return 0;
-  }
 
   public get renderOffset (): Vector {
     return new Vector(-this.pivot.x / this.parent.scale.x, -this.pivot.y / this.parent.scale.y);
@@ -64,6 +60,10 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
     return this._hovered;
   }
 
+  public set textures (textures: Texture[] | FrameObject[]) {
+    super.textures = Graphics.getTrimmedTexturesForDimensions(textures, this.dimensions);
+  }
+
   public static getFrameObjects (textures: Texture[], time: number): FrameObject[] {
     return textures.map((texture: Texture): FrameObject => {
       return { texture, time };
@@ -71,8 +71,9 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
   }
 
   constructor (textures: Texture[] | FrameObject[]) {
-    super(textures);
-
+    super([Texture.EMPTY]);
+    
+    this.textures = textures;
     this.scale.set(1.0 / Graphics.SQUARE_SIZE);
 
     this.on("mouseover", () => {
@@ -110,6 +111,22 @@ export default class MoveableSprite extends AnimatedSprite implements IRenderabl
       
       this.x += moveDelta.x;
       this.y += moveDelta.y;
+    }
+  }
+
+  public addFilter (filter: Filter): void {
+    this.filters = [...(this.filters ?? []), filter];
+  }
+
+  public removeFilter (filter: Filter): void {
+    this.filters = this.filters?.filter(filter => filter !== filter) ?? [];
+  }
+
+  public toggleFilter (filter: Filter, toggle: boolean): void {
+    if (toggle) {
+      this.addFilter(filter);
+    } else {
+      this.removeFilter(filter);
     }
   }
 }
