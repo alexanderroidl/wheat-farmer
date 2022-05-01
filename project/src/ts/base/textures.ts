@@ -2,7 +2,8 @@ import { Texture } from "pixi.js";
 import Graphics from "./graphics";
 
 class TextureSources {
-  public static readonly empty: string = "notfound 0";
+  public static readonly empty: string = "empty 0";
+  public static readonly notFound: string = "notfound 0";
   public static readonly background: string = "bg 0";
   public static readonly wheat: string[] = [
     "wheat 0",
@@ -62,6 +63,12 @@ class TextureSources {
   public static readonly hats: string[] = [
     "robot extras 1"
   ];
+  public static readonly damage: string[] = [
+    "damage 0",
+    "damage 1",
+    "damage 2",
+    "damage 3"
+  ];
 }
 
 export interface RobotTextureGroups {
@@ -73,15 +80,21 @@ export interface RobotTextureGroups {
 
 export class Textures {
   empty: Texture;
+  notFound: Texture;
   background: Texture;
   wheat: Texture[];
   explosion: Texture[];
   robot: RobotTextureGroups;
   bomb: Texture[];
   hats: Texture[];
+  damage: Texture[];
 
   public static get empty (): Texture {
     return Textures.instance.empty;
+  }
+
+  public static get notFound (): Texture {
+    return Textures.instance.notFound;
   }
 
   public static get background (): Texture {
@@ -108,6 +121,10 @@ export class Textures {
     return Textures.instance.hats;
   }
 
+  public static get damage (): Texture[] {
+    return Textures.instance.damage;
+  }
+
   private static _instance?: Textures;
   public static get instance (): Textures {
     if (!Textures._instance) {
@@ -118,6 +135,7 @@ export class Textures {
 
   constructor () {
     this.empty = Graphics.getTexture(TextureSources.empty);
+    this.notFound = Graphics.getTexture(TextureSources.notFound);
     this.background = Graphics.getTexture(TextureSources.background);
     this.wheat = Graphics.getTextures(TextureSources.wheat);
     this.explosion = Graphics.getTextures(TextureSources.explosion);
@@ -129,5 +147,6 @@ export class Textures {
     };
     this.bomb = Graphics.getTextures(TextureSources.bomb);
     this.hats = Graphics.getTextures(TextureSources.hats);
+    this.damage = Graphics.getTextures(TextureSources.damage);
   }
 }

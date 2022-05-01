@@ -1,11 +1,10 @@
 import { Layer } from "@pixi/layers";
 import { OutlineFilter } from "pixi-filters";
 import * as PIXI from "pixi.js";
-import { Loader, Point, Spritesheet, Texture } from "pixi.js";
+import { FrameObject, Loader, Rectangle, Spritesheet, Texture } from "pixi.js";
 import { Browser } from "../browser/browser";
 import MoveableSprite from "../core/moveable-sprite";
 import Vector from "../core/vector";
-import WheatTile from "../tiles/wheat-tile";
 import { Camera } from "./camera";
 import { InventoryItem } from "./inventory";
 import { Textures } from "./textures";
@@ -17,10 +16,13 @@ export enum GraphicsLayer {
   GUI
 }
 
+export type TextureOrFrameObject = Texture | FrameObject;
+
 export default class Graphics extends PIXI.Application {
   public static readonly FONT_SIZE = 12;
   public static readonly FONT_EMOJI_SIZE = 16;
   public static readonly SQUARE_SIZE = 64;
+  public static readonly TEXTURE_SQUARE_SIZE_DIMENSIONS = new Vector(1, 2);
   public static readonly SPRITESHEET_PATH = "spritesheet/sheet.json";
 
   private static _spriteSheet: Spritesheet | null = null;
@@ -50,7 +52,7 @@ export default class Graphics extends PIXI.Application {
       throw Error(`Texture "${index}" could not be found in spritesheet`);
     }
     const texture = spriteSheet.textures[index].clone();
-    texture.defaultAnchor = new Point(0, 0.5);
+    // texture.defaultAnchor = new Point(0, 0.5);
     return texture;
   }
 
@@ -61,7 +63,7 @@ export default class Graphics extends PIXI.Application {
   constructor (cb: () => void) {
     super({
       resizeTo: window,
-      backgroundColor: 0x1099bb,
+      backgroundColor: 0xFFFFFF,
       resolution: window.devicePixelRatio
     });
     this.setupPIXI();
@@ -98,6 +100,8 @@ export default class Graphics extends PIXI.Application {
 
   private setupPIXI (): void {
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+    PIXI.settings.RESOLUTION = window.devicePixelRatio;
+    PIXI.settings.FILTER_RESOLUTION = window.devicePixelRatio;
     this.stage.sortableChildren = true;
     Browser.addPixi(this);
   }
@@ -159,18 +163,18 @@ export default class Graphics extends PIXI.Application {
     return debugText;
   }
 
-  public addChild<T extends MoveableSprite[]> (...children: T): T[0] {
+  public addChild (...children: MoveableSprite[]): void {
     for (const child of children) {
       child.parentLayer = this._layers[child.layer];
+      this.stage.addChild(...children);
     }
-    return this.stage.addChild(...children);
   }
 
-  public removeChild<T extends MoveableSprite[]> (...children: T): T[0] {
+  public removeChild (...children: MoveableSprite[]): void {
     for (const child of children) {
       child.parentLayer = undefined;
+      this.stage.removeChild(child);
     }
-    return this.stage.removeChild(...children);
   }
 
   public getWorldPosFromScreen (screenPos: Vector): Vector {
@@ -179,22 +183,51 @@ export default class Graphics extends PIXI.Application {
       (screenPos.y - this.screen.height / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.y
     );
   }
+  public static getTrimmedTextureForDimensions <T extends Texture | FrameObject> (originalTexture: T, squareSizeDimensions: Vector): T {
+    if (!(originalTexture instanceof Texture)) {
+      return {
+        texture: Graphics.getTrimmedTextureForDimensions(originalTexture.texture, squareSizeDimensions),
+        time: originalTexture.time
+      } as T;
+    }
+
+    if (originalTexture.width === 1 && originalTexture.height === 1) {
+      return originalTexture as T;
+    }
+    
+    const texture = originalTexture.clone();
+    const textureCoords = Graphics.TEXTURE_SQUARE_SIZE_DIMENSIONS
+      .substract(squareSizeDimensions)
+      .multiply(Graphics.SQUARE_SIZE);
+
+    texture.frame = new Rectangle(
+      texture.orig.x + textureCoords.x,
+      texture.orig.y + textureCoords.y,
+      texture.orig.width - textureCoords.x,
+      texture.orig.height - textureCoords.y
+    );
+
+      
+    return texture as T;
+  }
+
+  public static getTrimmedTexturesForDimensions <T extends Texture[] | FrameObject[]> (textures: T, squareSizeDimensions: Vector): T {
+    return textures.map(texture => {
+      return Graphics.getTrimmedTextureForDimensions(texture, squareSizeDimensions);
+    }) as T;
+  }
 
   public update (d: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
     this.camera.move(cameraMoveDelta);
     this.camera.z += cameraZoomDelta;
 
-    this._spriteOutlineFilter.thickness = MoveableSprite.OUTLINE_WIDTH * this.camera.z;
+    this._spriteOutlineFilter.thickness = MoveableSprite.HOVER_OUTLINE_WIDTH * this.camera.z;
     const sprites: MoveableSprite[] = this.stage.children.filter(child => child instanceof MoveableSprite) as MoveableSprite[];
+
+    // Toggle sprite outline
     for (const sprite of sprites) {
-      if (sprite instanceof WheatTile && sprite.hovered) {
-        console.log(sprite.outlineOnHover);
-      }
-      if (sprite.hovered && sprite.outlineOnHover) {
-        sprite.filters = [this._spriteOutlineFilter];
-      } else {
-        sprite.filters = [];
-      }
+      const spriteOutlineVisible = sprite.hovered && sprite.outlineOnHover;
+      sprite.toggleFilter(this._spriteOutlineFilter, spriteOutlineVisible);
     }
 
     this.stage.scale.set(Graphics.SQUARE_SIZE * this.camera.z / window.devicePixelRatio);

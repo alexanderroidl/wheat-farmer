@@ -49,13 +49,17 @@ export default class Game {
     // Create and add background tile sprite
       
     // World has added sprite
-    this._world.on("spriteAdded", (sprite: MoveableSprite) => {
-      this._graphics.addChild(sprite);
+    this._world.on("createdSprites", (sprites: MoveableSprite[]) => {
+      sprites.forEach(sprite => {
+        this._graphics.addChild(sprite);
+      });
     });
 
     // World has removed sprite
-    this._world.on("spriteRemoved", (sprite: MoveableSprite) => {
-      this._graphics.removeChild(sprite);
+    this._world.on("removedSprites", (sprites: MoveableSprite[]) => {
+      sprites.forEach(sprite => {
+        this._graphics.removeChild(sprite);
+      });
     });
 
     // Graphics finished loading -> add ticker
@@ -65,7 +69,7 @@ export default class Game {
 
     // Fill world with empty squares
     // this._world.initChunks();
-    this._world.create(RobotEntity, new Vector(0));
+    this._world.create(RobotEntity, new Vector(1.5, 1.5));
     this._world.create(RobotEntity, new Vector(0, 9));
     this._world.create(RobotEntity, new Vector(9, 9));
   }
@@ -199,7 +203,7 @@ export default class Game {
     }
 
     if (cameraMoveDelta.length) {
-      cameraMoveDelta = cameraMoveDelta.multiply(this._graphics.camera.z);
+      cameraMoveDelta = cameraMoveDelta.multiply(1 / this._graphics.camera.z);
     }
     
     if (this._browser.mouse.pressed) {

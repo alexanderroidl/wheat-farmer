@@ -1,5 +1,4 @@
 import events from "events";
-import { Sprite } from "pixi.js";
 import BitMath from "../core/bit-math";
 import Easings from "../core/easings";
 import MoveableSprite from "../core/moveable-sprite";
@@ -15,10 +14,11 @@ import WheatTile from "../tiles/wheat-tile";
 import { Chunk, Chunks } from "./chunk";
 import Graphics from "./graphics";
 import Player from "./player";
+import { Textures } from "./textures";
 
 export declare interface World {
-  on(event: "spriteAdded", listener: (sprite: MoveableSprite) => void): this;
-  on(event: "spriteRemoved", listener: (sprite: MoveableSprite) => void): this;
+  on(event: "createdSprites", listener: (sprites: MoveableSprite[]) => void): this;
+  on(event: "removedSprites", listener: (sprites: MoveableSprite[]) => void): this;
   on(event: string, listener: () => void): this;
 }
 
@@ -70,7 +70,7 @@ export class World extends events.EventEmitter {
     const chunk = new Chunk(chunkPos);
     chunk.position = new Vector(chunkPos);
     for (const tile of chunk.tiles) {
-      this.emit("spriteAdded", tile);
+      this.emit("createdSprites", [tile]);
     }
     this._chunks[chunkPos.y][chunkPos.x] = chunk;
     return chunk;
@@ -122,7 +122,7 @@ export class World extends events.EventEmitter {
     return chunk.getTile(chunk.getTilePosChunkPos(pos));
   }
 
-  public setTile (pos: Vector, tile: Tile | null): void {
+  public setTile (pos: Vector, tile: Tile | null): Tile {
     const chunkPos = pos.divide(new Vector(Chunk.WIDTH, Chunk.HEIGHT)).floor();
     const chunk = this.getChunk(chunkPos);
     if (!chunk) {
@@ -133,13 +133,12 @@ export class World extends events.EventEmitter {
     const existingTile = chunk.getTile(chunkTilePos);
 
     if (existingTile) {
-      this.emit("spriteRemoved", existingTile);
+      this.emit("removedSprites", [existingTile]);
     }
-    chunk.setTile(chunkTilePos, tile);
 
-    if (tile instanceof Sprite) {
-      this.emit("spriteAdded", tile);
-    }
+    const tileUsed = chunk.setTile(chunkTilePos, tile);
+    this.emit("createdSprites", [tileUsed]);
+    return tileUsed;
   }
 
   public onTileClicked (pos: Vector): void {
@@ -190,7 +189,7 @@ export class World extends events.EventEmitter {
         this._player.items.setItemAmount("Wheat", playerWheatTiles + seedDrops);
         this._player.items.wheat += 1;
 
-        this.emit("spriteRemoved", tile);
+        this.emit("removedSprites", [tile]);
 
         // Replace with empty tile
         this.setTile(pos, null);
@@ -256,7 +255,7 @@ export class World extends events.EventEmitter {
 
     if (newSprite instanceof Entity) {
       this._entities.push(newSprite);
-      this.emit("spriteAdded", newSprite);
+      this.emit("createdSprites", [newSprite]);
     }
 
     if (newSprite instanceof Tile) {
@@ -283,7 +282,7 @@ export class World extends events.EventEmitter {
 
   public removeEntity (entity: Entity): void {
     this._entities = this._entities.filter((e) => e !== entity);
-    this.emit("spriteRemoved", entity);
+    this.emit("removedSprites", [entity]);
   }
 
   public createExplosion (pos: Vector, radius: number, maxRadius: number): void {
@@ -327,6 +326,7 @@ export class World extends events.EventEmitter {
 
       target.damage = totalDamage;
       if (damageSprites) {
+        this.emit("createdSprites", damageSprites);
         target.addDamageSprites(...damageSprites);
       }
     }
@@ -339,10 +339,10 @@ export class World extends events.EventEmitter {
     const damageTextureCount = BitMath.floor(damage * 3) + 1;
 
     for (let i = 0; i < damageTextureCount; i++) {
-      const textureIdOffset = BitMath.floor(Math.random() * 4);
       const worldOffset = new Vector(Math.random() - 0.5, Math.random() - 0.5).multiply(Graphics.SQUARE_SIZE);
       const size = (1 + Easings.easeInCubic(Math.random()) * 2 * damage);
-      const texture = Graphics.getTexture(`damage ${textureIdOffset}`);
+      const randomTextureIndex = BitMath.floor(Math.random() * Textures.damage.length);
+      const texture = Textures.damage[randomTextureIndex];
       const sprite = new MoveableSprite([texture]);
       
       sprite.scale.set(size);

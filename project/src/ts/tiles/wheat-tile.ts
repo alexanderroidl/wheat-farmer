@@ -43,5 +43,12 @@ export default class WheatTile extends Tile implements ITradeable {
     if (this.currentFrame !== targetFrame) {
       this.gotoAndStop(targetFrame);
     }
+
+    
+    if (this.growthRate < 1) {
+      this.cursor = "progress";
+    } else {
+      this.cursor = "pointer";
+    }
   }
 }
