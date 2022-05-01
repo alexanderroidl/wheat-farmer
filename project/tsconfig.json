@@ -20,6 +20,9 @@
     "types" : ["node", "offscreencanvas"]
 	},
 	"include": [
-		"src/ts/**/*"
+		"src/ts/**/*.ts"
+	],
+	"exclude": [
+    "**/*.spec.ts"
 	]
 }
