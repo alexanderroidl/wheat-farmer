@@ -1,5 +1,3 @@
-import { Layer } from "@pixi/layers";
-import { OutlineFilter } from "pixi-filters";
 import * as PIXI from "pixi.js";
 import { FrameObject, Loader, Rectangle, Spritesheet, Texture } from "pixi.js";
 import { Browser } from "../browser/browser";
@@ -31,13 +29,7 @@ export default class Graphics extends PIXI.Application {
   public equippedItem: InventoryItem | null = null;
   public debugText?: PIXI.Text;
   public background?: PIXI.TilingSprite;
-  private _spriteOutlineFilter: OutlineFilter = new OutlineFilter(undefined, 0xFFFFFF, 1);
-  private _layers: Layer[] = [
-    new Layer(),
-    new Layer(),
-    new Layer(),
-    new Layer()
-  ];
+  private _layers: PIXI.Container[] = [];
 
   public get loading (): boolean {
     return Graphics._spriteSheet == null;
@@ -52,7 +44,6 @@ export default class Graphics extends PIXI.Application {
       throw Error(`Texture "${index}" could not be found in spritesheet`);
     }
     const texture = spriteSheet.textures[index].clone();
-    // texture.defaultAnchor = new Point(0, 0.5);
     return texture;
   }
 
@@ -73,9 +64,11 @@ export default class Graphics extends PIXI.Application {
   }
 
   private setupLayers (): void {
-    this._layers.forEach((layer) => {
-      this.stage.addChild(layer);
-    });
+    for (let layerIndex = 0; layerIndex < Object.keys(GraphicsLayer).length; layerIndex++) {
+      this._layers[layerIndex] = new PIXI.Container();
+      this._layers[layerIndex].zIndex = layerIndex;
+      this.stage.addChild(this._layers[layerIndex]);
+    }
   }
 
   private setupCameraEvents (): void {
@@ -114,7 +107,7 @@ export default class Graphics extends PIXI.Application {
     backgroundSprite.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
     backgroundSprite.anchor.set(0, 0);
 
-    backgroundSprite.parentLayer = this._layers[GraphicsLayer.Background];
+    this._layers[GraphicsLayer.Background].addChild(backgroundSprite);
     return backgroundSprite;
   }
 
@@ -158,22 +151,21 @@ export default class Graphics extends PIXI.Application {
       fontSize: 10
     });
     debugText.scale.set(1.0 / Graphics.SQUARE_SIZE);
-    debugText.anchor.set(0.5, 0.5);
-    debugText.parentLayer = this._layers[GraphicsLayer.GUI];
+    // debugText.anchor.set(0.5, 0.5);
+    debugText.position.set(1, 1);
+    this._layers[GraphicsLayer.GUI].addChild(debugText);
     return debugText;
   }
 
   public addChild (...children: MoveableSprite[]): void {
     for (const child of children) {
-      child.parentLayer = this._layers[child.layer];
-      this.stage.addChild(...children);
+      this._layers[child.layer].addChild(child);
     }
   }
 
   public removeChild (...children: MoveableSprite[]): void {
     for (const child of children) {
-      child.parentLayer = undefined;
-      this.stage.removeChild(child);
+      this._layers[child.layer].removeChild(child);
     }
   }
 
@@ -190,10 +182,6 @@ export default class Graphics extends PIXI.Application {
         time: originalTexture.time
       } as T;
     }
-
-    if (originalTexture.width === 1 && originalTexture.height === 1) {
-      return originalTexture as T;
-    }
     
     const texture = originalTexture.clone();
     const textureCoords = Graphics.TEXTURE_SQUARE_SIZE_DIMENSIONS
@@ -206,7 +194,6 @@ export default class Graphics extends PIXI.Application {
       texture.orig.width - textureCoords.x,
       texture.orig.height - textureCoords.y
     );
-
       
     return texture as T;
   }
@@ -220,15 +207,6 @@ export default class Graphics extends PIXI.Application {
   public update (d: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
     this.camera.move(cameraMoveDelta);
     this.camera.z += cameraZoomDelta;
-
-    this._spriteOutlineFilter.thickness = MoveableSprite.HOVER_OUTLINE_WIDTH * this.camera.z;
-    const sprites: MoveableSprite[] = this.stage.children.filter(child => child instanceof MoveableSprite) as MoveableSprite[];
-
-    // Toggle sprite outline
-    for (const sprite of sprites) {
-      const spriteOutlineVisible = sprite.hovered && sprite.outlineOnHover;
-      sprite.toggleFilter(this._spriteOutlineFilter, spriteOutlineVisible);
-    }
 
     this.stage.scale.set(Graphics.SQUARE_SIZE * this.camera.z / window.devicePixelRatio);
     this.stage.pivot.set(this.camera.x, this.camera.y);
