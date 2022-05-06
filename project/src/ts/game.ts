@@ -1,4 +1,4 @@
-import MoveableSprite from "core/moveable-sprite";
+import MoveableSprite from "./core/moveable-sprite";
 import Graphics from "./base/graphics";
 import Sound from "./base/sound";
 import { World } from "./base/world";
