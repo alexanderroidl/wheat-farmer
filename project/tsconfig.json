@@ -3,21 +3,28 @@
 		"src/ts/index.ts"
 	],
 	"compilerOptions": {
-		"target": "es2018",
-		"lib": ["es5", "es6", "es2018", "dom", "dom.iterable"],
+		"target": "es6",
+		"lib": ["es2018", "dom", "dom.iterable"],
 		"moduleResolution": "node",
 		"allowJs": true,
 		"noEmit": false,
 		"strict": true,
-		"isolatedModules": false,
-		"esModuleInterop": true,
-		"baseUrl": "./src/ts",
-		"module": "commonjs",
+		"baseUrl": "src/ts",
+		"module": "es6",
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "types" : ["node", "offscreencanvas"]
+    "types" : ["node", "offscreencanvas"],
+    "paths":{
+      "@base/*": ["base/*"],
+      "@browser/*": ["browser/*"],
+      "@core/*": ["core/*"],
+      "@entities/*": ["entities/*"],
+      "@interfaces/*": ["interfaces/*"],
+      "@tiles/*": ["tiles/*"],
+      "@title-screen/*": ["title-screen/*"]
+    }
 	},
 	"include": [
 		"src/ts/**/*.ts"
