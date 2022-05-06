@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Webserver",
+      "port": 9229,
+      "protocol": "inspector",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "serve"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceRoot}/project"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Browser",
+      "url": "http://localhost:3000",
+      "pathMapping": {
+        "js/": "${workspaceRoot}/project"
+      },
+      "sourceMaps": true
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Webserver & Browser",
+      "configurations": ["Webserver", "Browser"]
+    }
+  ]
+}

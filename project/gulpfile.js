@@ -18,6 +18,7 @@ const browserify = require("browserify");
 const source = require("vinyl-source-stream");
 const buffer = require("vinyl-buffer");
 const tsify = require("tsify");
+const pathmodify = require("pathmodify");
 const uglify = require("gulp-uglify");
 const stripDebug = require("gulp-strip-debug");
 // Gulp styles
@@ -94,17 +95,29 @@ function scripts (cb) {
 
   // Reset count of total ESLint errors
   linterErrorCount = 0;
-  
+    
   // Load TypeScript project file
   const tsConfig = require("./tsconfig.json");
+  const tsConfigCompilerPaths = tsConfig.compilerOptions.paths;
+  const tsConfigPathDirRegExp = new RegExp(/^((?:[\w\-@]+\/?)+)\/\*$/);
   
-  return browserify("./src/ts/index.ts", {
-    basedir: "./",
+  return browserify("src/ts/index.ts", {
+    basedir: ".",
     debug: true,
     cache: {},
     packageCache: {}
   })
-    .plugin(tsify, tsConfig.compilerOptions)
+    .plugin(pathmodify, {
+      mods: Object.keys(tsConfigCompilerPaths).map(tsPathAlias => {
+        const tsPathTarget = tsConfigCompilerPaths[tsPathAlias];
+
+        const aliasDir = tsPathAlias.match(tsConfigPathDirRegExp)[1];
+        const targetDir = tsPathTarget[0].match(tsConfigPathDirRegExp)[1];
+
+        return pathmodify.mod.dir(aliasDir, `./${targetDir}`);
+      })
+    })
+    .plugin(tsify)
     .transform("babelify", {
       extensions: [".ts"]
     })
