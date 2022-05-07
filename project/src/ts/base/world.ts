@@ -12,7 +12,7 @@ import Tile from "../tiles/tile";
 import WallTile from "../tiles/wall-tile";
 import WheatTile from "../tiles/wheat-tile";
 import { Chunk, Chunks } from "./chunk";
-import { DamageSprite } from "./damage-sprite";
+import DamageEntity from "@entities/damage";
 import Player from "./player";
 
 export declare interface World {
@@ -262,7 +262,7 @@ export class World extends events.EventEmitter {
       
       if (oldTile) {
         newSprite.damage = oldTile.damage;
-        newSprite.addDamageSprites(...oldTile.damageSprites);
+        newSprite.addDamageSprites(...oldTile.damageEntities);
       }
 
       if (!(newSprite instanceof EmptyTile)) {
@@ -306,7 +306,7 @@ export class World extends events.EventEmitter {
       const tileDestroyed = Math.random() * maxRadius / (distance + 1) > 0.5;
       const existingTile = this.getTile(tilePos);
       const totalDamage = (existingTile?.damage ?? 0) + damage;
-      const damageSprites = this.createDamageSprites(damage);
+      const damageSprites = this.createDamageEntities(damage);
 
       for (const damageSprite of damageSprites) {
         damageSprite.x += tilePos.x;
@@ -331,10 +331,10 @@ export class World extends events.EventEmitter {
     this.create(ExplosionEntity, pos.substract(0.5));
   }
 
-  public createDamageSprites (damage: number): DamageSprite[] {
+  public createDamageEntities (damage: number): DamageEntity[] {
     const damageTextureCount = BitMath.floor(damage * 3) + 1;
     return damageTextureCount <= 0 ? [] : Array(damageTextureCount).fill(null).map(() => {
-      return new DamageSprite(damage);
+      return new DamageEntity(damage);
     });
   }
 
