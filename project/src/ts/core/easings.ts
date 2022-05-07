@@ -22,4 +22,8 @@ export default class Easings {
   public static easeOutQuint (x: number): number {
     return 1 - Math.pow(1 - x, 5);
   }
+
+  public static easeOutQuart (x: number): number {
+    return 1 - Math.pow(1 - x, 4);
+  }
 }

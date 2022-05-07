@@ -1,6 +1,6 @@
+import Easings from "@core/easings";
 import events from "events";
 import BitMath from "../core/bit-math";
-import Easings from "../core/easings";
 import MoveableSprite from "../core/moveable-sprite";
 import Vector from "../core/vector";
 import BombEntity from "../entities/bomb";
@@ -12,9 +12,8 @@ import Tile from "../tiles/tile";
 import WallTile from "../tiles/wall-tile";
 import WheatTile from "../tiles/wheat-tile";
 import { Chunk, Chunks } from "./chunk";
-import Graphics from "./graphics";
+import { DamageSprite } from "./damage-sprite";
 import Player from "./player";
-import { Textures } from "./textures";
 
 export declare interface World {
   on(event: "createdSprites", listener: (sprites: MoveableSprite[]) => void): this;
@@ -263,9 +262,7 @@ export class World extends events.EventEmitter {
       
       if (oldTile) {
         newSprite.damage = oldTile.damage;
-
-        const damageSprites = oldTile.getDamageSprites();
-        newSprite.addDamageSprites(...damageSprites);
+        newSprite.addDamageSprites(...oldTile.damageSprites);
       }
 
       if (!(newSprite instanceof EmptyTile)) {
@@ -305,15 +302,15 @@ export class World extends events.EventEmitter {
           ).length;
 
       // Calculate damage and restrict to values between 0-1
-      const damage = 1 - (distance / (maxRadius + 1));
+      const damage = (1 - distance / (maxRadius + 1)) * Easings.easeOutQuart(Math.random());
       const tileDestroyed = Math.random() * maxRadius / (distance + 1) > 0.5;
       const existingTile = this.getTile(tilePos);
       const totalDamage = (existingTile?.damage ?? 0) + damage;
       const damageSprites = this.createDamageSprites(damage);
 
-      for (const sprite of damageSprites) {
-        sprite.x += tilePos.x;
-        sprite.y += tilePos.y;
+      for (const damageSprite of damageSprites) {
+        damageSprite.x += tilePos.x;
+        damageSprite.y += tilePos.y;
       }
 
       let target: Tile | null = null;
@@ -331,30 +328,14 @@ export class World extends events.EventEmitter {
       }
     }
 
-    this.create(ExplosionEntity, pos);
+    this.create(ExplosionEntity, pos.substract(0.5));
   }
 
-  public createDamageSprites (damage: number): MoveableSprite[] {
-    const sprites = [];
+  public createDamageSprites (damage: number): DamageSprite[] {
     const damageTextureCount = BitMath.floor(damage * 3) + 1;
-
-    for (let i = 0; i < damageTextureCount; i++) {
-      const worldOffset = new Vector(Math.random() - 0.5, Math.random() - 0.5).multiply(Graphics.SQUARE_SIZE);
-      const size = (1 + Easings.easeInCubic(Math.random()) * 2 * damage);
-      const randomTextureIndex = BitMath.floor(Math.random() * Textures.damage.length);
-      const texture = Textures.damage[randomTextureIndex];
-      const sprite = new MoveableSprite([texture]);
-      
-      sprite.scale.set(size);
-      sprite.anchor.set(0.5);
-      sprite.alpha = Math.random() * 0.65 * damage;
-      sprite.rotation = Math.random() * Math.PI * 2;
-      sprite.position.set(worldOffset.x, worldOffset.y);
-
-      sprites.push(sprite);
-    }
-
-    return sprites;
+    return damageTextureCount <= 0 ? [] : Array(damageTextureCount).fill(null).map(() => {
+      return new DamageSprite(damage);
+    });
   }
 
   public update (delta: number): void {
