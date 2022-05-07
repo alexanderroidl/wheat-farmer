@@ -3,9 +3,9 @@ import Graphics from "./base/graphics";
 import Sound from "./base/sound";
 import { World } from "./base/world";
 import { Browser } from "./browser/browser";
-import Vector from "./core/vector";
-import RobotEntity from "./entities/robot";
+import Vector from "@core/vector";
 import TitleScreen from "./title-screen/title-screen";
+import BombEntity from "@entities/bomb";
 
 declare global {
   interface Window {
@@ -66,12 +66,6 @@ export default class Game {
     this._graphics.ticker.add((delta: number) => {
       this.update(delta);
     });
-
-    // Fill world with empty squares
-    // this._world.initChunks();
-    this._world.create(RobotEntity, new Vector(1.5, 1.5));
-    this._world.create(RobotEntity, new Vector(0, 9));
-    this._world.create(RobotEntity, new Vector(9, 9));
   }
 
   private setupCLI (): void {
@@ -207,20 +201,26 @@ export default class Game {
     }
     
     if (this._browser.mouse.pressed) {
-      let mouseMoveDelta: Vector = new Vector(0);
+      // Only drag mouse if space key is not pressed
+      if (!this._keysPressed.includes("Space")) {
+        let mouseMoveDelta: Vector = new Vector(0);
 
-      if (this._lastMousePosition) {
-        mouseMoveDelta = this._browser.mouse.position.substract(this._lastMousePosition);
+        if (this._lastMousePosition) {
+          mouseMoveDelta = this._browser.mouse.position.substract(this._lastMousePosition);
 
-        if (mouseMoveDelta.length > Game.MOUSE_DRAG_TRESHOLD) {
-          const mouseDeltaWorld = mouseMoveDelta.divide(Graphics.SQUARE_SIZE * this._graphics.camera.z);
-          cameraMoveDelta = cameraMoveDelta.add(mouseDeltaWorld.multiply(-1));
-          this._draggingMouse = true;
+          if (mouseMoveDelta.length > Game.MOUSE_DRAG_TRESHOLD) {
+            const mouseDeltaWorld = mouseMoveDelta.divide(Graphics.SQUARE_SIZE * this._graphics.camera.z);
+            cameraMoveDelta = cameraMoveDelta.add(mouseDeltaWorld.multiply(-1));
+            this._draggingMouse = true;
+          }
         }
-      }
-      
-      if (this._lastMousePosition == null || mouseMoveDelta.length > Game.MOUSE_DRAG_TRESHOLD) {
-        this._lastMousePosition = new Vector(this._browser.mouse.position);
+        
+        if (this._lastMousePosition == null || mouseMoveDelta.length > Game.MOUSE_DRAG_TRESHOLD) {
+          this._lastMousePosition = new Vector(this._browser.mouse.position);
+        }
+      } else { // Holding space key
+        // Simulate click when moving mouse
+        this._clickedAt = new Vector(this._browser.mouse.position);
       }
     } else {
       this._lastMousePosition = null;
@@ -249,7 +249,12 @@ export default class Game {
         const worldPos = this._graphics.getWorldPosFromScreen(this._clickedAt);
         this._clickedAt = null;
 
-        this._world.onTileClicked(worldPos.floor());
+        if (this._keysPressed.includes("ShiftLeft")) {
+          const radius = Math.floor(Math.random() * (BombEntity.maxExplosionRadius + 1));
+          this._world.createExplosion(worldPos, radius, BombEntity.maxExplosionRadius);
+        } else {
+          this._world.onTileClicked(worldPos.floor());
+        }
       }
     }
 

@@ -1,4 +1,4 @@
-import { DisplayObject } from "pixi.js";
+import { DamageSprite } from "@base/damage-sprite";
 import { GraphicsLayer } from "../base/graphics";
 import MoveableSprite from "../core/moveable-sprite";
 
@@ -9,30 +9,30 @@ export default abstract class Tile extends MoveableSprite {
   public abstract readonly name: string;
   public layer: GraphicsLayer = GraphicsLayer.Tiles;
   public age: number = 0;
-  protected _damageSprites: MoveableSprite[] = [];
+  protected _damageSprites: DamageSprite[] = [];
   private _damage: number = 0;
 
-  public get damage (): number {
+  public get damage () {
     return this._damage;
   }
 
   public set damage (damage: number) {
-    this._damage = damage < 0 ? 0 : damage;
+    this._damage = damage < 0 ? 0 : damage > 1 ? 1 : damage;
   }
 
   public get char (): string | null {
     return null;
   }
 
-  public addDamageSprites (...damageSprites: MoveableSprite[]): void {
+  public get damageSprites () {
+    return this._damageSprites;
+  }
+
+  public addDamageSprites (...damageSprites: DamageSprite[]): void {
     if (damageSprites.length) {
       this._damageSprites.push(...damageSprites);
       this.addChild(...damageSprites);
     }
-  }
-
-  public getDamageSprites (): MoveableSprite[] {
-    return this._damageSprites;
   }
 
   public hasCollision (): boolean {
@@ -43,20 +43,21 @@ export default abstract class Tile extends MoveableSprite {
     super.updateSprite(deltaTime);
 
     this.age += deltaTime;
-    this.damage -= deltaTime / (Tile.DAMAGE_HEAL_TIME * 100);
+    this.damage -= deltaTime / Tile.DAMAGE_HEAL_TIME;
 
     // Iterate damage tiles
     for (const damageSprite of this._damageSprites) {
-      damageSprite.alpha -= this.damage / deltaTime / 100;
+      damageSprite.alpha = this.damage * 0.5;
 
       // Remove damage sprite as child if alpha is zero
-      if (damageSprite.alpha <= 0) {
+      if (damageSprite.alpha <= 0 && !damageSprite.destroyed) {
         this.removeChild(damageSprite);
+        damageSprite.destroy();
       }
     }
 
-    this._damageSprites = this._damageSprites.filter((sprite: DisplayObject) => {
-      return Boolean(this.parent);
+    this._damageSprites = this._damageSprites.filter((damageSprite: DamageSprite) => {
+      return !damageSprite.destroyed;
     });
   }
 }

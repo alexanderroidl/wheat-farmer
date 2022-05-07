@@ -13,6 +13,8 @@ export default class EmptyTile extends Tile {
   }
 
   public updateTile (d: number): void {
+    super.updateTile(d);
+    
     const textureFrameIndex = this.hovered ? 1 : 0;
     if (textureFrameIndex !== this.currentFrame) {
       this.gotoAndStop(textureFrameIndex);

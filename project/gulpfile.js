@@ -7,6 +7,7 @@ const spawn = require("child_process").spawn;
 const del = require("del");
 const chalk = require("chalk");
 const ESLint = require("eslint").ESLint;
+const path = require("path");
 // Gulp general
 const gulp = require("gulp");
 const sourceMaps = require("gulp-sourcemaps");
@@ -98,9 +99,20 @@ function scripts (cb) {
     
   // Load TypeScript project file
   const tsConfig = require("./tsconfig.json");
-  const tsConfigCompilerPaths = tsConfig.compilerOptions.paths;
-  const tsConfigPathDirRegExp = new RegExp(/^((?:[\w\-@]+\/?)+)\/\*$/);
-  
+  const tsConfigBaseUrl = tsConfig.compilerOptions.baseUrl;
+  const tsConfigPathDirRegExp = new RegExp(/^((?:[@\w-]+\/?)+)\/\*$/);
+  const importAliasPathRegExp = new RegExp(/^(@[\w-]+)(\/.*?)$/);
+
+  const tsPathMappings = {};
+  for (const tsPathAlias in tsConfig.compilerOptions.paths) {
+    const tsPathTarget = tsConfig.compilerOptions.paths[tsPathAlias];
+
+    const aliasDir = tsPathAlias.match(tsConfigPathDirRegExp)[1];
+    const targetDir = tsPathTarget[0].match(tsConfigPathDirRegExp)[1];
+
+    tsPathMappings[aliasDir] = targetDir;
+  }
+
   return browserify("src/ts/index.ts", {
     basedir: ".",
     debug: true,
@@ -108,14 +120,18 @@ function scripts (cb) {
     packageCache: {}
   })
     .plugin(pathmodify, {
-      mods: Object.keys(tsConfigCompilerPaths).map(tsPathAlias => {
-        const tsPathTarget = tsConfigCompilerPaths[tsPathAlias];
-
-        const aliasDir = tsPathAlias.match(tsConfigPathDirRegExp)[1];
-        const targetDir = tsPathTarget[0].match(tsConfigPathDirRegExp)[1];
-
-        return pathmodify.mod.dir(aliasDir, `./${targetDir}`);
-      })
+      mods: [
+        (rec) => {
+          const pathAliasMatch = rec.id.match(importAliasPathRegExp);
+          if (pathAliasMatch && pathAliasMatch[1] in tsPathMappings) {
+            const pathAliasTarget = tsPathMappings[pathAliasMatch[1]];
+            return {
+              id: path.join(__dirname, tsConfigBaseUrl, pathAliasTarget, pathAliasMatch[2])
+            };
+          }
+          return rec;
+        }
+      ]
     })
     .plugin(tsify)
     .transform("babelify", {

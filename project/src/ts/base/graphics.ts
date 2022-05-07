@@ -1,3 +1,5 @@
+import Tile from "../tiles/tile";
+import WheatTile from "../tiles/wheat-tile";
 import * as PIXI from "pixi.js";
 import { FrameObject, Loader, Rectangle, Spritesheet, Texture } from "pixi.js";
 import { Browser } from "../browser/browser";
@@ -5,6 +7,7 @@ import MoveableSprite from "../core/moveable-sprite";
 import Vector from "../core/vector";
 import { Camera } from "./camera";
 import { InventoryItem } from "./inventory";
+import { ProgressBar } from "./progress-bar";
 import { Textures } from "./textures";
 
 export enum GraphicsLayer {
@@ -28,8 +31,10 @@ export default class Graphics extends PIXI.Application {
   public readonly camera: Camera = new Camera();
   public equippedItem: InventoryItem | null = null;
   public debugText?: PIXI.Text;
-  public background?: PIXI.TilingSprite;
+  public backgroundSprite?: PIXI.TilingSprite;
   private _layers: PIXI.Container[] = [];
+  private _growthProgressBar: ProgressBar = new ProgressBar(0x00FF00);
+  private _damageProgressBar: ProgressBar = new ProgressBar(0xFF0000);
 
   public get loading (): boolean {
     return Graphics._spriteSheet == null;
@@ -61,6 +66,8 @@ export default class Graphics extends PIXI.Application {
     this.setupLayers();
     this.setupCameraEvents();
     this.setupLoader(cb);
+    this._layers[GraphicsLayer.GUI].addChild(this._growthProgressBar);
+    this._layers[GraphicsLayer.GUI].addChild(this._damageProgressBar);
   }
 
   private setupLayers (): void {
@@ -107,22 +114,21 @@ export default class Graphics extends PIXI.Application {
     backgroundSprite.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
     backgroundSprite.anchor.set(0, 0);
 
-    this._layers[GraphicsLayer.Background].addChild(backgroundSprite);
     return backgroundSprite;
   }
 
   private updateBackgroundSprite (): void {
-    if (!this.background) {
+    if (!this.backgroundSprite) {
       return;
     }
 
     const screenLeft = this.camera.x - this.screen.width / 2 / Graphics.SQUARE_SIZE / this.camera.z;
     const screenTop = this.camera.y - this.screen.height / 2 / Graphics.SQUARE_SIZE / this.camera.z;
     
-    this.background.width = this.screen.width / Graphics.SQUARE_SIZE / this.camera.z + 1;
-    this.background.height = this.screen.height / Graphics.SQUARE_SIZE / this.camera.z + 1;
+    this.backgroundSprite.width = this.screen.width / Graphics.SQUARE_SIZE / this.camera.z + 1;
+    this.backgroundSprite.height = this.screen.height / Graphics.SQUARE_SIZE / this.camera.z + 1;
 
-    this.background.pivot.set(
+    this.backgroundSprite.pivot.set(
       -(Math.ceil(screenLeft) + screenLeft % (this.camera.z / Graphics.SQUARE_SIZE) - 1),
       -(Math.ceil(screenTop) + screenTop % (this.camera.z / Graphics.SQUARE_SIZE) - 1)
     );
@@ -137,11 +143,11 @@ export default class Graphics extends PIXI.Application {
     Graphics._spriteSheet = sheet;
     Textures.instance;
 
-    this.background = this.createBackgroundSprite();
-    this.stage.addChild(this.background);
+    this.backgroundSprite = this.createBackgroundSprite();
+    this._layers[GraphicsLayer.Background].addChild(this.backgroundSprite);
 
     this.debugText = this.createDebugText();
-    this.stage.addChild(this.debugText);
+    this._layers[GraphicsLayer.GUI].addChild(this.debugText);
 
     cb.call(null);
   }
@@ -153,7 +159,6 @@ export default class Graphics extends PIXI.Application {
     debugText.scale.set(1.0 / Graphics.SQUARE_SIZE);
     // debugText.anchor.set(0.5, 0.5);
     debugText.position.set(1, 1);
-    this._layers[GraphicsLayer.GUI].addChild(debugText);
     return debugText;
   }
 
@@ -204,7 +209,31 @@ export default class Graphics extends PIXI.Application {
     }) as T;
   }
 
-  public update (d: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
+  private updateTileGUI (delta: number): void {
+    this._growthProgressBar.visible = false;
+    this._damageProgressBar.visible = false;
+
+    const tiles = this._layers[GraphicsLayer.Tiles].children as Tile[];
+    for (const tile of tiles) {
+      if (!tile.hovered) {
+        continue;
+      }
+      this._damageProgressBar.position.set(tile.position.x, tile.position.y + 0.1);
+      this._damageProgressBar.progress = tile.damage;
+      this._damageProgressBar.visible = this._damageProgressBar.progress > 0;
+
+      if (tile instanceof WheatTile) {
+        this._growthProgressBar.position.set(tile.position.x, tile.position.y);
+        this._growthProgressBar.progress = (tile as WheatTile).growthRate;
+        this._growthProgressBar.visible = this._growthProgressBar.progress < 1;
+      }
+    }
+
+    this._growthProgressBar.update(delta);
+    this._damageProgressBar.update(delta);
+  }
+
+  public update (delta: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
     this.camera.move(cameraMoveDelta);
     this.camera.z += cameraZoomDelta;
 
@@ -214,5 +243,6 @@ export default class Graphics extends PIXI.Application {
     this.stage.y = this.screen.height / (2 * window.devicePixelRatio);
 
     this.updateBackgroundSprite();
+    this.updateTileGUI(delta);
   }
 }

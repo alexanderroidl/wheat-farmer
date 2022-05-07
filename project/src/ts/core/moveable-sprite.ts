@@ -1,4 +1,4 @@
-import { AnimatedSprite, Filter, FrameObject, Texture } from "pixi.js";
+import { AnimatedSprite, Filter, FrameObject, Rectangle, Texture } from "pixi.js";
 import Graphics, { GraphicsLayer } from "../base/graphics";
 import Easings from "./easings";
 import Vector from "./vector";
@@ -7,6 +7,7 @@ export default class MoveableSprite extends AnimatedSprite {
   public static readonly HOVER_OUTLINE_WIDTH = 0.5;
   
   protected dimensions: Vector = new Vector(1, 1);
+  public hitArea: Rectangle;
   public interactive: boolean = true;
   public outlineOnHover: boolean = false;
   public speed: number = 0;
@@ -75,6 +76,12 @@ export default class MoveableSprite extends AnimatedSprite {
     
     this.textures = textures;
     this.scale.set(1.0 / Graphics.SQUARE_SIZE);
+    this.hitArea = new Rectangle(
+      0,
+      0,
+      Graphics.SQUARE_SIZE * this.dimensions.x,
+      Graphics.SQUARE_SIZE * this.dimensions.y
+    );
 
     this.on("mouseover", () => {
       this._hovered = true;
