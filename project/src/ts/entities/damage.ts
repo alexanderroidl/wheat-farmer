@@ -1,17 +1,12 @@
 import BitMath from "@core/bit-math";
 import Easings from "@core/easings";
-import MoveableSprite from "@core/moveable-sprite";
 import Vector from "@core/vector";
-import Graphics from "./graphics";
-import { Textures } from "./textures";
+import Graphics from "@base/graphics";
+import { Textures } from "@base/textures";
+import Entity from "./entity";
 
-export class DamageSprite extends MoveableSprite {
-  public interactive: boolean = true;
-  public toBeDestroyed: boolean = false;
-
-  public get hovered (): boolean {
-    return false;
-  }
+export default class DamageEntity extends Entity {
+  public readonly name: string = "Damage";
 
   constructor (damage: number) {
     const randomTextureIndex = BitMath.floor(Math.random() * Textures.damage.length);

@@ -1,4 +1,4 @@
-import ITradeable from "interfaces/tradeable";
+import ITradeable from "@interfaces/tradeable.interface";
 import Tile from "./tile";
 
 export default class WallTile extends Tile implements ITradeable {

@@ -1,4 +1,4 @@
-import ISlide from "interfaces/slide";
+import ISlide from "./slide.interface";
 import Graphics from "../base/graphics";
 import Color from "../core/color";
 import Vector from "../core/vector";

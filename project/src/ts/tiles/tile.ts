@@ -1,4 +1,4 @@
-import { DamageSprite } from "@base/damage-sprite";
+import DamageEntity from "@entities/damage";
 import { GraphicsLayer } from "../base/graphics";
 import MoveableSprite from "../core/moveable-sprite";
 
@@ -9,7 +9,7 @@ export default abstract class Tile extends MoveableSprite {
   public abstract readonly name: string;
   public layer: GraphicsLayer = GraphicsLayer.Tiles;
   public age: number = 0;
-  protected _damageSprites: DamageSprite[] = [];
+  protected _damageEntities: DamageEntity[] = [];
   private _damage: number = 0;
 
   public get damage () {
@@ -24,14 +24,14 @@ export default abstract class Tile extends MoveableSprite {
     return null;
   }
 
-  public get damageSprites () {
-    return this._damageSprites;
+  public get damageEntities () {
+    return this._damageEntities;
   }
 
-  public addDamageSprites (...damageSprites: DamageSprite[]): void {
-    if (damageSprites.length) {
-      this._damageSprites.push(...damageSprites);
-      this.addChild(...damageSprites);
+  public addDamageSprites (...damageEntities: DamageEntity[]): void {
+    if (damageEntities.length) {
+      this._damageEntities.push(...damageEntities);
+      this.addChild(...damageEntities);
     }
   }
 
@@ -46,18 +46,18 @@ export default abstract class Tile extends MoveableSprite {
     this.damage -= deltaTime / Tile.DAMAGE_HEAL_TIME;
 
     // Iterate damage tiles
-    for (const damageSprite of this._damageSprites) {
-      damageSprite.alpha = this.damage * 0.5;
+    for (const damageEntity of this._damageEntities) {
+      damageEntity.alpha = this.damage * 0.5;
 
       // Remove damage sprite as child if alpha is zero
-      if (damageSprite.alpha <= 0 && !damageSprite.destroyed) {
-        this.removeChild(damageSprite);
-        damageSprite.destroy();
+      if (damageEntity.alpha <= 0 && !damageEntity.destroyed) {
+        this.removeChild(damageEntity);
+        damageEntity.destroy();
       }
     }
 
-    this._damageSprites = this._damageSprites.filter((damageSprite: DamageSprite) => {
-      return !damageSprite.destroyed;
+    this._damageEntities = this._damageEntities.filter((damageEntity: DamageEntity) => {
+      return !damageEntity.destroyed;
     });
   }
 }

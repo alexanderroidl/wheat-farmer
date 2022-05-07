@@ -3,7 +3,7 @@ import Sound from "../base/sound"; // TODO: Resolve issue for importing from bas
 import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
 import Color from "../core/color";
 import Vector from "../core/vector";
-import ISlide from "../interfaces/slide";
+import ISlide from "./slide.interface";
 
 export default class TitleScreenLogoSlide implements ISlide {
   // Generated with "Text To ASCII Art Generator (TAAG)" by patorjk.com
