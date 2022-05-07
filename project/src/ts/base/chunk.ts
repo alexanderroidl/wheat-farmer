@@ -13,15 +13,10 @@ export class Chunk {
   private _loaded?: boolean;
   private _tiles: Tile[];
 
-  public get loaded (): boolean {
-    return Boolean(this._loaded);
-  }
-
-  public set loaded (loaded: boolean) {
-    for (const tile of this._tiles) {
-      tile.visible = loaded;
-    }
-    this._loaded = loaded;
+  constructor (position: Vector) {
+    this.position = position;
+    this._tiles = this.generateTiles();
+    this.loaded = true;
   }
 
   public get tiles (): Tile[] {
@@ -36,20 +31,15 @@ export class Chunk {
     return this.position.y;
   }
 
-  constructor (position: Vector) {
-    this.position = position;
-    this._tiles = this.generateTiles();
-    this.loaded = true;
+  public get loaded (): boolean {
+    return Boolean(this._loaded);
   }
 
-  private generateTiles (): Tile[] {
-    return new Array(Chunk.SIZE).fill(null).map((tile, tileIndex) => {
-      const emptyTile = new EmptyTile();
-      const x = tileIndex % Chunk.WIDTH;
-      const y = Math.floor(tileIndex / Chunk.WIDTH);
-      emptyTile.position.set(this.x * Chunk.WIDTH + x, this.y * Chunk.HEIGHT + y);
-      return emptyTile;
-    });
+  public set loaded (loaded: boolean) {
+    for (const tile of this._tiles) {
+      tile.visible = loaded;
+    }
+    this._loaded = loaded;
   }
 
   public getTile (pos: Vector): Tile | null {
@@ -84,5 +74,15 @@ export class Chunk {
     for (const tile of this._tiles) {
       tile.updateTile(deltaTime);
     }
+  }
+
+  private generateTiles (): Tile[] {
+    return new Array(Chunk.SIZE).fill(null).map((tile, tileIndex) => {
+      const emptyTile = new EmptyTile();
+      const x = tileIndex % Chunk.WIDTH;
+      const y = Math.floor(tileIndex / Chunk.WIDTH);
+      emptyTile.position.set(this.x * Chunk.WIDTH + x, this.y * Chunk.HEIGHT + y);
+      return emptyTile;
+    });
   }
 }

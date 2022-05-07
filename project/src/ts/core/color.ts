@@ -8,6 +8,12 @@ export default class Color {
   private _g: number;
   private _b: number;
 
+  constructor (r: number, g: number, b: number) {
+    this._r = r;
+    this._g = g;
+    this._b = b;
+  }
+
   public get r (): number {
     return this._r;
   }
@@ -20,10 +26,18 @@ export default class Color {
     return this._b;
   }
 
-  constructor (r: number, g: number, b: number) {
-    this._r = r;
-    this._g = g;
-    this._b = b;
+  public static fromHex (hex: string): Color | null {
+    const colorsResult = Color.REGEXP_RGB_COLORS_FROM_HEX.exec(hex);
+
+    if (colorsResult) {
+      return new Color(
+        parseInt(colorsResult[1], 16),
+        parseInt(colorsResult[2], 16),
+        parseInt(colorsResult[3], 16)
+      );
+    }
+
+    return null;
   }
 
   public toHex (): string {
@@ -44,20 +58,6 @@ export default class Color {
     }
   
     return "#" + rs + gs + bs;
-  }
-
-  public static fromHex (hex: string): Color | null {
-    const colorsResult = Color.REGEXP_RGB_COLORS_FROM_HEX.exec(hex);
-
-    if (colorsResult) {
-      return new Color(
-        parseInt(colorsResult[1], 16),
-        parseInt(colorsResult[2], 16),
-        parseInt(colorsResult[3], 16)
-      );
-    }
-
-    return null;
   }
 
   public mix (color: Color, percent: number): Color {

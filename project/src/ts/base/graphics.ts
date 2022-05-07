@@ -36,6 +36,20 @@ export default class Graphics extends PIXI.Application {
   private _growthProgressBar: ProgressBar = new ProgressBar(0x00FF00);
   private _damageProgressBar: ProgressBar = new ProgressBar(0xFF0000);
 
+  constructor (cb: () => void) {
+    super({
+      resizeTo: window,
+      backgroundColor: 0xFFFFFF,
+      resolution: window.devicePixelRatio
+    });
+    this.setupPIXI();
+    this.setupLayers();
+    this.setupCameraEvents();
+    this.setupLoader(cb);
+    this._layers[GraphicsLayer.GUI].addChild(this._growthProgressBar);
+    this._layers[GraphicsLayer.GUI].addChild(this._damageProgressBar);
+  }
+
   public get loading (): boolean {
     return Graphics._spriteSheet == null;
   }
@@ -55,19 +69,66 @@ export default class Graphics extends PIXI.Application {
   public static getTextures (indexes: string[] | number[]): Texture[] {
     return indexes.map((i: string | number) => Graphics.getTexture(i));
   }
-  
-  constructor (cb: () => void) {
-    super({
-      resizeTo: window,
-      backgroundColor: 0xFFFFFF,
-      resolution: window.devicePixelRatio
-    });
-    this.setupPIXI();
-    this.setupLayers();
-    this.setupCameraEvents();
-    this.setupLoader(cb);
-    this._layers[GraphicsLayer.GUI].addChild(this._growthProgressBar);
-    this._layers[GraphicsLayer.GUI].addChild(this._damageProgressBar);
+
+  public static getTrimmedTextureForDimensions <T extends Texture | FrameObject> (originalTexture: T, squareSizeDimensions: Vector): T {
+    if (!(originalTexture instanceof Texture)) {
+      return {
+        texture: Graphics.getTrimmedTextureForDimensions(originalTexture.texture, squareSizeDimensions),
+        time: originalTexture.time
+      } as T;
+    }
+    
+    const texture = originalTexture.clone();
+    const textureCoords = Graphics.TEXTURE_SQUARE_SIZE_DIMENSIONS
+      .substract(squareSizeDimensions)
+      .multiply(Graphics.SQUARE_SIZE);
+
+    texture.frame = new Rectangle(
+      texture.orig.x + textureCoords.x,
+      texture.orig.y + textureCoords.y,
+      texture.orig.width - textureCoords.x,
+      texture.orig.height - textureCoords.y
+    );
+      
+    return texture as T;
+  }
+
+  public static getTrimmedTexturesForDimensions <T extends Texture[] | FrameObject[]> (textures: T, squareSizeDimensions: Vector): T {
+    return textures.map(texture => {
+      return Graphics.getTrimmedTextureForDimensions(texture, squareSizeDimensions);
+    }) as T;
+  }
+
+  public addChild (...children: MoveableSprite[]): void {
+    for (const child of children) {
+      this._layers[child.layer].addChild(child);
+    }
+  }
+
+  public removeChild (...children: MoveableSprite[]): void {
+    for (const child of children) {
+      this._layers[child.layer].removeChild(child);
+    }
+  }
+
+  public getWorldPosFromScreen (screenPos: Vector): Vector {
+    return new Vector(
+      (screenPos.x - this.screen.width / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.x,
+      (screenPos.y - this.screen.height / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.y
+    );
+  }
+
+  public update (delta: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
+    this.camera.move(cameraMoveDelta);
+    this.camera.z += cameraZoomDelta;
+
+    this.stage.scale.set(Graphics.SQUARE_SIZE * this.camera.z / window.devicePixelRatio);
+    this.stage.pivot.set(this.camera.x, this.camera.y);
+    this.stage.x = this.screen.width / (2 * window.devicePixelRatio);
+    this.stage.y = this.screen.height / (2 * window.devicePixelRatio);
+
+    this.updateBackgroundSprite();
+    this.updateTileGUI(delta);
   }
 
   private setupLayers (): void {
@@ -162,53 +223,6 @@ export default class Graphics extends PIXI.Application {
     return debugText;
   }
 
-  public addChild (...children: MoveableSprite[]): void {
-    for (const child of children) {
-      this._layers[child.layer].addChild(child);
-    }
-  }
-
-  public removeChild (...children: MoveableSprite[]): void {
-    for (const child of children) {
-      this._layers[child.layer].removeChild(child);
-    }
-  }
-
-  public getWorldPosFromScreen (screenPos: Vector): Vector {
-    return new Vector(
-      (screenPos.x - this.screen.width / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.x,
-      (screenPos.y - this.screen.height / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.y
-    );
-  }
-  public static getTrimmedTextureForDimensions <T extends Texture | FrameObject> (originalTexture: T, squareSizeDimensions: Vector): T {
-    if (!(originalTexture instanceof Texture)) {
-      return {
-        texture: Graphics.getTrimmedTextureForDimensions(originalTexture.texture, squareSizeDimensions),
-        time: originalTexture.time
-      } as T;
-    }
-    
-    const texture = originalTexture.clone();
-    const textureCoords = Graphics.TEXTURE_SQUARE_SIZE_DIMENSIONS
-      .substract(squareSizeDimensions)
-      .multiply(Graphics.SQUARE_SIZE);
-
-    texture.frame = new Rectangle(
-      texture.orig.x + textureCoords.x,
-      texture.orig.y + textureCoords.y,
-      texture.orig.width - textureCoords.x,
-      texture.orig.height - textureCoords.y
-    );
-      
-    return texture as T;
-  }
-
-  public static getTrimmedTexturesForDimensions <T extends Texture[] | FrameObject[]> (textures: T, squareSizeDimensions: Vector): T {
-    return textures.map(texture => {
-      return Graphics.getTrimmedTextureForDimensions(texture, squareSizeDimensions);
-    }) as T;
-  }
-
   private updateTileGUI (delta: number): void {
     this._growthProgressBar.visible = false;
     this._damageProgressBar.visible = false;
@@ -231,18 +245,5 @@ export default class Graphics extends PIXI.Application {
 
     this._growthProgressBar.update(delta);
     this._damageProgressBar.update(delta);
-  }
-
-  public update (delta: number, cameraMoveDelta: Vector, cameraZoomDelta: number): void {
-    this.camera.move(cameraMoveDelta);
-    this.camera.z += cameraZoomDelta;
-
-    this.stage.scale.set(Graphics.SQUARE_SIZE * this.camera.z / window.devicePixelRatio);
-    this.stage.pivot.set(this.camera.x, this.camera.y);
-    this.stage.x = this.screen.width / (2 * window.devicePixelRatio);
-    this.stage.y = this.screen.height / (2 * window.devicePixelRatio);
-
-    this.updateBackgroundSprite();
-    this.updateTileGUI(delta);
   }
 }

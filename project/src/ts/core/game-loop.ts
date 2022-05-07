@@ -12,13 +12,6 @@ export default class GameLoop {
   public panic = false;
   public rafHandle?: number;
 
-  /* eslint-disable @typescript-eslint/no-empty-function */
-  public begin = (_time: number, delta: number): void => {};
-  public end = (_fps: number, panic: boolean): void => {};
-  public update = (_delta: number): void => {};
-  public render = (_interpolation: number): void => {};
-  /* eslint-enable @typescript-eslint/no-empty-function */
-
   constructor () {
     this.animate = this.animate.bind(this);
   }
@@ -38,6 +31,13 @@ export default class GameLoop {
       this.minFrameDelay = 1000 / fps;
     }
   }
+
+  /* eslint-disable @typescript-eslint/no-empty-function */
+  public begin = (_time: number, delta: number): void => {};
+  public end = (_fps: number, panic: boolean): void => {};
+  public update = (_delta: number): void => {};
+  public render = (_interpolation: number): void => {};
+  /* eslint-enable @typescript-eslint/no-empty-function */
 
   public resetFrameDelta (): number {
     const frameDelta = this.frameDelta;

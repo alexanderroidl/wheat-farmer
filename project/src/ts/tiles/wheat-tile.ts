@@ -14,16 +14,16 @@ export default class WheatTile extends Tile implements ITradeable {
   public loop: boolean = false;
   private _timeGrown: number = 0;
 
+  constructor () {
+    super(Textures.wheat);
+  }
+  
   public get growthRate (): number {
     return this._timeGrown / WheatTile.GROWTH_TIME * (1 - this.damage);
   }
   
   public get char (): string | null {
     return "🌱";
-  }
-
-  constructor () {
-    super(Textures.wheat);
   }
   
   public dropSeeds (): number {

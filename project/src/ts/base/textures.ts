@@ -79,6 +79,8 @@ export interface RobotTextureGroups {
 }
 
 export class Textures {
+  private static _instance?: Textures;
+
   empty: Texture;
   notFound: Texture;
   background: Texture;
@@ -88,6 +90,23 @@ export class Textures {
   bomb: Texture[];
   hats: Texture[];
   damage: Texture[];
+
+  constructor () {
+    this.empty = Graphics.getTexture(TextureSources.empty);
+    this.notFound = Graphics.getTexture(TextureSources.notFound);
+    this.background = Graphics.getTexture(TextureSources.background);
+    this.wheat = Graphics.getTextures(TextureSources.wheat);
+    this.explosion = Graphics.getTextures(TextureSources.explosion);
+    this.robot = {
+      red: Graphics.getTextures(TextureSources.robot.red),
+      yellow: Graphics.getTextures(TextureSources.robot.yellow),
+      green: Graphics.getTextures(TextureSources.robot.green),
+      hawaii: Graphics.getTextures(TextureSources.robot.hawaii)
+    };
+    this.bomb = Graphics.getTextures(TextureSources.bomb);
+    this.hats = Graphics.getTextures(TextureSources.hats);
+    this.damage = Graphics.getTextures(TextureSources.damage);
+  }
 
   public static get empty (): Texture {
     return Textures.instance.empty;
@@ -125,28 +144,10 @@ export class Textures {
     return Textures.instance.damage;
   }
 
-  private static _instance?: Textures;
   public static get instance (): Textures {
     if (!Textures._instance) {
       Textures._instance = new Textures();
     }
     return Textures._instance;
-  }
-
-  constructor () {
-    this.empty = Graphics.getTexture(TextureSources.empty);
-    this.notFound = Graphics.getTexture(TextureSources.notFound);
-    this.background = Graphics.getTexture(TextureSources.background);
-    this.wheat = Graphics.getTextures(TextureSources.wheat);
-    this.explosion = Graphics.getTextures(TextureSources.explosion);
-    this.robot = {
-      red: Graphics.getTextures(TextureSources.robot.red),
-      yellow: Graphics.getTextures(TextureSources.robot.yellow),
-      green: Graphics.getTextures(TextureSources.robot.green),
-      hawaii: Graphics.getTextures(TextureSources.robot.hawaii)
-    };
-    this.bomb = Graphics.getTextures(TextureSources.bomb);
-    this.hats = Graphics.getTextures(TextureSources.hats);
-    this.damage = Graphics.getTextures(TextureSources.damage);
   }
 }

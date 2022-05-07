@@ -22,6 +22,18 @@ export default class RobotEntity extends Entity {
   private _sinAmplifier: number = Math.random() * 0.75;
   private _sinShiftDistanceOffset: number = Math.random() * RobotEntity.MOVEMENT_WAVE_LENGTH;
 
+  constructor () {
+    const randomTextureGroupMultiplier = Easings.easeInCubic(Math.random());
+    const textureGroups: Texture[][] = Object.values(Textures.robot);
+    const textures = textureGroups[Math.floor(textureGroups.length * randomTextureGroupMultiplier)];
+
+    super(textures);
+      
+    if (Math.random() > (1 - RobotEntity.CHANCE_TO_SPAWN_WITH_HAT)) {
+      this.giveHat();
+    }
+  }
+
   public get bombPlantProgress (): number {
     if (this._bombPlantedAt === null) {
       return 0;
@@ -37,18 +49,6 @@ export default class RobotEntity extends Entity {
 
   public get hasCompletedBombPlant (): boolean {
     return this.bombPlantProgress === 1;
-  }
-
-  constructor () {
-    const randomTextureGroupMultiplier = Easings.easeInCubic(Math.random());
-    const textureGroups: Texture[][] = Object.values(Textures.robot);
-    const textures = textureGroups[Math.floor(textureGroups.length * randomTextureGroupMultiplier)];
-
-    super(textures);
-      
-    if (Math.random() > (1 - RobotEntity.CHANCE_TO_SPAWN_WITH_HAT)) {
-      this.giveHat();
-    }
   }
 
   public giveHat (): void {

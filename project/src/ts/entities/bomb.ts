@@ -9,6 +9,10 @@ export default class BombEntity extends Entity {
 
   public readonly name: string = "Bomb";
 
+  constructor () {
+    super(BombEntity.getFrameObjects());
+  }
+
   public get explosionProgress (): number {
     return this.currentFrame / (this.totalFrames - 1);
   }
@@ -24,10 +28,6 @@ export default class BombEntity extends Entity {
   public static getFrameObjects (): FrameObject[] {
     const frameTime = BombEntity.explodeTime / Textures.bomb.length;
     return MoveableSprite.getFrameObjects(Textures.bomb, frameTime);
-  }
-
-  constructor () {
-    super(BombEntity.getFrameObjects());
   }
 
   public updateEntity (delta: number): void {

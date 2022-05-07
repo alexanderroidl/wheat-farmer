@@ -5,8 +5,7 @@ import Vector from "./vector";
 
 export default class MoveableSprite extends AnimatedSprite {
   public static readonly HOVER_OUTLINE_WIDTH = 0.5;
-  
-  protected dimensions: Vector = new Vector(1, 1);
+
   public hitArea: Rectangle;
   public interactive: boolean = true;
   public outlineOnHover: boolean = false;
@@ -15,61 +14,11 @@ export default class MoveableSprite extends AnimatedSprite {
   public moveStartDistance: number | null = null;
   public sourceFrames: string[] = [];
   public layer: GraphicsLayer = GraphicsLayer.Background;
+  
+  protected dimensions: Vector = new Vector(1, 1);
+
   private _hovered: boolean = false;
   private _moveTarget: Vector | null = null;
-
-  public get renderOffset (): Vector {
-    return new Vector(-this.pivot.x / this.parent.scale.x, -this.pivot.y / this.parent.scale.y);
-  }
-
-  public set renderOffset (offset: Vector) {
-    this.pivot.set(-offset.x * this.parent.scale.x, -offset.y * this.parent.scale.y);
-  }
-
-  public get moveHasCompleted (): boolean {
-    return this.moveTarget instanceof Vector && (this.x === this.moveTarget.x && this.y === this.moveTarget.y);
-  }
-
-  public get isMoving (): boolean {
-    return this.speed > 0 && this.moveTarget instanceof Vector && !this.moveHasCompleted;
-  }
-
-  public get movedDistance (): number {
-    if (!this.moveStartPosition) {
-      return 0;
-    }
-    return this.moveStartPosition.substract(this.x, this.y).length;
-  }
-
-  public set moveTarget (moveTarget: Vector | null) {
-    this._moveTarget = moveTarget;
-
-    if (moveTarget instanceof Vector) {
-      this.moveStartPosition = new Vector(this.x, this.y);
-      this.moveStartDistance = moveTarget.substract(this.x, this.y).length;
-    } else {
-      this.moveStartPosition = null;
-      this.moveStartDistance = null;
-    }
-  }
-
-  public get moveTarget (): Vector | null {
-    return this._moveTarget;
-  }
-
-  public get hovered (): boolean {
-    return this._hovered;
-  }
-
-  public set textures (textures: Texture[] | FrameObject[]) {
-    super.textures = Graphics.getTrimmedTexturesForDimensions(textures, this.dimensions);
-  }
-
-  public static getFrameObjects (textures: Texture[], time: number): FrameObject[] {
-    return textures.map((texture: Texture): FrameObject => {
-      return { texture, time };
-    });
-  }
 
   constructor (textures: Texture[] | FrameObject[]) {
     super([Texture.EMPTY]);
@@ -92,24 +41,57 @@ export default class MoveableSprite extends AnimatedSprite {
     });
   }
 
-  protected move (delta: number): Vector {
-    // Entity has no assigned target
-    if (this.moveTarget == null || this.moveStartDistance == null) {
-      return new Vector(0);
+  public get renderOffset (): Vector {
+    return new Vector(-this.pivot.x / this.parent.scale.x, -this.pivot.y / this.parent.scale.y);
+  }
+
+  public get moveHasCompleted (): boolean {
+    return this.moveTarget instanceof Vector && (this.x === this.moveTarget.x && this.y === this.moveTarget.y);
+  }
+
+  public get isMoving (): boolean {
+    return this.speed > 0 && this.moveTarget instanceof Vector && !this.moveHasCompleted;
+  }
+
+  public get movedDistance (): number {
+    if (!this.moveStartPosition) {
+      return 0;
     }
+    return this.moveStartPosition.substract(this.x, this.y).length;
+  }
 
-    let entitySpeed = this.speed * (delta / 1000);
-    let distance = this.moveTarget.substract(this.x, this.y).length;
+  public get moveTarget (): Vector | null {
+    return this._moveTarget;
+  }
 
-    const distanceProgress = distance / this.moveStartDistance;
+  public get hovered (): boolean {
+    return this._hovered;
+  }
 
-    entitySpeed = entitySpeed * (1 + 2 * Easings.easeInOutQuart(1 - distanceProgress));
+  public set renderOffset (offset: Vector) {
+    this.pivot.set(-offset.x * this.parent.scale.x, -offset.y * this.parent.scale.y);
+  }
 
-    if (distance <= entitySpeed) {
-      distance = entitySpeed;
+  public set moveTarget (moveTarget: Vector | null) {
+    this._moveTarget = moveTarget;
+
+    if (moveTarget instanceof Vector) {
+      this.moveStartPosition = new Vector(this.x, this.y);
+      this.moveStartDistance = moveTarget.substract(this.x, this.y).length;
+    } else {
+      this.moveStartPosition = null;
+      this.moveStartDistance = null;
     }
+  }
 
-    return this.moveTarget.substract(this.x, this.y).multiply(entitySpeed / distance);
+  public set textures (textures: Texture[] | FrameObject[]) {
+    super.textures = Graphics.getTrimmedTexturesForDimensions(textures, this.dimensions);
+  }
+
+  public static getFrameObjects (textures: Texture[], time: number): FrameObject[] {
+    return textures.map((texture: Texture): FrameObject => {
+      return { texture, time };
+    });
   }
 
   public updateSprite (deltaTime: number): void {
@@ -135,5 +117,25 @@ export default class MoveableSprite extends AnimatedSprite {
     } else {
       this.removeFilter(filter);
     }
+  }
+
+  protected move (delta: number): Vector {
+    // Entity has no assigned target
+    if (this.moveTarget == null || this.moveStartDistance == null) {
+      return new Vector(0);
+    }
+
+    let entitySpeed = this.speed * (delta / 1000);
+    let distance = this.moveTarget.substract(this.x, this.y).length;
+
+    const distanceProgress = distance / this.moveStartDistance;
+
+    entitySpeed = entitySpeed * (1 + 2 * Easings.easeInOutQuart(1 - distanceProgress));
+
+    if (distance <= entitySpeed) {
+      distance = entitySpeed;
+    }
+
+    return this.moveTarget.substract(this.x, this.y).multiply(entitySpeed / distance);
   }
 }

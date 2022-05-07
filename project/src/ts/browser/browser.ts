@@ -31,8 +31,33 @@ export class Browser extends events.EventEmitter {
   private _gui: Gui = new Gui(this._mouse);
   private _windowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
 
+  constructor () {
+    super();
+    this.setupEvents();
+  }
+
   public static get debug (): boolean {
     return Boolean(Browser.getURLParameter("debug"));
+  }
+
+  /**
+     * Check if user agent is mobile device
+     * @returns {boolean}
+     */
+  public static get isMobile (): boolean {
+    const toMatch = [
+      /Android/i,
+      /webOS/i,
+      /iPhone/i,
+      /iPad/i,
+      /iPod/i,
+      /BlackBerry/i,
+      /Windows Phone/i
+    ];
+    
+    return toMatch.some((toMatchItem) => {
+      return navigator.userAgent.match(toMatchItem);
+    });
   }
 
   public get gui (): Gui {
@@ -48,11 +73,40 @@ export class Browser extends events.EventEmitter {
   }
 
   /**
-   * Constructor
+   * Invoke window alert
+   * @param text Text to alert
    */
-  constructor () {
-    super();
-    this.setupEvents();
+  public static alert (text: string): void {
+    window.alert(text);
+  }
+  
+  /**
+     * Retrieve value of URL GET parameter (Source: https://stackoverflow.com/a/5448595/11379072)
+     * @param {string} name GET parameter name
+     * @returns {string|null}
+     */
+  public static getURLParameter (name: string): string | null {
+    let result: string | null = null;
+    let tmp = [];
+  
+    const parameters = location.search.substr(1).split("&");
+    for (const parameter of parameters) {
+      tmp = parameter.split("=");
+  
+      if (tmp[0] === name) {
+        result = decodeURIComponent(tmp[1]);
+      }
+    }
+  
+    return result;
+  }
+  
+  public static addPixi (pixi: PIXI.Application): void {
+    document.body.append(pixi.view);
+  }
+  
+  public static toggleTitleScreen (toggle: boolean): void {
+    document.body.classList.toggle("titlescreen", toggle);
   }
 
   /**
@@ -260,62 +314,5 @@ export class Browser extends events.EventEmitter {
         this._onTouchCancel(new Vector(0, 0));
       });
     }
-  }
-
-  /**
-   * Invoke window alert
-   * @param text Text to alert
-   */
-  public static alert (text: string): void {
-    window.alert(text);
-  }
-
-  /**
-   * Retrieve value of URL GET parameter (Source: https://stackoverflow.com/a/5448595/11379072)
-   * @param {string} name GET parameter name
-   * @returns {string|null}
-   */
-  public static getURLParameter (name: string): string | null {
-    let result: string | null = null;
-    let tmp = [];
-
-    const parameters = location.search.substr(1).split("&");
-    for (const parameter of parameters) {
-      tmp = parameter.split("=");
-
-      if (tmp[0] === name) {
-        result = decodeURIComponent(tmp[1]);
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Check if user agent is mobile device
-   * @returns {boolean}
-   */
-  public static get isMobile (): boolean {
-    const toMatch = [
-      /Android/i,
-      /webOS/i,
-      /iPhone/i,
-      /iPad/i,
-      /iPod/i,
-      /BlackBerry/i,
-      /Windows Phone/i
-    ];
-
-    return toMatch.some((toMatchItem) => {
-      return navigator.userAgent.match(toMatchItem);
-    });
-  }
-
-  public static addPixi (pixi: PIXI.Application): void {
-    document.body.append(pixi.view);
-  }
-
-  public static toggleTitleScreen (toggle: boolean): void {
-    document.body.classList.toggle("titlescreen", toggle);
   }
 }
