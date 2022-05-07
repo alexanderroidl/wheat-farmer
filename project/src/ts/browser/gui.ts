@@ -1,12 +1,12 @@
-import Vector from "core/vector";
-import { Camera } from "../base/camera";
-import Graphics from "../base/graphics";
-import { Inventory, InventoryItem } from "../base/inventory";
-import Player from "../base/player";
-import { World } from "../base/world";
-import BitMath from "../core/bit-math";
-import Util from "../core/util";
-import Tile from "../tiles/tile";
+import Vector from "@core/vector";
+import { Camera } from "@base/camera";
+import Graphics from "@base/graphics";
+import { Inventory, InventoryItem } from "@base/inventory";
+import Player from "@base/player";
+import { World } from "@base/world";
+import BitMath from "@core/bit-math";
+import Util from "@core/util";
+import Tile from "@tiles/tile";
 import { Browser, BrowserMouse } from "./browser";
 
 export default class Gui {
@@ -21,68 +21,6 @@ export default class Gui {
     this._mouse = mouse;
 
     this.setupDOM();
-  }
-
-  private setupDOM (): void {
-    // Stats display
-    this._statsDisplay.classList.add("gui");
-    this._statsDisplay.classList.add("stats-display");
-
-    // World stats
-    this._worldStats.classList.add("world-stats");
-
-    // Keyboard info
-    const menuInfo = document.createElement("div");
-    menuInfo.classList.add("keyboard-info-row");
-    menuInfo.innerHTML = "<span>m</span> Menu";
-    menuInfo.addEventListener("click", (e) => {
-      // TODO: Implement logic
-    });
-
-    const shopInfo = document.createElement("div");
-    shopInfo.classList.add("keyboard-info-row");
-    shopInfo.innerHTML = "<span>S</span> Shop";
-    shopInfo.addEventListener("click", (e) => {
-      // TODO: Implement logic
-    });
-
-    const inventoryInfo = document.createElement("div");
-    inventoryInfo.classList.add("keyboard-info-row");
-    inventoryInfo.innerHTML = "<span>E</span> Inventory";
-    inventoryInfo.addEventListener("click", (e) => {
-      // TODO: Implement logic
-    });
-
-    const keyboardInfo = document.createElement("div");
-    keyboardInfo.classList.add("keyboard-info");
-    keyboardInfo.append(menuInfo, shopInfo, inventoryInfo);
-
-    // Add everything to DOM
-    document.body.append(this._statsDisplay, this._worldStats, keyboardInfo);
-  }
-
-  private getWorldStatsRowHTML (icon: string, text?: string) {
-    if (typeof text === "undefined") {
-      text = "";
-    }
-
-    const leftColumn = document.createElement("div");
-    leftColumn.classList.add("left");
-    leftColumn.innerHTML = icon;
-
-    const rightColumn = document.createElement("div");
-    rightColumn.classList.add("right");
-    rightColumn.innerHTML = text;
-
-    const statsRow = document.createElement("div");
-    statsRow.classList.add("row");
-    statsRow.append(leftColumn, rightColumn);
-
-    if (text.length === 2 && !Util.isAlphaNumeric(text)) {
-      statsRow.classList.add("emoji");
-    }
-
-    return statsRow;
   }
 
   public renderWorldStatsHTML (world: World): void {
@@ -117,44 +55,6 @@ export default class Gui {
       const statsRow = this.getWorldStatsRowHTML(stat.icon, String(stat.text));
       this._worldStats.append(statsRow);
     }
-  }
-
-  private getCameraDebugHTML (camera: Camera): string {
-    return `
-      <strong>Camera:</strong><br>
-      <strong>Position:</strong> ${camera.x.toFixed(3)}, ${camera.y.toFixed(3)}<br>
-      <strong>Zoom:</strong> ${camera.z.toFixed(3)}
-    `;
-  }
-
-  private getMouseDebugHTML (mouseWorldPos: Vector): string {
-    return `
-      <strong>Mouse${(this._mouse.pressed ? " (down)" : "")}:</strong><br>
-      <strong>Screen:</strong> ${this._mouse.position}<br>
-      <strong>World:</strong> ${mouseWorldPos}
-    `;
-  }
-
-  private getGraphicsDebugHTML (graphics: Graphics, fps: number): string {
-    const camera = graphics.camera;
-
-    const xStart = BitMath.floor(camera.x / (Graphics.SQUARE_SIZE * camera.z));
-    const xEnd = BitMath.ceil((camera.x + window.innerWidth) / (Graphics.SQUARE_SIZE * camera.z));
-    const yStart = BitMath.floor(camera.y / (Graphics.SQUARE_SIZE * camera.z));
-    const yEnd = BitMath.ceil((camera.y + window.innerHeight) / (Graphics.SQUARE_SIZE * camera.z));
-
-    return `
-      <strong>graphics:</strong><br>
-      <strong>X:</strong> (${xStart}, ${xEnd})<br> 
-      <strong>Y:</strong> (${yStart}, ${yEnd})<br>
-      <strong>FPS:</strong> ${fps.toFixed(1)}
-    `;
-  }
-
-  private getMiscDebugHTML (world: World): string {
-    return `
-            <strong>Tiles/Min:</strong> ${world.tilesPlantedPerMin}
-        `;
   }
 
   public renderDebug (camera: Camera, graphics: Graphics, world: World, fps: number): void {
@@ -351,5 +251,105 @@ export default class Gui {
     });
 
     document.body.append(this._inventory);
+  }
+
+  private setupDOM (): void {
+    // Stats display
+    this._statsDisplay.classList.add("gui");
+    this._statsDisplay.classList.add("stats-display");
+
+    // World stats
+    this._worldStats.classList.add("world-stats");
+
+    // Keyboard info
+    const menuInfo = document.createElement("div");
+    menuInfo.classList.add("keyboard-info-row");
+    menuInfo.innerHTML = "<span>m</span> Menu";
+    menuInfo.addEventListener("click", (e) => {
+      // TODO: Implement logic
+    });
+
+    const shopInfo = document.createElement("div");
+    shopInfo.classList.add("keyboard-info-row");
+    shopInfo.innerHTML = "<span>S</span> Shop";
+    shopInfo.addEventListener("click", (e) => {
+      // TODO: Implement logic
+    });
+
+    const inventoryInfo = document.createElement("div");
+    inventoryInfo.classList.add("keyboard-info-row");
+    inventoryInfo.innerHTML = "<span>E</span> Inventory";
+    inventoryInfo.addEventListener("click", (e) => {
+      // TODO: Implement logic
+    });
+
+    const keyboardInfo = document.createElement("div");
+    keyboardInfo.classList.add("keyboard-info");
+    keyboardInfo.append(menuInfo, shopInfo, inventoryInfo);
+
+    // Add everything to DOM
+    document.body.append(this._statsDisplay, this._worldStats, keyboardInfo);
+  }
+
+  private getWorldStatsRowHTML (icon: string, text?: string) {
+    if (typeof text === "undefined") {
+      text = "";
+    }
+
+    const leftColumn = document.createElement("div");
+    leftColumn.classList.add("left");
+    leftColumn.innerHTML = icon;
+
+    const rightColumn = document.createElement("div");
+    rightColumn.classList.add("right");
+    rightColumn.innerHTML = text;
+
+    const statsRow = document.createElement("div");
+    statsRow.classList.add("row");
+    statsRow.append(leftColumn, rightColumn);
+
+    if (text.length === 2 && !Util.isAlphaNumeric(text)) {
+      statsRow.classList.add("emoji");
+    }
+
+    return statsRow;
+  }
+
+  private getCameraDebugHTML (camera: Camera): string {
+    return `
+      <strong>Camera:</strong><br>
+      <strong>Position:</strong> ${camera.x.toFixed(3)}, ${camera.y.toFixed(3)}<br>
+      <strong>Zoom:</strong> ${camera.z.toFixed(3)}
+    `;
+  }
+
+  private getMouseDebugHTML (mouseWorldPos: Vector): string {
+    return `
+      <strong>Mouse${(this._mouse.pressed ? " (down)" : "")}:</strong><br>
+      <strong>Screen:</strong> ${this._mouse.position}<br>
+      <strong>World:</strong> ${mouseWorldPos}
+    `;
+  }
+
+  private getGraphicsDebugHTML (graphics: Graphics, fps: number): string {
+    const camera = graphics.camera;
+
+    const xStart = BitMath.floor(camera.x / (Graphics.SQUARE_SIZE * camera.z));
+    const xEnd = BitMath.ceil((camera.x + window.innerWidth) / (Graphics.SQUARE_SIZE * camera.z));
+    const yStart = BitMath.floor(camera.y / (Graphics.SQUARE_SIZE * camera.z));
+    const yEnd = BitMath.ceil((camera.y + window.innerHeight) / (Graphics.SQUARE_SIZE * camera.z));
+
+    return `
+      <strong>graphics:</strong><br>
+      <strong>X:</strong> (${xStart}, ${xEnd})<br> 
+      <strong>Y:</strong> (${yStart}, ${yEnd})<br>
+      <strong>FPS:</strong> ${fps.toFixed(1)}
+    `;
+  }
+
+  private getMiscDebugHTML (world: World): string {
+    return `
+            <strong>Tiles/Min:</strong> ${world.tilesPlantedPerMin}
+        `;
   }
 }

@@ -1,6 +1,6 @@
 module.exports = {
-  parser: "@typescript-eslint/parser",
   ignorePatterns: ["build/**/*.js"],
+  parser: "@typescript-eslint/parser",
   overrides: [
     // Typescript
     {
@@ -51,7 +51,9 @@ module.exports = {
         "@typescript-eslint/no-inferrable-types": 0,
         "semi": "off",
         "@typescript-eslint/semi": ["error"],
-        "@typescript-eslint/type-annotation-spacing": ["error"]
+        "@typescript-eslint/type-annotation-spacing": ["error"],
+        "@typescript-eslint/member-ordering": "error",
+        "@typescript-eslint/adjacent-overload-signatures": "off"
       },
       env: {
         browser: true

@@ -9,28 +9,6 @@ export default class Sound {
   private _isMusic: boolean = false;
   private _audio: HTMLAudioElement;
 
-  public get volume (): number {
-    return this._audio.volume;
-  }
-
-  public set volume (volume: number) {
-    this._audio.volume = volume;
-  }
-
-  public get paused (): boolean {
-    return this._audio.paused;
-  }
-
-  public get isMusic (): boolean {
-    return this._isMusic;
-  }
-
-  public set isMusic (isMusic: boolean) {
-    this._isMusic = !!isMusic;
-    this._audio.loop = !!isMusic;
-  }
-
-
   /**
    * Constructor
    *
@@ -44,32 +22,26 @@ export default class Sound {
     Sound.all.push(this);
   }
 
-
-  /**
-   * Start/resume playback
-   */
-  public play (): void {
-    this._audio.play();
+  public get volume (): number {
+    return this._audio.volume;
   }
 
-
-  /**
-   * Pause playback
-   */
-  public pause (): void {
-    this._audio.pause();
+  public get paused (): boolean {
+    return this._audio.paused;
   }
 
-
-  /**
-   * Unlock to be played anytime by browser
-   */
-  public unlock (): void {
-    this.play();
-    this.pause();
-    this._audio.currentTime = 0;
+  public get isMusic (): boolean {
+    return this._isMusic;
   }
 
+  public set volume (volume: number) {
+    this._audio.volume = volume;
+  }
+
+  public set isMusic (isMusic: boolean) {
+    this._isMusic = !!isMusic;
+    this._audio.loop = !!isMusic;
+  }
 
   /**
    * Unlock all sounds to be played anytime by browser
@@ -78,5 +50,28 @@ export default class Sound {
     for (const sound of Sound.all) {
       sound.unlock();
     }
+  }
+
+  /**
+   * Start/resume playback
+   */
+  public play (): void {
+    this._audio.play();
+  }
+
+  /**
+   * Pause playback
+   */
+  public pause (): void {
+    this._audio.pause();
+  }
+
+  /**
+   * Unlock to be played anytime by browser
+   */
+  public unlock (): void {
+    this.play();
+    this.pause();
+    this._audio.currentTime = 0;
   }
 }

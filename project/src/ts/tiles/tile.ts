@@ -6,19 +6,11 @@ export default abstract class Tile extends MoveableSprite {
   public static readonly DAMAGE_HEAL_TIME = 60 * 1000;
   public static readonly COLOR: string = "";
 
-  public abstract readonly name: string;
   public layer: GraphicsLayer = GraphicsLayer.Tiles;
   public age: number = 0;
   protected _damageEntities: DamageEntity[] = [];
   private _damage: number = 0;
-
-  public get damage () {
-    return this._damage;
-  }
-
-  public set damage (damage: number) {
-    this._damage = damage < 0 ? 0 : damage > 1 ? 1 : damage;
-  }
+  public abstract readonly name: string;
 
   public get char (): string | null {
     return null;
@@ -26,6 +18,14 @@ export default abstract class Tile extends MoveableSprite {
 
   public get damageEntities () {
     return this._damageEntities;
+  }
+
+  public get damage () {
+    return this._damage;
+  }
+
+  public set damage (damage: number) {
+    this._damage = damage < 0 ? 0 : damage > 1 ? 1 : damage;
   }
 
   public addDamageSprites (...damageEntities: DamageEntity[]): void {

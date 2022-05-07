@@ -10,11 +10,6 @@ export default class ExplosionEntity extends Entity {
   public loop: boolean = false;
   public completed: boolean = false;
 
-  public static getFrameObjects (): FrameObject[] {
-    const frameTime = ExplosionEntity.timeToExplode / Textures.explosion.length;
-    return MoveableSprite.getFrameObjects(Textures.explosion, frameTime);
-  }
-
   constructor () {
     super(ExplosionEntity.getFrameObjects());
 
@@ -22,5 +17,10 @@ export default class ExplosionEntity extends Entity {
     this.onComplete = () => {
       this.completed = true;
     };
+  }
+
+  public static getFrameObjects (): FrameObject[] {
+    const frameTime = ExplosionEntity.timeToExplode / Textures.explosion.length;
+    return MoveableSprite.getFrameObjects(Textures.explosion, frameTime);
   }
 }

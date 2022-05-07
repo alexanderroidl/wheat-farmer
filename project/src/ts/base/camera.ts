@@ -19,20 +19,24 @@ export class Camera extends events.EventEmitter {
     return this._position.x;
   }
 
-  public set x (x: number) {
-    this._position.x = x;
-  }
-
   public get y (): number {
     return this._position.y;
   }
 
-  public set y (y: number) {
-    this._position.y = y;
-  }
-
   public get z (): number {
     return this._zoom;
+  }
+
+  public get position (): Vector {
+    return this._position;
+  }
+
+  public set x (x: number) {
+    this._position.x = x;
+  }
+
+  public set y (y: number) {
+    this._position.y = y;
   }
 
   public set z (zoom: number) {
@@ -43,10 +47,6 @@ export class Camera extends events.EventEmitter {
       this.emit("zoomed", zoom);
     }
     this._zoom = zoom;
-  }
-
-  public get position (): Vector {
-    return this._position;
   }
 
   public set position (position: Vector) {

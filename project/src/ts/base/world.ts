@@ -30,6 +30,10 @@ export class World extends events.EventEmitter {
   private _enemyGroupsPerMin: number[] = [];
   private _enemiesScheduledToSpawn: number = 0;
 
+  constructor () {
+    super();
+  }
+
   public get createdAt (): number {
     return this._createdAt;
   }
@@ -50,40 +54,12 @@ export class World extends events.EventEmitter {
     return this._enemyGroupsPerMin.length;
   }
 
-  constructor () {
-    super();
-  }
-
   public initChunks (): void {
     for (let y = -1; y < 2; y++) {
       for (let x = -1; x < 2; x++) {
         this.newChunkAt(new Vector(x, y));
       }
     }
-  }
-
-  private newChunkAt (chunkPos: Vector): Chunk {
-    if (!this._chunks[chunkPos.y]) {
-      this._chunks[chunkPos.y] = {};
-    }
-    const chunk = new Chunk(chunkPos);
-    chunk.position = new Vector(chunkPos);
-    for (const tile of chunk.tiles) {
-      this.emit("createdSprites", [tile]);
-    }
-    this._chunks[chunkPos.y][chunkPos.x] = chunk;
-    return chunk;
-  }
-
-  private getChunk (chunkPos: Vector): Chunk | null {
-    if (!this._chunks[chunkPos.y]) {
-      this._chunks[chunkPos.y] = {};
-    }
-    return this._chunks[chunkPos.y][chunkPos.x] ?? null;
-  }
-
-  private getChunkPos (pos: Vector): Vector {
-    return pos.divide(new Vector(Chunk.WIDTH, Chunk.HEIGHT)).floor();
   }
 
   public getRandomLoadedPosition (): Vector {
@@ -99,20 +75,6 @@ export class World extends events.EventEmitter {
 
   public scheduleEnemySpawn (count: number = 1): void {
     this._enemiesScheduledToSpawn += count;
-  }
-
-  private getChunks (loadedOnly: boolean = false): Chunk[] {
-    const chunks = [];
-    for (const chunkY in this._chunks) {
-      for (const chunkX in this._chunks[chunkY]) {
-        const chunk = this._chunks[chunkY][chunkX];
-        if (!chunk || loadedOnly && !chunk.loaded) {
-          continue;
-        }
-        chunks.push(chunk);
-      }
-    }
-    return chunks;
   }
 
   public getTile (pos: Vector): Tile | null {
@@ -433,5 +395,43 @@ export class World extends events.EventEmitter {
         }
       }
     }
+  }
+
+  private newChunkAt (chunkPos: Vector): Chunk {
+    if (!this._chunks[chunkPos.y]) {
+      this._chunks[chunkPos.y] = {};
+    }
+    const chunk = new Chunk(chunkPos);
+    chunk.position = new Vector(chunkPos);
+    for (const tile of chunk.tiles) {
+      this.emit("createdSprites", [tile]);
+    }
+    this._chunks[chunkPos.y][chunkPos.x] = chunk;
+    return chunk;
+  }
+
+  private getChunk (chunkPos: Vector): Chunk | null {
+    if (!this._chunks[chunkPos.y]) {
+      this._chunks[chunkPos.y] = {};
+    }
+    return this._chunks[chunkPos.y][chunkPos.x] ?? null;
+  }
+
+  private getChunkPos (pos: Vector): Vector {
+    return pos.divide(new Vector(Chunk.WIDTH, Chunk.HEIGHT)).floor();
+  }
+
+  private getChunks (loadedOnly: boolean = false): Chunk[] {
+    const chunks = [];
+    for (const chunkY in this._chunks) {
+      for (const chunkX in this._chunks[chunkY]) {
+        const chunk = this._chunks[chunkY][chunkX];
+        if (!chunk || loadedOnly && !chunk.loaded) {
+          continue;
+        }
+        chunks.push(chunk);
+      }
+    }
+    return chunks;
   }
 }

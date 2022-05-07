@@ -5,15 +5,6 @@ export default class Vector {
   public y: number;
 
   /**
-     * Retrieve total length
-     *
-     * @returns Total length
-     */
-  public get length (): number {
-    return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
-  }
-
-  /**
      * Constructor
      *
      * @param x - Initial x coordinate
@@ -27,6 +18,15 @@ export default class Vector {
       this.x = x;
       this.y = y ?? x;
     }
+  }
+
+  /**
+   * Retrieve total length
+   *
+   * @returns Total length
+   */
+  public get length (): number {
+    return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
   }
 
   /**
