@@ -77,7 +77,7 @@ export default class Graphics extends PIXI.Application {
         time: originalTexture.time
       } as T;
     }
-    
+
     const texture = originalTexture.clone();
     const textureCoords = Graphics.TEXTURE_SQUARE_SIZE_DIMENSIONS
       .substract(squareSizeDimensions)
@@ -89,7 +89,7 @@ export default class Graphics extends PIXI.Application {
       texture.orig.width - textureCoords.x,
       texture.orig.height - textureCoords.y
     );
-      
+
     return texture as T;
   }
 
@@ -170,7 +170,7 @@ export default class Graphics extends PIXI.Application {
   private createBackgroundSprite (): PIXI.TilingSprite {
     const bgTexture = Textures.background.clone();
     bgTexture.frame = new PIXI.Rectangle(bgTexture.orig.x, bgTexture.orig.height / 2, bgTexture.orig.width, bgTexture.orig.height / 2);
-    
+
     const backgroundSprite = new PIXI.TilingSprite(bgTexture);
     backgroundSprite.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
     backgroundSprite.anchor.set(0, 0);
@@ -185,7 +185,7 @@ export default class Graphics extends PIXI.Application {
 
     const screenLeft = this.camera.x - this.screen.width / 2 / Graphics.SQUARE_SIZE / this.camera.z;
     const screenTop = this.camera.y - this.screen.height / 2 / Graphics.SQUARE_SIZE / this.camera.z;
-    
+
     this.backgroundSprite.width = this.screen.width / Graphics.SQUARE_SIZE / this.camera.z + 1;
     this.backgroundSprite.height = this.screen.height / Graphics.SQUARE_SIZE / this.camera.z + 1;
 

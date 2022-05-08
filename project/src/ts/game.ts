@@ -47,7 +47,7 @@ export default class Game {
 
   private setupWorld (): void {
     // Create and add background tile sprite
-      
+
     // World has added sprite
     this._world.on("createdSprites", (sprites: MoveableSprite[]) => {
       sprites.forEach(sprite => {
@@ -199,7 +199,7 @@ export default class Game {
     if (cameraMoveDelta.length) {
       cameraMoveDelta = cameraMoveDelta.multiply(1 / this._graphics.camera.z);
     }
-    
+
     if (this._browser.mouse.pressed) {
       // Only drag mouse if space key is not pressed
       if (!this._keysPressed.includes("Space")) {
@@ -214,7 +214,7 @@ export default class Game {
             this._draggingMouse = true;
           }
         }
-        
+
         if (this._lastMousePosition == null || mouseMoveDelta.length > Game.MOUSE_DRAG_TRESHOLD) {
           this._lastMousePosition = new Vector(this._browser.mouse.position);
         }
@@ -241,7 +241,7 @@ export default class Game {
       this._clickedAt = null;
       this._draggingMouse = false;
     }
-    
+
     if (this._clickedAt !== null) {
       if (this._timeSinceLastClick > Game.CLICK_COOLDOWN_MS) {
         clicked = true;
@@ -295,7 +295,7 @@ export default class Game {
   private update (d: number): void {
     const delta = Date.now() - this._lastUpdateRun;
     this._lastUpdateRun = Date.now();
-    
+
     const { cameraMoveDelta, cameraZoomDelta } = this.handleUserInput(d);
     this._graphics.update(d, cameraMoveDelta, cameraZoomDelta);
 

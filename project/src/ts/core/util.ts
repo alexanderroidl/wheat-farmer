@@ -13,7 +13,7 @@ export default class Util {
     }
     return value;
   }
-  
+
   public static mix (start: number, end: number, percent: number): number {
     return start + ((percent) * (end - start));
   }

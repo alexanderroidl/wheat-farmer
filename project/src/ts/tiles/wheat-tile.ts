@@ -17,15 +17,15 @@ export default class WheatTile extends Tile implements ITradeable {
   constructor () {
     super(Textures.wheat);
   }
-  
+
   public get growthRate (): number {
     return this._timeGrown / WheatTile.GROWTH_TIME * (1 - this.damage);
   }
-  
+
   public get char (): string | null {
     return "🌱";
   }
-  
+
   public dropSeeds (): number {
     return BitMath.floor(Math.random() * (this.maxSeedDrop - this.minSeedDrop + 1)) + this.minSeedDrop;
   }
@@ -38,13 +38,13 @@ export default class WheatTile extends Tile implements ITradeable {
     } else {
       this._timeGrown += delta;
     }
-    
+
     const targetFrame = Math.floor(this.growthRate * (this.totalFrames - 1));
     if (this.currentFrame !== targetFrame) {
       this.gotoAndStop(targetFrame);
     }
 
-    
+
     if (this.growthRate < 1) {
       this.cursor = "progress";
     } else {

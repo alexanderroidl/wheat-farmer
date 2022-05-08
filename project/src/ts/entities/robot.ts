@@ -28,7 +28,7 @@ export default class RobotEntity extends Entity {
     const textures = textureGroups[Math.floor(textureGroups.length * randomTextureGroupMultiplier)];
 
     super(textures);
-      
+
     if (Math.random() > (1 - RobotEntity.CHANCE_TO_SPAWN_WITH_HAT)) {
       this.giveHat();
     }
@@ -38,7 +38,7 @@ export default class RobotEntity extends Entity {
     if (this._bombPlantedAt === null) {
       return 0;
     }
-      
+
     const progress = (Date.now() - this._bombPlantedAt) / RobotEntity.BOMB_PLANT_TIME;
     return progress > 1 ? 1 : progress;
   }

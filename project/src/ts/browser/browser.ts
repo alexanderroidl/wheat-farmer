@@ -54,7 +54,7 @@ export class Browser extends events.EventEmitter {
       /BlackBerry/i,
       /Windows Phone/i
     ];
-    
+
     return toMatch.some((toMatchItem) => {
       return navigator.userAgent.match(toMatchItem);
     });
@@ -79,7 +79,7 @@ export class Browser extends events.EventEmitter {
   public static alert (text: string): void {
     window.alert(text);
   }
-  
+
   /**
      * Retrieve value of URL GET parameter (Source: https://stackoverflow.com/a/5448595/11379072)
      * @param {string} name GET parameter name
@@ -88,23 +88,23 @@ export class Browser extends events.EventEmitter {
   public static getURLParameter (name: string): string | null {
     let result: string | null = null;
     let tmp = [];
-  
+
     const parameters = location.search.substr(1).split("&");
     for (const parameter of parameters) {
       tmp = parameter.split("=");
-  
+
       if (tmp[0] === name) {
         result = decodeURIComponent(tmp[1]);
       }
     }
-  
+
     return result;
   }
-  
+
   public static addPixi (pixi: PIXI.Application): void {
     document.body.append(pixi.view);
   }
-  
+
   public static toggleTitleScreen (toggle: boolean): void {
     document.body.classList.toggle("titlescreen", toggle);
   }

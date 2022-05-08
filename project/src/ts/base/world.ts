@@ -114,7 +114,7 @@ export class World extends events.EventEmitter {
       this.create(WheatTile, pos);
       //   }
       // }
-  
+
       //   // Player has wall tile equipped
       //   if (this._player.equipped.type instanceof WallTile) {
       //     if (playerWallTiles > 0) {
@@ -122,7 +122,7 @@ export class World extends events.EventEmitter {
       //       if (playerWallTiles - 1 === 0) {
       //         this._player.equipped = this._player.items.getItem("Wheat");
       //       }
-  
+
       //       this.create(WallTile, pos);
       //     }
       //   }
@@ -206,7 +206,7 @@ export class World extends events.EventEmitter {
 
     return wheatTilePositions[BitMath.floor(Math.random() * wheatTilePositions.length)];
   }
-  
+
   public create <A extends MoveableSprite> (moveableSprite: { new(): A }, pos: Vector): A {
     const newSprite = new moveableSprite();
 
@@ -217,7 +217,7 @@ export class World extends events.EventEmitter {
 
     if (newSprite instanceof Tile) {
       const oldTile = this.getTile(pos);
-      
+
       if (oldTile) {
         newSprite.damage = oldTile.damage;
         newSprite.addDamageSprites(...oldTile.damageEntities);
@@ -226,7 +226,7 @@ export class World extends events.EventEmitter {
       if (!(newSprite instanceof EmptyTile)) {
         this._plantedTilesPerMin.push(newSprite.age);
       }
-  
+
       this.setTile(pos, newSprite);
     } else {
       newSprite.position.set(pos.x, pos.y);
@@ -328,7 +328,7 @@ export class World extends events.EventEmitter {
 
         const entityWorldPos = new Vector(entity.x, entity.y);
         const radius = BitMath.floor(Math.random() * (BombEntity.maxExplosionRadius + 1));
-        
+
         this.createExplosion(entityWorldPos, radius, BombEntity.maxExplosionRadius);
       }
 

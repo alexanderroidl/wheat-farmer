@@ -14,10 +14,10 @@ export default class DamageEntity extends Entity {
     const randomTextureIndex = BitMath.floor(Math.random() * Textures.damage.length);
     const randomTexture = Textures.damage[randomTextureIndex];
     super([randomTexture]);
-    
+
     const offset = new Vector(Math.random(), Math.random()).substract(0.5).multiply(Graphics.SQUARE_SIZE);
     const size = 1 + Easings.easeInCubic(Math.random()) * 2 * damage;
-    
+
     this.scale.set(size);
     this.anchor.set(0.5);
     this.alpha = Math.random() * 0.65 * damage;

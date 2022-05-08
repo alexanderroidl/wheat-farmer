@@ -24,7 +24,7 @@ export default class GameLoop {
     if (fps == null) {
       fps = Infinity;
     }
-        
+
     if (fps === 0) {
       this.stop();
     } else {
@@ -49,7 +49,7 @@ export default class GameLoop {
     if (this.started) {
       return;
     }
-        
+
     this.started = true;
     this.rafHandle = requestAnimationFrame((timestamp) => {
       this.render(1);

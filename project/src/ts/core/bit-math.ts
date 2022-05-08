@@ -7,7 +7,7 @@ export default class BitMath {
   public static floor (n: number): number {
     return n + (n < 0 && !Number.isInteger(n) ? -1 : 0) >> 0;
   }
-    
+
   /**
    * Rounds a number
    * @param {number} n
@@ -25,7 +25,7 @@ export default class BitMath {
   public static ceil (n: number): number {
     return n + (n < 0 ? 0 : 1) >> 0;
   }
-  
+
   /**
    * Gets absolute value of a number
    * @param {number} n Must be an integer. Floats are not supported
