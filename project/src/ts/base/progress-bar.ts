@@ -20,7 +20,7 @@ export class ProgressBar extends Graphics {
 
     this.beginFill(this.color);
     this.drawRect((1 - this.size.x) / 2, 0, this.size.x * this.progress, this.size.y);
-    
+
     this.endFill();
   }
 }

@@ -44,11 +44,11 @@ export default class Color {
     let rs = this.r.toString(16);
     let gs = this.g.toString(16);
     let bs = this.b.toString(16);
-  
+
     while (rs.length < 2) {
       rs = "0" + rs;
     }
-    
+
     while (gs.length < 2) {
       gs = "0" + gs;
     }
@@ -56,7 +56,7 @@ export default class Color {
     while (bs.length < 2) {
       bs = "0" + bs;
     }
-  
+
     return "#" + rs + gs + bs;
   }
 
@@ -64,7 +64,7 @@ export default class Color {
     const r = BitMath.round(Util.mix(this.r, color.r, percent));
     const g = BitMath.round(Util.mix(this.g, color.g, percent));
     const b = BitMath.round(Util.mix(this.b, color.b, percent));
-  
+
     return new Color(r, g, b);
   }
 

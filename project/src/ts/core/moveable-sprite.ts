@@ -14,7 +14,7 @@ export default class MoveableSprite extends AnimatedSprite {
   public moveStartDistance: number | null = null;
   public sourceFrames: string[] = [];
   public layer: GraphicsLayer = GraphicsLayer.Background;
-  
+
   protected dimensions: Vector = new Vector(1, 1);
 
   private _hovered: boolean = false;
@@ -22,7 +22,7 @@ export default class MoveableSprite extends AnimatedSprite {
 
   constructor (textures: Texture[] | FrameObject[]) {
     super([Texture.EMPTY]);
-    
+
     this.textures = textures;
     this.scale.set(1.0 / Graphics.SQUARE_SIZE);
     this.hitArea = new Rectangle(
@@ -97,7 +97,7 @@ export default class MoveableSprite extends AnimatedSprite {
   public updateSprite (deltaTime: number): void {
     if (this.isMoving) {
       const moveDelta = this.move(deltaTime);
-      
+
       this.x += moveDelta.x;
       this.y += moveDelta.y;
     }
