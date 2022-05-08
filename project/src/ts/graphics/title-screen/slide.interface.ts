@@ -1,4 +1,4 @@
-import Graphics from "@base/graphics";
+import Graphics from "@graphics/graphics";
 import Vector from "@core/vector";
 
 export default interface ISlide {

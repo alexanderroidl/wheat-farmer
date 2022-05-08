@@ -1,6 +1,6 @@
-import { Textures } from "@base/textures";
+import { Textures } from "@graphics/textures";
 import BitMath from "@core/bit-math";
-import ITradeable from "@interfaces/tradeable.interface";
+import ITradeable from "@world/tradeable.interface";
 import Tile from "./tile";
 
 export default class WheatTile extends Tile implements ITradeable {

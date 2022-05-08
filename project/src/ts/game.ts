@@ -1,11 +1,10 @@
-import MoveableSprite from "@core/moveable-sprite";
-import Graphics from "@base/graphics";
-import Sound from "@base/sound";
-import { World } from "@base/world";
-import { Browser } from "@browser/browser";
+import MoveableSprite from "@graphics/moveable-sprite";
+import Graphics from "@graphics/graphics";
+import { World } from "@world/world";
+import { Browser } from "@base/browser/browser";
 import Vector from "@core/vector";
-import TitleScreen from "./title-screen/title-screen";
-import BombEntity from "@entities/bomb";
+import TitleScreen from "@graphics/title-screen/title-screen";
+import BombEntity from "@world/entities/bomb";
 
 declare global {
   interface Window {

@@ -1,12 +1,23 @@
-import Tile from "@tiles/tile";
-import WheatTile from "@tiles/wheat-tile";
-import * as PIXI from "pixi.js";
-import { FrameObject, Loader, Rectangle, Spritesheet, Texture } from "pixi.js";
-import { Browser } from "@browser/browser";
-import MoveableSprite from "@core/moveable-sprite";
+import {
+  settings as PIXISettings,
+  SCALE_MODES,
+  Application,
+  Container,
+  FrameObject,
+  Loader,
+  Rectangle,
+  Spritesheet,
+  Text,
+  Texture,
+  TilingSprite
+} from "pixi.js";
+import Tile from "@world/tiles/tile";
+import WheatTile from "@world/tiles/wheat-tile";
+import { Browser } from "@base/browser/browser";
+import MoveableSprite from "@graphics/moveable-sprite";
 import Vector from "@core/vector";
-import { Camera } from "./camera";
-import { InventoryItem } from "./inventory";
+import { Camera } from "@base/camera";
+import { InventoryItem } from "@world/inventory";
 import { ProgressBar } from "./progress-bar";
 import { Textures } from "./textures";
 
@@ -17,9 +28,7 @@ export enum GraphicsLayer {
   GUI
 }
 
-export type TextureOrFrameObject = Texture | FrameObject;
-
-export default class Graphics extends PIXI.Application {
+export default class Graphics extends Application {
   public static readonly FONT_SIZE = 12;
   public static readonly FONT_EMOJI_SIZE = 16;
   public static readonly SQUARE_SIZE = 64;
@@ -30,9 +39,9 @@ export default class Graphics extends PIXI.Application {
 
   public readonly camera: Camera = new Camera();
   public equippedItem: InventoryItem | null = null;
-  public debugText?: PIXI.Text;
-  public backgroundSprite?: PIXI.TilingSprite;
-  private _layers: PIXI.Container[] = [];
+  public debugText?: Text;
+  public backgroundSprite?: TilingSprite;
+  private _layers: Container[] = [];
   private _growthProgressBar: ProgressBar = new ProgressBar(0x00FF00);
   private _damageProgressBar: ProgressBar = new ProgressBar(0xFF0000);
 
@@ -52,6 +61,10 @@ export default class Graphics extends PIXI.Application {
 
   public get loading (): boolean {
     return Graphics._spriteSheet == null;
+  }
+
+  public get screenSize (): Vector {
+    return new Vector(this.screen.width, this.screen.height);
   }
 
   public static getTexture (index: string | number): Texture {
@@ -112,9 +125,20 @@ export default class Graphics extends PIXI.Application {
   }
 
   public getWorldPosFromScreen (screenPos: Vector): Vector {
-    return new Vector(
-      (screenPos.x - this.screen.width / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.x,
-      (screenPos.y - this.screen.height / 2) / (Graphics.SQUARE_SIZE * this.camera.z) + this.camera.y
+    return screenPos
+      .substract(this.screenSize.divide(2))
+      .divide(Graphics.SQUARE_SIZE * this.camera.z)
+      .add(this.camera.position);
+  }
+
+  public getVisibleBounds (): Rectangle {
+    const screenWorldSize = this.screenSize.divide(Graphics.SQUARE_SIZE * this.camera.z);
+
+    return new Rectangle(
+      this.camera.x,
+      this.camera.y,
+      screenWorldSize.x,
+      screenWorldSize.y
     );
   }
 
@@ -133,7 +157,7 @@ export default class Graphics extends PIXI.Application {
 
   private setupLayers (): void {
     for (let layerIndex = 0; layerIndex < Object.keys(GraphicsLayer).length; layerIndex++) {
-      this._layers[layerIndex] = new PIXI.Container();
+      this._layers[layerIndex] = new Container();
       this._layers[layerIndex].zIndex = layerIndex;
       this.stage.addChild(this._layers[layerIndex]);
     }
@@ -160,18 +184,18 @@ export default class Graphics extends PIXI.Application {
   }
 
   private setupPIXI (): void {
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
-    PIXI.settings.RESOLUTION = window.devicePixelRatio;
-    PIXI.settings.FILTER_RESOLUTION = window.devicePixelRatio;
+    PIXISettings.SCALE_MODE = SCALE_MODES.NEAREST;
+    PIXISettings.RESOLUTION = window.devicePixelRatio;
+    PIXISettings.FILTER_RESOLUTION = window.devicePixelRatio;
     this.stage.sortableChildren = true;
     Browser.addPixi(this);
   }
 
-  private createBackgroundSprite (): PIXI.TilingSprite {
+  private createBackgroundSprite (): TilingSprite {
     const bgTexture = Textures.background.clone();
-    bgTexture.frame = new PIXI.Rectangle(bgTexture.orig.x, bgTexture.orig.height / 2, bgTexture.orig.width, bgTexture.orig.height / 2);
+    bgTexture.frame = new Rectangle(bgTexture.orig.x, bgTexture.orig.height / 2, bgTexture.orig.width, bgTexture.orig.height / 2);
 
-    const backgroundSprite = new PIXI.TilingSprite(bgTexture);
+    const backgroundSprite = new TilingSprite(bgTexture);
     backgroundSprite.tileScale.set(1.0 / Graphics.SQUARE_SIZE);
     backgroundSprite.anchor.set(0, 0);
 
@@ -213,8 +237,8 @@ export default class Graphics extends PIXI.Application {
     cb.call(null);
   }
 
-  private createDebugText (): PIXI.Text {
-    const debugText = new PIXI.Text("", {
+  private createDebugText (): Text {
+    const debugText = new Text("", {
       fontSize: 10
     });
     debugText.scale.set(1.0 / Graphics.SQUARE_SIZE);

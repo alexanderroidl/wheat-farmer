@@ -1,6 +1,6 @@
-import DamageEntity from "@entities/damage";
-import { GraphicsLayer } from "@base/graphics";
-import MoveableSprite from "@core/moveable-sprite";
+import DamageEntity from "@world/entities/damage";
+import { GraphicsLayer } from "@graphics/graphics";
+import MoveableSprite from "@graphics/moveable-sprite";
 
 export default abstract class Tile extends MoveableSprite {
   public static readonly DAMAGE_HEAL_TIME = 60 * 1000;

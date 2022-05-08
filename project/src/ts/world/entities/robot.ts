@@ -1,7 +1,7 @@
 import { Texture } from "pixi.js";
-import { Textures } from "@base/textures";
+import { Textures } from "@graphics/textures";
+import MoveableSprite from "@graphics/moveable-sprite";
 import Easings from "@core/easings";
-import MoveableSprite from "@core/moveable-sprite";
 import Vector from "@core/vector";
 import BombEntity from "./bomb";
 import Entity from "./entity";

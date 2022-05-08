@@ -1,6 +1,6 @@
 import { FrameObject } from "pixi.js";
-import { Textures } from "@base/textures";
-import MoveableSprite from "@core/moveable-sprite";
+import { Textures } from "@graphics/textures";
+import MoveableSprite from "@graphics/moveable-sprite";
 import Entity from "./entity";
 
 export default class BombEntity extends Entity {

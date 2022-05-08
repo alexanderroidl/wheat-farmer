@@ -1,4 +1,4 @@
-import Vector from "../core/vector";
+import Vector from "@core/vector";
 
 export default class Sound {
   public static all: Sound[] = [];

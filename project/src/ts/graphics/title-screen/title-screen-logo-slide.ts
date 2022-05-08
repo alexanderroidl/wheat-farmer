@@ -1,4 +1,4 @@
-import Graphics from "@base/graphics";
+import Graphics from "@graphics/graphics";
 import Sound from "@base/sound";
 import BitMath from "@core/bit-math";
 import Color from "@core/color";

@@ -1,4 +1,4 @@
-import ITradeable from "@interfaces/tradeable.interface";
+import ITradeable from "@world/tradeable.interface";
 
 export class InventoryItem {
   public amount: number = 0;
