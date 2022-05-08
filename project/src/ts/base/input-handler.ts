@@ -50,7 +50,7 @@ export class InputHandler {
     cameraZoomDelta: number,
     scrollDelta: number
   } {
-    const delta = Date.now() - this._lastUpdateRun;
+    const deltaTimeMs = Date.now() - this._lastUpdateRun;
     this._lastUpdateRun = Date.now();
 
     let clickedScreenPos: Vector | null = null;
@@ -71,7 +71,7 @@ export class InputHandler {
     }
 
     if (!clickedScreenPos) {
-      this._timeSinceLastClick += delta;
+      this._timeSinceLastClick += deltaTimeMs;
     }
 
     const scrollDelta = this._scrollDelta;
@@ -200,7 +200,6 @@ export class InputHandler {
     this._browser.on("keyDown", (keyCode: number, code: string) => {
       if (!this._keysPressed.includes(code)) {
         this._keysPressed.push(code);
-        console.log(code, "pressed");
       }
     });
 

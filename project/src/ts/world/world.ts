@@ -8,6 +8,7 @@ import { Tile, EmptyTile, WallTile, WheatTile } from "@world/tiles";
 import DamageEntity from "@world/entities/damage";
 import { Chunk, Chunks } from "./chunk";
 import Player from "./player";
+import { Rectangle } from "pixi.js";
 
 interface WorldEvents {
   "createdSprites": (sprites: MoveableSprite[]) => void;
@@ -292,6 +293,23 @@ export class World extends EventEmitter {
     });
   }
 
+  public updateChunksForWorldViewport (worldView: Rectangle): void {
+    const chunksToKeep: Chunk[] = [];
+    const worldViewChunkCoords = this.getChunkCoordsForWorldViewport(worldView);
+
+    for (const worldViewChunkPos of worldViewChunkCoords) {
+      const chunk = this.getChunk(worldViewChunkPos) ?? this.newChunkAt(worldViewChunkPos);
+      chunk.loaded = true;
+      chunksToKeep.push(chunk);
+    }
+
+    for (const loadedChunk of this.getChunks(true)) {
+      if (!chunksToKeep.includes(loadedChunk)) {
+        loadedChunk.loaded = false;
+      }
+    }
+  }
+
   public update (delta: number): void {
     // Remove old planted tiles
     this._plantedTilesPerMin = this._plantedTilesPerMin.map(a => a + delta).filter((age: number) => {
@@ -425,5 +443,25 @@ export class World extends EventEmitter {
       }
     }
     return chunks;
+  }
+
+  private getChunkCoordsForWorldViewport (worldView: Rectangle): Vector[] {
+    const chunkMin =
+      new Vector(
+        Math.trunc(worldView.x / Chunk.WIDTH),
+        Math.trunc(worldView.y / Chunk.HEIGHT)
+      ).substract(1);
+
+    const chunkGrid =
+      new Vector(worldView.width, worldView.height)
+        .divide(Chunk.DIMENSIONS)
+        .ceil()
+        .add(1);
+
+    return Array(chunkGrid.x * chunkGrid.y).fill(null).map((_value: null, chunkIndex: number) => {
+      const chunkX = chunkIndex % chunkGrid.x;
+      const chunkY = Math.floor(chunkIndex / chunkGrid.y);
+      return chunkMin.add(chunkX, chunkY);
+    });
   }
 }

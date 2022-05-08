@@ -12,7 +12,7 @@ export class ProgressBar extends Graphics {
     this.color = color;
   }
 
-  public update (delta: number): void {
+  public update (): void {
     this.clear();
 
     this.beginFill(0xFFFFFF);

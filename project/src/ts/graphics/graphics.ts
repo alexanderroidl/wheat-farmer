@@ -131,12 +131,13 @@ export default class Graphics extends Application {
       .add(this.camera.position);
   }
 
-  public getVisibleBounds (): Rectangle {
+  public getViewportWorldBounds (): Rectangle {
     const screenWorldSize = this.screenSize.divide(Graphics.SQUARE_SIZE * this.camera.z);
+    const offset = this.camera.position.substract(screenWorldSize.divide(2));
 
     return new Rectangle(
-      this.camera.x,
-      this.camera.y,
+      offset.x,
+      offset.y,
       screenWorldSize.x,
       screenWorldSize.y
     );
@@ -152,7 +153,7 @@ export default class Graphics extends Application {
     this.stage.y = this.screen.height / (2 * window.devicePixelRatio);
 
     this.updateBackgroundSprite();
-    this.updateTileGUI(delta);
+    this.updateTileGUI();
   }
 
   private setupLayers (): void {
@@ -243,7 +244,7 @@ export default class Graphics extends Application {
     );
   }
 
-  private updateTileGUI (delta: number): void {
+  private updateTileGUI (): void {
     this._growthProgressBar.visible = false;
     this._damageProgressBar.visible = false;
 
@@ -263,7 +264,7 @@ export default class Graphics extends Application {
       }
     }
 
-    this._growthProgressBar.update(delta);
-    this._damageProgressBar.update(delta);
+    this._growthProgressBar.update();
+    this._damageProgressBar.update();
   }
 }

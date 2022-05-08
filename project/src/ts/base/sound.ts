@@ -1,12 +1,9 @@
-import Vector from "@core/vector";
-
 export default class Sound {
   public static all: Sound[] = [];
 
   public static mainMusic = new Sound("audio/210107blunt164.ogg", true);
 
-  public position: Vector | null = null;
-  private _isMusic: boolean = false;
+  public _isMusic: boolean = false;
   private _audio: HTMLAudioElement;
 
   /**

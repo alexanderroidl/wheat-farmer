@@ -7,6 +7,7 @@ export class Chunk {
   public static readonly WIDTH: number = 9;
   public static readonly HEIGHT: number = 9;
   public static readonly SIZE: number = Chunk.WIDTH * Chunk.HEIGHT;
+  public static readonly DIMENSIONS = new Vector(Chunk.WIDTH, Chunk.HEIGHT);
 
   public position: Vector;
   private _loaded?: boolean;

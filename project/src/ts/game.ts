@@ -6,6 +6,7 @@ import Vector from "@core/vector";
 import TitleScreen from "@graphics/title-screen/title-screen";
 import BombEntity from "@world/entities/bomb";
 import { InputHandler, InputKeys } from "@base/input-handler";
+import { Ticker } from "pixi.js";
 
 declare global {
   interface Window {
@@ -88,14 +89,14 @@ export default class Game {
     }
   }
 
-  private updateDebug (d: number): void {
+  private updateDebug (fps: number): void {
     // Render stats
     this._browser.gui.renderWorldStatsHTML(this._world);
 
     // Debug GET parameter provided
     if (Browser.debug) {
       // Render debug info
-      this._browser.gui.renderDebug(this._graphics.camera, this._graphics, this._world, 42); // TODO: Set PIXI.js fps
+      this._browser.gui.renderDebug(this._graphics.camera, this._graphics, this._world, fps); // TODO: Set PIXI.js fps
     }
   }
 
@@ -167,8 +168,11 @@ export default class Game {
       return;
     }
 
+    const viewportWorldBounds = this._graphics.getViewportWorldBounds();
+    this._world.updateChunksForWorldViewport(viewportWorldBounds);
+
     // Update world
     this._world.update(delta);
-    this.updateDebug(d);
+    this.updateDebug(Ticker.shared.FPS);
   }
 }
