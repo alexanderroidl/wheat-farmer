@@ -16,7 +16,7 @@
       "type": "chrome",
       "request": "launch",
       "name": "Browser",
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3000?debug",
       "pathMapping": {
         "js/": "${workspaceRoot}/project"
       },
