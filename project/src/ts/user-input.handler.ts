@@ -1,0 +1,203 @@
+import Sound from "@base/sound";
+import { Browser } from "@base/browser/browser";
+import Vector from "@core/vector";
+
+export class UserInputHandler {
+  public static readonly CLICK_COOLDOWN_MS = 350;
+  public static readonly MOUSE_DRAG_TRESHOLD = 50;
+
+  private _browser: Browser;
+  private _keysPressed: string[] = [];
+  private _scrollDelta: number = 0;
+  private _clickedAt: Vector | null = null;
+  private _lastMousePosition?: Vector | null;
+  private _timeSinceLastClick: number = 0;
+  private _lastUpdateRun: number = 0;
+
+  constructor (browser: Browser) {
+    this._browser = browser;
+    this.setupMouse();
+    this.setupKeyboard();
+    this.setupTouchScreen();
+  }
+
+  public get clickedAt () {
+    return this._clickedAt;
+  }
+
+  public process (d: number): {
+    clickedScreenPos: Vector | null,
+    cameraDragDelta: Vector,
+    cameraMoveDelta: Vector,
+    cameraZoomDelta: number,
+    scrollDelta: number
+  } {
+    const delta = Date.now() - this._lastUpdateRun;
+    this._lastUpdateRun = Date.now();
+
+    let clickedScreenPos: Vector | null = null;
+
+    const { cameraDragDelta, cameraMoveDelta, cameraZoomDelta } = this.processMouseAndKeyboard(d);
+
+    // Stopped dragging mouse
+    if (cameraDragDelta.length && !this._lastMousePosition) {
+      this._clickedAt = null;
+    }
+
+    if (this._clickedAt !== null) {
+      if (this._timeSinceLastClick > UserInputHandler.CLICK_COOLDOWN_MS) {
+        clickedScreenPos = new Vector(this._clickedAt);
+        this._clickedAt = null;
+        this._timeSinceLastClick = 0;
+      }
+    }
+
+    if (!clickedScreenPos) {
+      this._timeSinceLastClick += delta;
+    }
+
+    const scrollDelta = this._scrollDelta;
+    this._scrollDelta = 0;
+
+    return {
+      clickedScreenPos,
+      cameraDragDelta,
+      cameraMoveDelta,
+      cameraZoomDelta,
+      scrollDelta
+    };
+  }
+
+  public isKeyPressed (keyCode: string): boolean {
+    return this._keysPressed.includes(keyCode);
+  }
+
+  private processMouseAndKeyboard (delta: number): {
+    cameraDragDelta: Vector;
+    cameraMoveDelta: Vector;
+    cameraZoomDelta: number;
+  } {
+    let cameraDragDelta = new Vector(0);
+    let cameraMoveDelta = new Vector(0);
+    let cameraZoomDelta = 0;
+
+    if (this._keysPressed.includes("KeyW")) {
+      cameraMoveDelta.y -= 0.1 * delta;
+    }
+
+    if (this._keysPressed.includes("KeyA")) {
+      cameraMoveDelta.x -= 0.1 * delta;
+    }
+
+    if (this._keysPressed.includes("KeyD")) {
+      cameraMoveDelta.x += 0.1 * delta;
+    }
+
+    if (this._keysPressed.includes("KeyS")) {
+      cameraMoveDelta.y += 0.1 * delta;
+    }
+
+    if (this._keysPressed.includes("BracketRight")) {
+      cameraZoomDelta = 0.01 * delta;
+    }
+
+    if (this._keysPressed.includes("Slash")) {
+      cameraZoomDelta = -0.01 * delta;
+    }
+
+    // // "Escape" pressed
+    // if (code === "Escape") {
+    //   this._titleScreen.hidden = false;
+    //   return;
+    // }
+
+    // // "S" pressed
+    // if (code === "KeyS" && this._world) {
+    //   this._paused = true;
+
+    //   // Open shop
+    //   this._browser.gui.openShop(this._world.player.items, () => {
+    //     this._paused = false;
+    //   });
+    // }
+
+    // // "E" pressed
+    // if (code === "KeyE" && this._world) {
+    //   this._paused = true;
+
+    //   // Open inventory
+    //   this._browser.gui.openInventory(this._world.player, this._world.player.items, () => {
+    //     this._paused = false;
+    //   });
+    // }
+
+    if (this._keysPressed.includes("ShiftLeft") || this._keysPressed.includes("ShiftRight")) {
+      cameraMoveDelta = cameraMoveDelta.multiply(2);
+    }
+
+    if (this._browser.mouse.pressed) {
+      // Only drag mouse if space key is not pressed
+      if (!this._keysPressed.includes("Space")) {
+        let mouseMoveDelta: Vector = new Vector(0);
+
+        if (this._lastMousePosition) {
+          mouseMoveDelta = this._browser.mouse.position.substract(this._lastMousePosition);
+
+          if (mouseMoveDelta.length > UserInputHandler.MOUSE_DRAG_TRESHOLD) {
+            // const mouseDeltaWorld = mouseMoveDelta.divide(Graphics.SQUARE_SIZE * this._graphics.camera.z);
+            // cameraMoveDelta = cameraMoveDelta.substract(mouseDeltaWorld);
+            cameraDragDelta = mouseMoveDelta;
+          }
+        }
+
+        if (this._lastMousePosition == null || mouseMoveDelta.length > UserInputHandler.MOUSE_DRAG_TRESHOLD) {
+          this._lastMousePosition = new Vector(this._browser.mouse.position);
+        }
+      } else { // Holding space key
+        // Simulate click when moving mouse
+        this._clickedAt = new Vector(this._browser.mouse.position);
+      }
+    } else {
+      this._lastMousePosition = null;
+    }
+
+    return {
+      cameraDragDelta,
+      cameraMoveDelta,
+      cameraZoomDelta
+    };
+  }
+
+  private setupMouse (): void {
+    this._browser.on("scroll", (delta: number) => {
+      this._scrollDelta += delta;
+    });
+
+    this._browser.on("mouseClick", (pos: Vector) => {
+      this._clickedAt = pos;
+    });
+  }
+
+  private setupKeyboard (): void {
+    this._browser.on("keyDown", (keyCode: number, code: string) => {
+      if (!this._keysPressed.includes(code)) {
+        this._keysPressed.push(code);
+      }
+    });
+
+    // On browser key up
+    this._browser.on("keyUp", (keyCode: number, code: string) => {
+      const codeIndex = this._keysPressed.indexOf(code);
+      if (codeIndex !== -1) {
+        delete this._keysPressed[codeIndex];
+      }
+    });
+  }
+
+  private setupTouchScreen (): void {
+    // On browser touch start
+    this._browser.on("touchStart", () => {
+      Sound.unlockAll();
+    });
+  }
+}
