@@ -1,10 +1,10 @@
-import Tile from "../tiles/tile";
-import WheatTile from "../tiles/wheat-tile";
+import Tile from "@tiles/tile";
+import WheatTile from "@tiles/wheat-tile";
 import * as PIXI from "pixi.js";
 import { FrameObject, Loader, Rectangle, Spritesheet, Texture } from "pixi.js";
-import { Browser } from "../browser/browser";
-import MoveableSprite from "../core/moveable-sprite";
-import Vector from "../core/vector";
+import { Browser } from "@browser/browser";
+import MoveableSprite from "@core/moveable-sprite";
+import Vector from "@core/vector";
 import { Camera } from "./camera";
 import { InventoryItem } from "./inventory";
 import { ProgressBar } from "./progress-bar";

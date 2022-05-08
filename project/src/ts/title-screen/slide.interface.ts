@@ -1,5 +1,5 @@
-import Graphics from "../base/graphics";
-import Vector from "../core/vector";
+import Graphics from "@base/graphics";
+import Vector from "@core/vector";
 
 export default interface ISlide {
     render: (graphics: Graphics, ctx: CanvasRenderingContext2D) => void;

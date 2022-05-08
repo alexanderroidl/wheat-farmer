@@ -1,7 +1,7 @@
 import { FrameObject, Texture } from "pixi.js";
-import { GraphicsLayer } from "../base/graphics";
-import MoveableSprite from "../core/moveable-sprite";
-import Vector from "../core/vector";
+import { GraphicsLayer } from "@base/graphics";
+import MoveableSprite from "@core/moveable-sprite";
+import Vector from "@core/vector";
 
 export default abstract class Entity extends MoveableSprite {
   public layer: GraphicsLayer = GraphicsLayer.Entities;

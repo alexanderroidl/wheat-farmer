@@ -1,8 +1,8 @@
-import MoveableSprite from "./core/moveable-sprite";
-import Graphics from "./base/graphics";
-import Sound from "./base/sound";
-import { World } from "./base/world";
-import { Browser } from "./browser/browser";
+import MoveableSprite from "@core/moveable-sprite";
+import Graphics from "@base/graphics";
+import Sound from "@base/sound";
+import { World } from "@base/world";
+import { Browser } from "@browser/browser";
 import Vector from "@core/vector";
 import TitleScreen from "./title-screen/title-screen";
 import BombEntity from "@entities/bomb";
@@ -59,6 +59,7 @@ export default class Game {
     this._world.on("removedSprites", (sprites: MoveableSprite[]) => {
       sprites.forEach(sprite => {
         this._graphics.removeChild(sprite);
+        sprite.destroy();
       });
     });
 
@@ -72,10 +73,6 @@ export default class Game {
     if (Browser.debug) {
       window.wheatFarmer = {
         spawnEnemy: (count: number = 1): void => {
-          if (!this._world) {
-            console.error("World not ready yet");
-            return;
-          }
           console.log(`Scheduled ${count} enemies to spawn`);
           this._world.scheduleEnemySpawn(count);
         }
@@ -301,10 +298,10 @@ export default class Game {
 
     this.updateTitleScreen(delta);
 
-    // // // Stop here if game is currently paused
-    // if (this._paused) {
-    //   return;
-    // }
+    // // Stop here if game is currently paused
+    if (this._paused) {
+      return;
+    }
 
     // Update world
     this._world.update(delta);

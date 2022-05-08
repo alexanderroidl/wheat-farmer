@@ -1,5 +1,5 @@
 import { AnimatedSprite, Filter, FrameObject, Rectangle, Texture } from "pixi.js";
-import Graphics, { GraphicsLayer } from "../base/graphics";
+import Graphics, { GraphicsLayer } from "@base/graphics";
 import Easings from "./easings";
 import Vector from "./vector";
 
