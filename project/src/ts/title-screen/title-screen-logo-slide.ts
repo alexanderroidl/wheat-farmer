@@ -1,8 +1,8 @@
-import Graphics from "../base/graphics";
-import Sound from "../base/sound"; // TODO: Resolve issue for importing from base URL
-import BitMath from "../core/bit-math"; // TODO: Resolve issue for importing from base URL
-import Color from "../core/color";
-import Vector from "../core/vector";
+import Graphics from "@base/graphics";
+import Sound from "@base/sound";
+import BitMath from "@core/bit-math";
+import Color from "@core/color";
+import Vector from "@core/vector";
 import ISlide from "./slide.interface";
 
 export default class TitleScreenLogoSlide implements ISlide {

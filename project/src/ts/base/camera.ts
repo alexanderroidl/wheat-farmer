@@ -1,5 +1,5 @@
 import events from "events";
-import Vector from "../core/vector";
+import Vector from "@core/vector";
 
 export declare interface Camera {
   on(event: "moved", listener: (position: Vector) => void): this;

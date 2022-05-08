@@ -1,4 +1,4 @@
-import Graphics from "../base/graphics";
+import Graphics from "@base/graphics";
 import ISlide from "./slide.interface";
 import Vector from "core/vector";
 import TitleScreenLogoSlide from "./title-screen-logo-slide";

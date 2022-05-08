@@ -1,7 +1,7 @@
 
 import events from "events";
 import * as PIXI from "pixi.js";
-import Vector from "../core/vector";
+import Vector from "@core/vector";
 import Gui from "./gui";
 
 export class BrowserMouse {

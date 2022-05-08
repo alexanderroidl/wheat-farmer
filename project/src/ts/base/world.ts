@@ -1,18 +1,18 @@
-import Easings from "@core/easings";
 import events from "events";
-import BitMath from "../core/bit-math";
-import MoveableSprite from "../core/moveable-sprite";
-import Vector from "../core/vector";
-import BombEntity from "../entities/bomb";
-import Entity from "../entities/entity";
-import ExplosionEntity from "../entities/explosion";
-import RobotEntity from "../entities/robot";
-import EmptyTile from "../tiles/empty-tile";
-import Tile from "../tiles/tile";
-import WallTile from "../tiles/wall-tile";
-import WheatTile from "../tiles/wheat-tile";
-import { Chunk, Chunks } from "./chunk";
+import Easings from "@core/easings";
+import BitMath from "@core/bit-math";
+import MoveableSprite from "@core/moveable-sprite";
+import Vector from "@core/vector";
+import BombEntity from "@entities/bomb";
+import Entity from "@entities/entity";
+import ExplosionEntity from "@entities/explosion";
+import RobotEntity from "@entities/robot";
+import EmptyTile from "@tiles/empty-tile";
+import Tile from "@tiles/tile";
+import WallTile from "@tiles/wall-tile";
+import WheatTile from "@tiles/wheat-tile";
 import DamageEntity from "@entities/damage";
+import { Chunk, Chunks } from "./chunk";
 import Player from "./player";
 
 export declare interface World {
@@ -47,14 +47,6 @@ export class World extends events.EventEmitter {
 
   public get enemyGroupsPerMin (): number {
     return this._enemyGroupsPerMin.length;
-  }
-
-  public initChunks (): void {
-    for (let y = -1; y < 2; y++) {
-      for (let x = -1; x < 2; x++) {
-        this.newChunkAt(new Vector(x, y));
-      }
-    }
   }
 
   public getRandomLoadedPosition (): Vector {
@@ -178,6 +170,7 @@ export class World extends events.EventEmitter {
     return tiles;
   }
 
+  // TODO: Rework for chunks
   public getRandomOutsidePos (radiusMultiplier: number = 3): Vector {
     // TODO: Replace static values
     const spawnRadius = Math.sqrt(Math.pow(10, 2) + Math.pow(10, 2)) * radiusMultiplier;

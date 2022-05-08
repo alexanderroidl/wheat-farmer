@@ -11,7 +11,7 @@
 		"strict": true,
 		"baseUrl": "src/ts",
 		"module": "es6",
-		"noUnusedLocals": false,
+		"noUnusedLocals": true,
 		"noUnusedParameters": false,
 		"allowSyntheticDefaultImports": true,
     "sourceMap": true,

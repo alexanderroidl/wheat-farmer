@@ -2,7 +2,6 @@ module.exports = {
   ignorePatterns: ["build/**/*.js"],
   parser: "@typescript-eslint/parser",
   overrides: [
-    // Typescript
     {
       files: ["*.ts"],
       plugins: ["@typescript-eslint"],
@@ -29,26 +28,24 @@ module.exports = {
             "format": ["camelCase"],
             "leadingUnderscore": "require"
           },
-  
           {
             "selector": "property",
             "modifiers": ["private", "readonly"],
             "format": ["UPPER_CASE"]
           },
-          
           {
             "selector": "typeLike",
             "format": ["PascalCase"]
           }
         ],
-        "no-unused-vars": 0,
+        "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": ["error", {
           "vars": "all",
           "args": "none",
           "argsIgnorePattern": "^_",
           "ignoreRestSiblings": false
         }],
-        "@typescript-eslint/no-inferrable-types": 0,
+        "@typescript-eslint/no-inferrable-types": "off",
         "semi": "off",
         "@typescript-eslint/semi": ["error"],
         "@typescript-eslint/type-annotation-spacing": ["error"],

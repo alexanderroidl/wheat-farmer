@@ -1,6 +1,6 @@
-import Vector from "../core/vector";
-import EmptyTile from "../tiles/empty-tile";
-import Tile from "../tiles/tile";
+import Vector from "@core/vector";
+import EmptyTile from "@tiles/empty-tile";
+import Tile from "@tiles/tile";
 
 export type Chunks = Record<number, Record<number, Chunk>>;
 

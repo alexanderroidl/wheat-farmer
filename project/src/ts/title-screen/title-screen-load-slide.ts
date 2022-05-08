@@ -1,7 +1,7 @@
+import Graphics from "@base/graphics";
+import Color from "@core/color";
+import Vector from "@core/vector";
 import ISlide from "./slide.interface";
-import Graphics from "../base/graphics";
-import Color from "../core/color";
-import Vector from "../core/vector";
 
 export default class TitleScreenLoadSlide implements ISlide {
   private static readonly TEXT = "Click to load";
