@@ -5,7 +5,7 @@ import { Browser } from "@base/browser/browser";
 import Vector from "@core/vector";
 import TitleScreen from "@graphics/title-screen/title-screen";
 import BombEntity from "@world/entities/bomb";
-import { UserInputHandler } from "./user-input.handler";
+import InputHandler from "@base/input-handler";
 
 declare global {
   interface Window {
@@ -20,7 +20,7 @@ export default class Game {
   private _world: World = new World();
   private _browser: Browser = new Browser();
   private _titleScreen: TitleScreen = new TitleScreen();
-  private _userInputHandler: UserInputHandler = new UserInputHandler(this._browser);
+  private _userInputHandler: InputHandler = new InputHandler(this._browser);
   private _paused: boolean = false;
   private _titleScreenHiddenBefore: boolean | null = null;
   private _lastUpdateRun: number = 0;
