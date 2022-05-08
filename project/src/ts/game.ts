@@ -5,7 +5,7 @@ import { Browser } from "@base/browser/browser";
 import Vector from "@core/vector";
 import TitleScreen from "@graphics/title-screen/title-screen";
 import BombEntity from "@world/entities/bomb";
-import InputHandler from "@base/input-handler";
+import { InputHandler, InputKeys } from "@base/input-handler";
 
 declare global {
   interface Window {
@@ -20,7 +20,7 @@ export default class Game {
   private _world: World = new World();
   private _browser: Browser = new Browser();
   private _titleScreen: TitleScreen = new TitleScreen();
-  private _userInputHandler: InputHandler = new InputHandler(this._browser);
+  private _inputHandler: InputHandler = new InputHandler(this._browser);
   private _paused: boolean = false;
   private _titleScreenHiddenBefore: boolean | null = null;
   private _lastUpdateRun: number = 0;
@@ -106,7 +106,7 @@ export default class Game {
       cameraMoveDelta,
       cameraZoomDelta,
       scrollDelta
-    } = this._userInputHandler.process(d);
+    } = this._inputHandler.process(d);
 
     let totalCameraMoveDelta = cameraMoveDelta;
 
@@ -118,7 +118,7 @@ export default class Game {
 
       const worldPos = this._graphics.getWorldPosFromScreen(clickedScreenPos);
 
-      if (this._userInputHandler.isKeyPressed("ShiftLeft")) {
+      if (Browser.debug && this._inputHandler.isKeyPressed(InputKeys.ExplodeOnClick)) {
         const radius = Math.floor(Math.random() * (BombEntity.maxExplosionRadius + 1));
         this._world.createExplosion(worldPos, radius, BombEntity.maxExplosionRadius);
       } else {
@@ -141,13 +141,13 @@ export default class Game {
       this._graphics.camera.z -= scrollDelta / 5;
 
       // Calculate delta for pointed at ingame coordinates before and after zoom
-      const mouseDelta = this._browser.mouse.position
+      const mouseWorldDelta = this._browser.mouse.position
         .substract(new Vector(window.innerWidth, window.innerHeight).divide(2))
         .divide(Graphics.SQUARE_SIZE)
         .multiply(1 / oldZoom - 1 / this._graphics.camera.z);
 
       // Move camera by using ingame mouse delta
-      totalCameraMoveDelta = totalCameraMoveDelta.add(mouseDelta);
+      totalCameraMoveDelta = totalCameraMoveDelta.add(mouseWorldDelta);
     }
 
     this._graphics.update(d, totalCameraMoveDelta, cameraZoomDelta);

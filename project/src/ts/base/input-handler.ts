@@ -2,7 +2,24 @@ import Sound from "@base/sound";
 import { Browser } from "@base/browser/browser";
 import Vector from "@core/vector";
 
-export default class InputHandler {
+export type InputKeyCodes = string[];
+
+export class InputKeys {
+  static MoveUp: InputKeyCodes = ["KeyW", "ArrowUp"];
+  static MoveLeft: InputKeyCodes = ["KeyA", "ArrowLeft"];
+  static MoveDown: InputKeyCodes = ["KeyS", "ArrowDown"];
+  static MoveRight: InputKeyCodes = ["KeyD", "ArrowRight"];
+  static MoveFaster: InputKeyCodes = ["ShiftLeft", "ShiftRight"];
+  static DontDrag: InputKeyCodes = ["Space"];
+  static ZoomIn: InputKeyCodes = ["BracketRight"];
+  static ZoomOut: InputKeyCodes = ["Slash"];
+  static ToggleShop: InputKeyCodes = ["KeyS"];
+  static ToggleInventory: InputKeyCodes = ["KeyE"];
+  static Menu: InputKeyCodes = ["Escape"];
+  static ExplodeOnClick: InputKeyCodes = ["AltLeft"]; // Debug-mode only
+}
+
+export class InputHandler {
   public static readonly CLICK_COOLDOWN_MS = 350;
   public static readonly MOUSE_DRAG_TRESHOLD = 50;
 
@@ -16,6 +33,7 @@ export default class InputHandler {
 
   constructor (browser: Browser) {
     this._browser = browser;
+
     this.setupMouse();
     this.setupKeyboard();
     this.setupTouchScreen();
@@ -68,8 +86,10 @@ export default class InputHandler {
     };
   }
 
-  public isKeyPressed (keyCode: string): boolean {
-    return this._keysPressed.includes(keyCode);
+  public isKeyPressed (key: InputKeyCodes): boolean {
+    return key.reduce((prev: boolean, current: string) => {
+      return Boolean(prev || this._keysPressed.includes(current));
+    }, false);
   }
 
   private processMouseAndKeyboard (delta: number): {
@@ -81,27 +101,27 @@ export default class InputHandler {
     let cameraMoveDelta = new Vector(0);
     let cameraZoomDelta = 0;
 
-    if (this._keysPressed.includes("KeyW")) {
+    if (this.isKeyPressed(InputKeys.MoveUp)) {
       cameraMoveDelta.y -= 0.1 * delta;
     }
 
-    if (this._keysPressed.includes("KeyA")) {
+    if (this.isKeyPressed(InputKeys.MoveLeft)) {
       cameraMoveDelta.x -= 0.1 * delta;
     }
 
-    if (this._keysPressed.includes("KeyD")) {
+    if (this.isKeyPressed(InputKeys.MoveRight)) {
       cameraMoveDelta.x += 0.1 * delta;
     }
 
-    if (this._keysPressed.includes("KeyS")) {
+    if (this.isKeyPressed(InputKeys.MoveDown)) {
       cameraMoveDelta.y += 0.1 * delta;
     }
 
-    if (this._keysPressed.includes("BracketRight")) {
+    if (this.isKeyPressed(InputKeys.ZoomIn)) {
       cameraZoomDelta = 0.01 * delta;
     }
 
-    if (this._keysPressed.includes("Slash")) {
+    if (this.isKeyPressed(InputKeys.ZoomOut)) {
       cameraZoomDelta = -0.01 * delta;
     }
 
@@ -131,13 +151,13 @@ export default class InputHandler {
     //   });
     // }
 
-    if (this._keysPressed.includes("ShiftLeft") || this._keysPressed.includes("ShiftRight")) {
+    if (this.isKeyPressed(InputKeys.MoveFaster)) {
       cameraMoveDelta = cameraMoveDelta.multiply(2);
     }
 
     if (this._browser.mouse.pressed) {
       // Only drag mouse if space key is not pressed
-      if (!this._keysPressed.includes("Space")) {
+      if (!this.isKeyPressed(InputKeys.DontDrag)) {
         let mouseMoveDelta: Vector = new Vector(0);
 
         if (this._lastMousePosition) {
@@ -180,6 +200,7 @@ export default class InputHandler {
     this._browser.on("keyDown", (keyCode: number, code: string) => {
       if (!this._keysPressed.includes(code)) {
         this._keysPressed.push(code);
+        console.log(code, "pressed");
       }
     });
 

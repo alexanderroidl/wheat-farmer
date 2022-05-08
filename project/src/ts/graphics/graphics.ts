@@ -191,6 +191,30 @@ export default class Graphics extends Application {
     Browser.addPixi(this);
   }
 
+  private setupSpritesheet (cb: () => void): void {
+    const sheet = Loader.shared.resources[Graphics.SPRITESHEET_PATH].spritesheet;
+    if (!sheet) {
+      throw new Error(`File "${Graphics.SPRITESHEET_PATH} is not a valid spritesheet JSON file`);
+    }
+
+    Graphics._spriteSheet = sheet;
+    Textures.instance;
+
+    this.backgroundSprite = this.createBackgroundSprite();
+    this._layers[GraphicsLayer.Background].addChild(this.backgroundSprite);
+
+    this.debugText = this.createDebugText();
+    this._layers[GraphicsLayer.GUI].addChild(this.debugText);
+
+    cb.call(null);
+  }
+
+  private createDebugText (): Text {
+    const debugText = new Text("", { fontSize: 10 });
+    debugText.scale.set(1.0 / Graphics.SQUARE_SIZE);
+    debugText.position.set(1, 1);
+    return debugText;
+  }
   private createBackgroundSprite (): TilingSprite {
     const bgTexture = Textures.background.clone();
     bgTexture.frame = new Rectangle(bgTexture.orig.x, bgTexture.orig.height / 2, bgTexture.orig.width, bgTexture.orig.height / 2);
@@ -217,34 +241,6 @@ export default class Graphics extends Application {
       -(Math.ceil(screenLeft) + screenLeft % (this.camera.z / Graphics.SQUARE_SIZE) - 1),
       -(Math.ceil(screenTop) + screenTop % (this.camera.z / Graphics.SQUARE_SIZE) - 1)
     );
-  }
-
-  private setupSpritesheet (cb: () => void): void {
-    const sheet = Loader.shared.resources[Graphics.SPRITESHEET_PATH].spritesheet;
-    if (!sheet) {
-      throw new Error(`File "${Graphics.SPRITESHEET_PATH} is not a valid spritesheet JSON file`);
-    }
-
-    Graphics._spriteSheet = sheet;
-    Textures.instance;
-
-    this.backgroundSprite = this.createBackgroundSprite();
-    this._layers[GraphicsLayer.Background].addChild(this.backgroundSprite);
-
-    this.debugText = this.createDebugText();
-    this._layers[GraphicsLayer.GUI].addChild(this.debugText);
-
-    cb.call(null);
-  }
-
-  private createDebugText (): Text {
-    const debugText = new Text("", {
-      fontSize: 10
-    });
-    debugText.scale.set(1.0 / Graphics.SQUARE_SIZE);
-    // debugText.anchor.set(0.5, 0.5);
-    debugText.position.set(1, 1);
-    return debugText;
   }
 
   private updateTileGUI (delta: number): void {

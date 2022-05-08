@@ -1,6 +1,6 @@
 
-import events from "events";
-import * as PIXI from "pixi.js";
+import { Application } from "pixi.js";
+import { EventEmitter } from "events";
 import Vector from "@core/vector";
 import Gui from "./gui";
 
@@ -9,24 +9,33 @@ export class BrowserMouse {
   public pressed: boolean = false;
 }
 
-export declare interface Browser {
-  on(event: "scroll", listener: (delta: number) => void): this;
-  on(event: "mouseDown", listener: (pos: Vector) => void): this;
-  on(event: "mouseUp", listener: (pos: Vector) => void): this;
-  on(event: "mouseMove", listener: (pos: Vector) => void): this;
-  on(event: "mouseClick", listener: (pos: Vector) => void): this;
-  on(event: "loaded", listener: () => void): this;
-  on(event: "resize", listener: (size: Vector, oldSize: Vector) => void): this;
-  on(event: "keyDown", listener: (keyCode: number, code: string) => void): this;
-  on(event: "keyUp", listener: (keyCode: number, code: string) => void): this;
-  on(event: "touchStart", listener: (pos: Vector) => void): this;
-  on(event: "touchMove", listener: (pos: Vector) => void): this;
-  on(event: "touchCancel", listener: (pos: Vector) => void): this;
-  on(event: "touchEnd", listener: (pos: Vector) => void): this;
-  on(event: string, listener: () => void): this;
+interface BrowserEvents {
+  "scroll": (delta: number) => void;
+  "mouseDown": (pos: Vector) => void;
+  "mouseUp": (pos: Vector) => void;
+  "mouseMove": (pos: Vector) => void;
+  "mouseClick": (pos: Vector) => void;
+  "loaded": () => void;
+  "resize": (size: Vector, oldSize: Vector) => void;
+  "keyDown": (keyCode: number, code: string) => void;
+  "keyUp": (keyCode: number, code: string) => void;
+  "touchStart": (pos: Vector) => void;
+  "touchMove": (pos: Vector) => void;
+  "touchCancel": (pos: Vector) => void;
+  "touchEnd": (pos: Vector) => void;
 }
 
-export class Browser extends events.EventEmitter {
+export declare interface Browser {
+  on<U extends keyof BrowserEvents>(
+    event: U, listener: BrowserEvents[U]
+  ): this;
+
+  emit<U extends keyof BrowserEvents>(
+    event: U, ...args: Parameters<BrowserEvents[U]>
+  ): boolean;
+}
+
+export class Browser extends EventEmitter {
   private _mouse: BrowserMouse = new BrowserMouse();
   private _gui: Gui = new Gui(this._mouse);
   private _windowSize: Vector = new Vector(window.innerWidth, window.innerHeight);
@@ -101,7 +110,7 @@ export class Browser extends events.EventEmitter {
     return result;
   }
 
-  public static addPixi (pixi: PIXI.Application): void {
+  public static addPixi (pixi: Application): void {
     document.body.append(pixi.view);
   }
 
@@ -286,6 +295,11 @@ export class Browser extends events.EventEmitter {
     // On key up
     document.addEventListener("keyup", (e: KeyboardEvent) => {
       this._onKeyUp(e.keyCode, e.code);
+    });
+
+    document.body.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      return false;
     });
 
     // Mobile-only events

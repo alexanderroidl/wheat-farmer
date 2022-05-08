@@ -1,4 +1,4 @@
-import events from "events";
+import { EventEmitter } from "events";
 import Easings from "@core/easings";
 import BitMath from "@core/bit-math";
 import MoveableSprite from "@graphics/moveable-sprite";
@@ -24,7 +24,7 @@ export declare interface World {
   ): boolean;
 }
 
-export class World extends events.EventEmitter {
+export class World extends EventEmitter {
   private _chunks: Chunks = {};
   private _player: Player = new Player();
   private _entities: Entity[] = [];
