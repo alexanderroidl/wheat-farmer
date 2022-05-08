@@ -18,12 +18,9 @@
     "types" : ["node", "offscreencanvas"],
     "paths":{
       "@base/*": ["base/*"],
-      "@browser/*": ["browser/*"],
       "@core/*": ["core/*"],
-      "@entities/*": ["entities/*"],
-      "@interfaces/*": ["interfaces/*"],
-      "@tiles/*": ["tiles/*"],
-      "@title-screen/*": ["title-screen/*"]
+      "@graphics/*": ["graphics/*"],
+      "@world/*": ["world/*"]
     }
 	},
 	"include": [

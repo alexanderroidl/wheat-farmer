@@ -1,4 +1,4 @@
-import events from "events";
+import { EventEmitter } from "events";
 import Vector from "@core/vector";
 
 export declare interface Camera {
@@ -7,7 +7,7 @@ export declare interface Camera {
   on(event: string, listener: () => void): this;
 }
 
-export class Camera extends events.EventEmitter {
+export class Camera extends EventEmitter {
   public static readonly DEFAULT_ZOOM = 1;
   public static readonly MIN_ZOOM = 0.25;
   public static readonly MAX_ZOOM = 4;

@@ -1,5 +1,5 @@
-import Graphics from "@base/graphics";
-import { Browser } from "@browser/browser";
+import Graphics from "@graphics/graphics";
+import { Browser } from "@base/browser/browser";
 import Game from "./game";
 
 const graphics = new Graphics(() => {

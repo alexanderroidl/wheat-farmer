@@ -1,24 +1,27 @@
 import events from "events";
 import Easings from "@core/easings";
 import BitMath from "@core/bit-math";
-import MoveableSprite from "@core/moveable-sprite";
+import MoveableSprite from "@graphics/moveable-sprite";
 import Vector from "@core/vector";
-import BombEntity from "@entities/bomb";
-import Entity from "@entities/entity";
-import ExplosionEntity from "@entities/explosion";
-import RobotEntity from "@entities/robot";
-import EmptyTile from "@tiles/empty-tile";
-import Tile from "@tiles/tile";
-import WallTile from "@tiles/wall-tile";
-import WheatTile from "@tiles/wheat-tile";
-import DamageEntity from "@entities/damage";
+import { Entity, BombEntity, ExplosionEntity, RobotEntity } from "@world/entities";
+import { Tile, EmptyTile, WallTile, WheatTile } from "@world/tiles";
+import DamageEntity from "@world/entities/damage";
 import { Chunk, Chunks } from "./chunk";
 import Player from "./player";
 
+interface WorldEvents {
+  "createdSprites": (sprites: MoveableSprite[]) => void;
+  "removedSprites": (sprites: MoveableSprite[]) => void;
+}
+
 export declare interface World {
-  on(event: "createdSprites", listener: (sprites: MoveableSprite[]) => void): this;
-  on(event: "removedSprites", listener: (sprites: MoveableSprite[]) => void): this;
-  on(event: string, listener: () => void): this;
+  on<U extends keyof WorldEvents>(
+    event: U, listener: WorldEvents[U]
+  ): this;
+
+  emit<U extends keyof WorldEvents>(
+    event: U, ...args: Parameters<WorldEvents[U]>
+  ): boolean;
 }
 
 export class World extends events.EventEmitter {

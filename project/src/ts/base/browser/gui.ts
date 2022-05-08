@@ -1,12 +1,12 @@
 import Vector from "@core/vector";
 import { Camera } from "@base/camera";
-import Graphics from "@base/graphics";
-import { Inventory, InventoryItem } from "@base/inventory";
-import Player from "@base/player";
-import { World } from "@base/world";
+import Graphics from "@graphics/graphics";
+import { Inventory, InventoryItem } from "@world/inventory";
+import Player from "@world/player";
+import { World } from "@world/world";
+import Tile from "@world/tiles/tile";
 import BitMath from "@core/bit-math";
 import Util from "@core/util";
-import Tile from "@tiles/tile";
 import { Browser, BrowserMouse } from "./browser";
 
 export default class Gui {

@@ -1,5 +1,5 @@
 // import { AlphaFilter } from "@pixi/filter-alpha";
-import { Textures } from "@base/textures";
+import { Textures } from "@graphics/textures";
 import Tile from "./tile";
 
 export default class EmptyTile extends Tile {

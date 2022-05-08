@@ -1,7 +1,7 @@
 import { AnimatedSprite, Filter, FrameObject, Rectangle, Texture } from "pixi.js";
-import Graphics, { GraphicsLayer } from "@base/graphics";
-import Easings from "./easings";
-import Vector from "./vector";
+import Graphics, { GraphicsLayer } from "@graphics/graphics";
+import Easings from "@core/easings";
+import Vector from "@core/vector";
 
 export default class MoveableSprite extends AnimatedSprite {
   public static readonly HOVER_OUTLINE_WIDTH = 0.5;

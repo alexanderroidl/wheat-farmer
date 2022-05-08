@@ -1,6 +1,5 @@
 import Vector from "@core/vector";
-import EmptyTile from "@tiles/empty-tile";
-import Tile from "@tiles/tile";
+import { Tile, EmptyTile } from "@world/tiles";
 
 export type Chunks = Record<number, Record<number, Chunk>>;
 

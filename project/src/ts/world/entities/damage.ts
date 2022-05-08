@@ -1,8 +1,8 @@
 import BitMath from "@core/bit-math";
 import Easings from "@core/easings";
 import Vector from "@core/vector";
-import Graphics, { GraphicsLayer } from "@base/graphics";
-import { Textures } from "@base/textures";
+import Graphics, { GraphicsLayer } from "@graphics/graphics";
+import { Textures } from "@graphics/textures";
 import Entity from "./entity";
 
 export default class DamageEntity extends Entity {
