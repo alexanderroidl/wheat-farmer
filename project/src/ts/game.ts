@@ -5,6 +5,7 @@ import { Browser } from "@base/browser/browser";
 import Vector from "@core/vector";
 import TitleScreen from "@graphics/title-screen/title-screen";
 import BombEntity from "@world/entities/bomb";
+import { UserInputHandler } from "./user-input.handler";
 
 declare global {
   interface Window {
@@ -15,21 +16,14 @@ declare global {
 }
 
 export default class Game {
-  public static readonly CLICK_COOLDOWN_MS = 350;
-  public static readonly MOUSE_DRAG_TRESHOLD = 50;
-
   private _graphics: Graphics;
   private _world: World = new World();
   private _browser: Browser = new Browser();
   private _titleScreen: TitleScreen = new TitleScreen();
-  private _timeSinceLastClick: number = 0;
+  private _userInputHandler: UserInputHandler = new UserInputHandler(this._browser);
   private _paused: boolean = false;
   private _titleScreenHiddenBefore: boolean | null = null;
   private _lastUpdateRun: number = 0;
-  private _keysPressed: string[] = [];
-  private _clickedAt: Vector | null = null;
-  private _lastMousePosition?: Vector | null;
-  private _draggingMouse: boolean = false;
 
   constructor (graphics: Graphics) {
     if (graphics.loading) {
@@ -38,15 +32,11 @@ export default class Game {
     this._graphics = graphics;
 
     this.setupWorld();
-    this.setupMouse();
-    this.setupKeyboard();
-    this.setupTouchScreen();
     this.setupCLI();
+    this._titleScreen.hidden = true;
   }
 
   private setupWorld (): void {
-    // Create and add background tile sprite
-
     // World has added sprite
     this._world.on("createdSprites", (sprites: MoveableSprite[]) => {
       sprites.forEach(sprite => {
@@ -58,7 +48,6 @@ export default class Game {
     this._world.on("removedSprites", (sprites: MoveableSprite[]) => {
       sprites.forEach(sprite => {
         this._graphics.removeChild(sprite);
-        sprite.destroy();
       });
     });
 
@@ -77,184 +66,6 @@ export default class Game {
         }
       };
     }
-  }
-
-  private setupMouse (): void {
-    this._browser.on("scroll", (delta: number) => {
-      const oldZoom = this._graphics.camera.z;
-
-      // Zoom out
-      this._graphics.camera.z -= delta / 5;
-
-      // Calculate delta for pointed at ingame coordinates before and after zoom
-      const mouseDelta = this._browser.mouse.position
-        .substract(new Vector(window.innerWidth, window.innerHeight).divide(2))
-        .divide(Graphics.SQUARE_SIZE)
-        .multiply(1 / oldZoom - 1 / this._graphics.camera.z);
-
-      // Move camera by using ingame mouse delta
-      this._graphics.camera.move(mouseDelta);
-    });
-
-    this._browser.on("mouseClick", (pos: Vector) => {
-      this._clickedAt = pos;
-
-      // Title screen was clicked
-      if (!this._titleScreen.hidden) {
-        this._titleScreen.onClick(pos);
-        this._timeSinceLastClick = 0;
-        return;
-      }
-    });
-  }
-
-  private setupKeyboard (): void {
-    this._browser.on("keyDown", (keyCode: number, code: string) => {
-      if (!this._keysPressed.includes(code)) {
-        this._keysPressed.push(code);
-      }
-    });
-
-    // On browser key up
-    this._browser.on("keyUp", (keyCode: number, code: string) => {
-      const codeIndex = this._keysPressed.indexOf(code);
-      if (codeIndex !== -1) {
-        delete this._keysPressed[codeIndex];
-      }
-    });
-  }
-
-  private setupTouchScreen (): void {
-    // On browser touch start
-    this._browser.on("touchStart", () => {
-      Sound.unlockAll();
-    });
-  }
-
-  private handleUserInput (d: number): {
-    cameraMoveDelta: Vector;
-    cameraZoomDelta: number;
-  } {
-    let cameraMoveDelta = new Vector(0);
-    let cameraZoomDelta = 0;
-
-    if (this._keysPressed.includes("KeyW")) {
-      cameraMoveDelta.y -= 0.1 * d;
-    }
-
-    if (this._keysPressed.includes("KeyA")) {
-      cameraMoveDelta.x -= 0.1 * d;
-    }
-
-    if (this._keysPressed.includes("KeyD")) {
-      cameraMoveDelta.x += 0.1 * d;
-    }
-
-    if (this._keysPressed.includes("KeyS")) {
-      cameraMoveDelta.y += 0.1 * d;
-    }
-
-    if (this._keysPressed.includes("BracketRight")) {
-      cameraZoomDelta = 0.01 * d;
-    }
-
-    if (this._keysPressed.includes("Slash")) {
-      cameraZoomDelta = -0.01 * d;
-    }
-
-    // // "Escape" pressed
-    // if (code === "Escape") {
-    //   this._titleScreen.hidden = false;
-    //   return;
-    // }
-
-    // // "S" pressed
-    // if (code === "KeyS" && this._world) {
-    //   this._paused = true;
-
-    //   // Open shop
-    //   this._browser.gui.openShop(this._world.player.items, () => {
-    //     this._paused = false;
-    //   });
-    // }
-
-    // // "E" pressed
-    // if (code === "KeyE" && this._world) {
-    //   this._paused = true;
-
-    //   // Open inventory
-    //   this._browser.gui.openInventory(this._world.player, this._world.player.items, () => {
-    //     this._paused = false;
-    //   });
-    // }
-
-    if (this._keysPressed.includes("ShiftLeft") || this._keysPressed.includes("ShiftRight")) {
-      cameraMoveDelta = cameraMoveDelta.multiply(2);
-    }
-
-    if (cameraMoveDelta.length) {
-      cameraMoveDelta = cameraMoveDelta.multiply(1 / this._graphics.camera.z);
-    }
-
-    if (this._browser.mouse.pressed) {
-      // Only drag mouse if space key is not pressed
-      if (!this._keysPressed.includes("Space")) {
-        let mouseMoveDelta: Vector = new Vector(0);
-
-        if (this._lastMousePosition) {
-          mouseMoveDelta = this._browser.mouse.position.substract(this._lastMousePosition);
-
-          if (mouseMoveDelta.length > Game.MOUSE_DRAG_TRESHOLD) {
-            const mouseDeltaWorld = mouseMoveDelta.divide(Graphics.SQUARE_SIZE * this._graphics.camera.z);
-            cameraMoveDelta = cameraMoveDelta.add(mouseDeltaWorld.multiply(-1));
-            this._draggingMouse = true;
-          }
-        }
-
-        if (this._lastMousePosition == null || mouseMoveDelta.length > Game.MOUSE_DRAG_TRESHOLD) {
-          this._lastMousePosition = new Vector(this._browser.mouse.position);
-        }
-      } else { // Holding space key
-        // Simulate click when moving mouse
-        this._clickedAt = new Vector(this._browser.mouse.position);
-      }
-    } else {
-      this._lastMousePosition = null;
-    }
-
-    return {
-      cameraMoveDelta,
-      cameraZoomDelta
-    };
-  }
-
-  private handleUserClickAndDrag (d: number): boolean {
-    // Trigger click on tile if mouse is down
-    let clicked = false;
-
-    // Stopped dragging mouse
-    if (this._draggingMouse && !this._lastMousePosition) {
-      this._clickedAt = null;
-      this._draggingMouse = false;
-    }
-
-    if (this._clickedAt !== null) {
-      if (this._timeSinceLastClick > Game.CLICK_COOLDOWN_MS) {
-        clicked = true;
-
-        const worldPos = this._graphics.getWorldPosFromScreen(this._clickedAt);
-        this._clickedAt = null;
-
-        if (this._keysPressed.includes("ShiftLeft")) {
-          const radius = Math.floor(Math.random() * (BombEntity.maxExplosionRadius + 1));
-          this._world.createExplosion(worldPos, radius, BombEntity.maxExplosionRadius);
-        } else {
-          this._world.onTileClicked(worldPos.floor());
-        }
-      }
-    }
-
-    return clicked;
   }
 
   private updateTitleScreen (dMs: number): void {
@@ -288,13 +99,67 @@ export default class Game {
     }
   }
 
+  private processUserInput (d: number): void {
+    const {
+      clickedScreenPos,
+      cameraDragDelta,
+      cameraMoveDelta,
+      cameraZoomDelta,
+      scrollDelta
+    } = this._userInputHandler.process(d);
+
+    let totalCameraMoveDelta = cameraMoveDelta;
+
+    if (clickedScreenPos instanceof Vector) {
+      if (!this._titleScreen.hidden) {
+        this._titleScreen.onClick(clickedScreenPos);
+        return;
+      }
+
+      const worldPos = this._graphics.getWorldPosFromScreen(clickedScreenPos);
+
+      if (this._userInputHandler.isKeyPressed("ShiftLeft")) {
+        const radius = Math.floor(Math.random() * (BombEntity.maxExplosionRadius + 1));
+        this._world.createExplosion(worldPos, radius, BombEntity.maxExplosionRadius);
+      } else {
+        this._world.onTileClicked(worldPos.floor());
+      }
+    }
+
+    // Is dragging mouse
+    if (cameraDragDelta.length) {
+      const mouseDeltaWorld = cameraDragDelta.divide(Graphics.SQUARE_SIZE * this._graphics.camera.z);
+      totalCameraMoveDelta = totalCameraMoveDelta.substract(mouseDeltaWorld);
+    }
+    totalCameraMoveDelta = totalCameraMoveDelta.divide(this._graphics.camera.z);
+
+    // Is scrolling
+    if (scrollDelta) {
+      const oldZoom = this._graphics.camera.z;
+
+      // Zoom out
+      this._graphics.camera.z -= scrollDelta / 5;
+
+      // Calculate delta for pointed at ingame coordinates before and after zoom
+      const mouseDelta = this._browser.mouse.position
+        .substract(new Vector(window.innerWidth, window.innerHeight).divide(2))
+        .divide(Graphics.SQUARE_SIZE)
+        .multiply(1 / oldZoom - 1 / this._graphics.camera.z);
+
+      // Move camera by using ingame mouse delta
+      totalCameraMoveDelta = totalCameraMoveDelta.add(mouseDelta);
+    }
+
+    this._graphics.update(d, totalCameraMoveDelta, cameraZoomDelta);
+  }
+
   private update (d: number): void {
     const delta = Date.now() - this._lastUpdateRun;
     this._lastUpdateRun = Date.now();
 
-    const { cameraMoveDelta, cameraZoomDelta } = this.handleUserInput(d);
-    this._graphics.update(d, cameraMoveDelta, cameraZoomDelta);
+    this.processUserInput(d);
 
+    // Update title screen
     this.updateTitleScreen(delta);
 
     // // Stop here if game is currently paused
@@ -305,9 +170,5 @@ export default class Game {
     // Update world
     this._world.update(delta);
     this.updateDebug(d);
-
-    // Trigger click on tile if mouse is down
-    const userIsClicking = this.handleUserClickAndDrag(d);
-    this._timeSinceLastClick = userIsClicking ? 0 : this._timeSinceLastClick + delta;
   }
 }
