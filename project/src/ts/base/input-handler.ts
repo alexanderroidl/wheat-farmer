@@ -2,7 +2,7 @@ import Sound from "@base/sound";
 import { Browser } from "@base/browser/browser";
 import Vector from "@core/vector";
 
-export class UserInputHandler {
+export default class InputHandler {
   public static readonly CLICK_COOLDOWN_MS = 350;
   public static readonly MOUSE_DRAG_TRESHOLD = 50;
 
@@ -45,7 +45,7 @@ export class UserInputHandler {
     }
 
     if (this._clickedAt !== null) {
-      if (this._timeSinceLastClick > UserInputHandler.CLICK_COOLDOWN_MS) {
+      if (this._timeSinceLastClick > InputHandler.CLICK_COOLDOWN_MS) {
         clickedScreenPos = new Vector(this._clickedAt);
         this._clickedAt = null;
         this._timeSinceLastClick = 0;
@@ -143,14 +143,12 @@ export class UserInputHandler {
         if (this._lastMousePosition) {
           mouseMoveDelta = this._browser.mouse.position.substract(this._lastMousePosition);
 
-          if (mouseMoveDelta.length > UserInputHandler.MOUSE_DRAG_TRESHOLD) {
-            // const mouseDeltaWorld = mouseMoveDelta.divide(Graphics.SQUARE_SIZE * this._graphics.camera.z);
-            // cameraMoveDelta = cameraMoveDelta.substract(mouseDeltaWorld);
+          if (mouseMoveDelta.length > InputHandler.MOUSE_DRAG_TRESHOLD) {
             cameraDragDelta = mouseMoveDelta;
           }
         }
 
-        if (this._lastMousePosition == null || mouseMoveDelta.length > UserInputHandler.MOUSE_DRAG_TRESHOLD) {
+        if (this._lastMousePosition == null || mouseMoveDelta.length > InputHandler.MOUSE_DRAG_TRESHOLD) {
           this._lastMousePosition = new Vector(this._browser.mouse.position);
         }
       } else { // Holding space key
