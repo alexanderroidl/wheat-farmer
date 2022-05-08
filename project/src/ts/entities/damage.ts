@@ -1,11 +1,13 @@
 import BitMath from "@core/bit-math";
 import Easings from "@core/easings";
 import Vector from "@core/vector";
-import Graphics from "@base/graphics";
+import Graphics, { GraphicsLayer } from "@base/graphics";
 import { Textures } from "@base/textures";
 import Entity from "./entity";
 
 export default class DamageEntity extends Entity {
+  public layer: GraphicsLayer = GraphicsLayer.Background;
+
   public readonly name: string = "Damage";
 
   constructor (damage: number) {

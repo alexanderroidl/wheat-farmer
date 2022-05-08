@@ -23,7 +23,6 @@ export declare interface World {
 
 export class World extends events.EventEmitter {
   private _chunks: Chunks = {};
-  private _createdAt: number = Date.now();
   private _player: Player = new Player();
   private _entities: Entity[] = [];
   private _plantedTilesPerMin: number[] = [];
@@ -32,10 +31,6 @@ export class World extends events.EventEmitter {
 
   constructor () {
     super();
-  }
-
-  public get createdAt (): number {
-    return this._createdAt;
   }
 
   public get player (): Player {
@@ -211,6 +206,7 @@ export class World extends events.EventEmitter {
 
     return wheatTilePositions[BitMath.floor(Math.random() * wheatTilePositions.length)];
   }
+  
   public create <A extends MoveableSprite> (moveableSprite: { new(): A }, pos: Vector): A {
     const newSprite = new moveableSprite();
 
