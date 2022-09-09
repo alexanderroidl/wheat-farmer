@@ -6,7 +6,7 @@ import Vector from "@core/vector";
 export default class MoveableSprite extends AnimatedSprite {
   public static readonly HOVER_OUTLINE_WIDTH = 0.5;
 
-  public hitArea: Rectangle;
+  public hitArea!: Rectangle;
   public interactive: boolean = true;
   public outlineOnHover: boolean = false;
   public speed: number = 0;
@@ -14,8 +14,7 @@ export default class MoveableSprite extends AnimatedSprite {
   public moveStartDistance: number | null = null;
   public sourceFrames: string[] = [];
   public layer: GraphicsLayer = GraphicsLayer.Background;
-
-  protected dimensions: Vector = new Vector(1, 1);
+  private _dimensions!: Vector;
 
   private _hovered: boolean = false;
   private _moveTarget: Vector | null = null;
@@ -23,14 +22,9 @@ export default class MoveableSprite extends AnimatedSprite {
   constructor (textures: Texture[] | FrameObject[]) {
     super([Texture.EMPTY]);
 
+    this.dimensions = new Vector(1, 1);
     this.textures = textures;
     this.scale.set(1.0 / Graphics.SQUARE_SIZE);
-    this.hitArea = new Rectangle(
-      0,
-      0,
-      Graphics.SQUARE_SIZE * this.dimensions.x,
-      Graphics.SQUARE_SIZE * this.dimensions.y
-    );
 
     this.on("mouseover", () => {
       this._hovered = true;
@@ -68,6 +62,10 @@ export default class MoveableSprite extends AnimatedSprite {
     return this._hovered;
   }
 
+  public get dimensions (): Vector {
+    return this._dimensions;
+  }
+
   public set renderOffset (offset: Vector) {
     this.pivot.set(-offset.x * this.parent.scale.x, -offset.y * this.parent.scale.y);
   }
@@ -86,6 +84,16 @@ export default class MoveableSprite extends AnimatedSprite {
 
   public set textures (textures: Texture[] | FrameObject[]) {
     super.textures = Graphics.getTrimmedTexturesForDimensions(textures, this.dimensions);
+  }
+
+  public set dimensions (dimensions: Vector) {
+    this._dimensions = dimensions;
+    this.hitArea = new Rectangle(
+      0,
+      0,
+      Graphics.SQUARE_SIZE * dimensions.x,
+      Graphics.SQUARE_SIZE * dimensions.y
+    );
   }
 
   public static getFrameObjects (textures: Texture[], time: number): FrameObject[] {

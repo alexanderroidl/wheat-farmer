@@ -1,5 +1,7 @@
+import SimplexNoise from "simplex-noise";
 import Vector from "@core/vector";
 import { Tile, EmptyTile } from "@world/tiles";
+import PalmTile from "./tiles/palm-tile";
 
 export type Chunks = Record<number, Record<number, Chunk>>;
 
@@ -13,9 +15,9 @@ export class Chunk {
   private _loaded?: boolean;
   private _tiles: Tile[];
 
-  constructor (position: Vector) {
+  constructor (position: Vector, simplex: SimplexNoise) {
     this.position = position;
-    this._tiles = this.generateTiles();
+    this._tiles = this.generateTiles(simplex);
     this.loaded = true;
   }
 
@@ -76,13 +78,61 @@ export class Chunk {
     }
   }
 
-  private generateTiles (): Tile[] {
-    return new Array(Chunk.SIZE).fill(null).map((tile, tileIndex) => {
-      const emptyTile = new EmptyTile();
-      const x = tileIndex % Chunk.WIDTH;
-      const y = Math.floor(tileIndex / Chunk.WIDTH);
-      emptyTile.position.set(this.x * Chunk.WIDTH + x, this.y * Chunk.HEIGHT + y);
-      return emptyTile;
-    });
+  private generateTiles (simplex: SimplexNoise): Tile[] {
+    const blueNoise: number[][] = [];
+    const tiles = [];
+    const R = 50;
+
+    const noise = (nx: number, ny: number): number => {
+      // Rescale from -1.0:+1.0 to 0.0:1.0
+      return simplex.noise2D(nx, ny) / 2 + 0.5;
+    };
+
+    for (let y = 0; y < Chunk.HEIGHT; y++) {
+      blueNoise[y] = [];
+
+      for (let x = 0; x < Chunk.WIDTH; x++) {
+        const nx = (x * this.x) / Chunk.WIDTH - 0.5;
+        const ny = (y * this.y) / Chunk.HEIGHT - 0.5;
+
+        // blue noise is high frequency; try varying this
+        blueNoise[y][x] = noise(50 * nx, 50 * ny);
+      }
+    }
+
+    for (let yc = 0; yc < Chunk.HEIGHT; yc++) {
+      for (let xc = 0; xc < Chunk.WIDTH; xc++) {
+        const generatedTileIndex = xc + yc * Chunk.WIDTH;
+        let max = 0;
+
+        for (let yn = yc - R; yn <= yc + R; yn++) {
+          for (let xn = xc - R; xn <= xc + R; xn++) {
+            if (0 <= yn && yn < Chunk.HEIGHT && 0 <= xn && xn < Chunk.WIDTH) {
+              const e = blueNoise[yn][xn];
+
+              if (e > max) {
+                max = e;
+              }
+            }
+          }
+        }
+
+        let generatedTile;
+        if (blueNoise[yc][xc] === max) {
+          generatedTile = new PalmTile();
+        } else {
+          generatedTile = new EmptyTile();
+        }
+
+        generatedTile.position.set(
+          this.x * Chunk.WIDTH + xc,
+          this.y * Chunk.HEIGHT + yc
+        );
+
+        tiles[generatedTileIndex] = generatedTile;
+      }
+    }
+
+    return tiles;
   }
 }

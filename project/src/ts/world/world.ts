@@ -9,6 +9,8 @@ import DamageEntity from "@world/entities/damage";
 import { Chunk, Chunks } from "./chunk";
 import Player from "./player";
 import { Rectangle } from "pixi.js";
+import SimplexNoise from "simplex-noise";
+import Graphics from "@graphics/graphics";
 
 interface WorldEvents {
   "createdSprites": (sprites: MoveableSprite[]) => void;
@@ -32,6 +34,7 @@ export class World extends EventEmitter {
   private _plantedTilesPerMin: number[] = [];
   private _enemyGroupsPerMin: number[] = [];
   private _enemiesScheduledToSpawn: number = 0;
+  private _simplex: SimplexNoise = new SimplexNoise();
 
   constructor () {
     super();
@@ -295,15 +298,16 @@ export class World extends EventEmitter {
 
   public updateChunksForWorldViewport (worldView: Rectangle): void {
     const chunksToKeep: Chunk[] = [];
-    const worldViewChunkCoords = this.getChunkCoordsForWorldViewport(worldView);
+    const { chunkCoords } = Graphics.getChunkCoordsForWorldViewport(worldView);
 
-    for (const worldViewChunkPos of worldViewChunkCoords) {
+    for (const worldViewChunkPos of chunkCoords) {
       const chunk = this.getChunk(worldViewChunkPos) ?? this.newChunkAt(worldViewChunkPos);
       chunk.loaded = true;
       chunksToKeep.push(chunk);
     }
 
-    for (const loadedChunk of this.getChunks(true)) {
+    const loadedChunks = this.getChunks(true);
+    for (const loadedChunk of loadedChunks) {
       if (!chunksToKeep.includes(loadedChunk)) {
         loadedChunk.loaded = false;
       }
@@ -411,7 +415,7 @@ export class World extends EventEmitter {
     if (!this._chunks[chunkPos.y]) {
       this._chunks[chunkPos.y] = {};
     }
-    const chunk = new Chunk(chunkPos);
+    const chunk = new Chunk(chunkPos, this._simplex);
     chunk.position = new Vector(chunkPos);
     for (const tile of chunk.tiles) {
       this.emit("createdSprites", [tile]);
@@ -443,25 +447,5 @@ export class World extends EventEmitter {
       }
     }
     return chunks;
-  }
-
-  private getChunkCoordsForWorldViewport (worldView: Rectangle): Vector[] {
-    const chunkMin =
-      new Vector(
-        Math.trunc(worldView.x / Chunk.WIDTH),
-        Math.trunc(worldView.y / Chunk.HEIGHT)
-      ).substract(1);
-
-    const chunkGrid =
-      new Vector(worldView.width, worldView.height)
-        .divide(Chunk.DIMENSIONS)
-        .ceil()
-        .add(1);
-
-    return Array(chunkGrid.x * chunkGrid.y).fill(null).map((_value: null, chunkIndex: number) => {
-      const chunkX = chunkIndex % chunkGrid.x;
-      const chunkY = Math.floor(chunkIndex / chunkGrid.y);
-      return chunkMin.add(chunkX, chunkY);
-    });
   }
 }

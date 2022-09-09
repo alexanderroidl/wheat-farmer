@@ -8,6 +8,7 @@ import Tile from "@world/tiles/tile";
 import BitMath from "@core/bit-math";
 import Util from "@core/util";
 import { Browser, BrowserMouse } from "./browser";
+import { Chunk } from "@world/chunk";
 
 export default class Gui {
   private _mouse: BrowserMouse;
@@ -327,29 +328,30 @@ export default class Gui {
     return `
       <strong>Mouse${(this._mouse.pressed ? " (down)" : "")}:</strong><br>
       <strong>Screen:</strong> ${this._mouse.position}<br>
-      <strong>World:</strong> ${mouseWorldPos}
+      <strong>World:</strong> ${mouseWorldPos}<br>
+      <strong>Chunk:</strong> ${mouseWorldPos.divide(Chunk.DIMENSIONS).floor()}
     `;
   }
 
   private getGraphicsDebugHTML (graphics: Graphics, fps: number): string {
-    const camera = graphics.camera;
+    const viewportWorldBounds = graphics.getViewportWorldBounds();
+    const viewportWorldBoundsOffset = new Vector(viewportWorldBounds.x, viewportWorldBounds.y);
+    const viewportWorldBoundsSize = new Vector(viewportWorldBounds.width, viewportWorldBounds.height);
 
-    const xStart = BitMath.floor(camera.x / (Graphics.SQUARE_SIZE * camera.z));
-    const xEnd = BitMath.ceil((camera.x + window.innerWidth) / (Graphics.SQUARE_SIZE * camera.z));
-    const yStart = BitMath.floor(camera.y / (Graphics.SQUARE_SIZE * camera.z));
-    const yEnd = BitMath.ceil((camera.y + window.innerHeight) / (Graphics.SQUARE_SIZE * camera.z));
-
+    const { chunkMin, chunkGrid } = Graphics.getChunkCoordsForWorldViewport(viewportWorldBounds);
     return `
-      <strong>graphics:</strong><br>
-      <strong>X:</strong> (${xStart}, ${xEnd})<br> 
-      <strong>Y:</strong> (${yStart}, ${yEnd})<br>
-      <strong>FPS:</strong> ${fps.toFixed(1)}
+      <strong>Graphics:</strong><br>
+      <strong>FPS:</strong> ${fps.toFixed(1)}<br>
+      <strong>Viewport Bounds:</strong><br>
+      (${viewportWorldBoundsOffset}) (${viewportWorldBoundsSize})<br>
+      <strong>Chunk Min:</strong> ${chunkMin}<br>
+      <strong>Chunk Grid:</strong> ${chunkGrid}
     `;
   }
 
   private getMiscDebugHTML (world: World): string {
     return `
-            <strong>Tiles/Min:</strong> ${world.tilesPlantedPerMin}
-        `;
+      <strong>Tiles/Min:</strong> ${world.tilesPlantedPerMin}
+    `;
   }
 }

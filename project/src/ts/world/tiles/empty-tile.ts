@@ -9,7 +9,7 @@ export default class EmptyTile extends Tile {
   // private _alphaFilter: AlphaFilter = new AlphaFilter(0.5);
 
   constructor () {
-    super([Textures.empty, Textures.wheat[0]]);
+    super([Textures.notFound, Textures.wheat[0]]);
   }
 
   public updateTile (d: number): void {

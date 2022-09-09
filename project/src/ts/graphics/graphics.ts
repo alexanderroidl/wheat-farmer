@@ -10,6 +10,7 @@ import {
   Text,
   Texture,
   TilingSprite
+  // Graphics as PIXIGraphics
 } from "pixi.js";
 import Tile from "@world/tiles/tile";
 import WheatTile from "@world/tiles/wheat-tile";
@@ -20,6 +21,7 @@ import { Camera } from "@base/camera";
 import { InventoryItem } from "@world/inventory";
 import { ProgressBar } from "./progress-bar";
 import { Textures } from "./textures";
+import { Chunk } from "@world/chunk";
 
 export enum GraphicsLayer {
   Background,
@@ -44,6 +46,7 @@ export default class Graphics extends Application {
   private _layers: Container[] = [];
   private _growthProgressBar: ProgressBar = new ProgressBar(0x00FF00);
   private _damageProgressBar: ProgressBar = new ProgressBar(0xFF0000);
+  // private _chunkBorders: PIXIGraphics[] = [];
 
   constructor (cb: () => void) {
     super({
@@ -112,6 +115,45 @@ export default class Graphics extends Application {
     }) as T;
   }
 
+  public static getChunkCoordsForWorldViewport (worldView: Rectangle): {
+    chunkCoords: Vector[];
+    chunkMin: Vector;
+    chunkGrid: Vector;
+  } {
+    const worldViewChunkCoords =
+      new Vector(worldView.x, worldView.y)
+        .divide(Chunk.DIMENSIONS);
+
+    // const worldViewOffset = new Vector(worldView.x, worldView.y);
+
+    const chunkMin =
+      // worldViewOffset.substract(worldViewOffset.mod(Chunk.DIMENSIONS));
+      new Vector(
+        Math.floor(worldViewChunkCoords.x),
+        Math.floor(worldViewChunkCoords.y)
+      //   // Math.sign(worldViewChunkCoords.x) * Math.floor(Math.abs(worldViewChunkCoords.x)),
+      //   // Math.sign(worldViewChunkCoords.y) * Math.floor(Math.abs(worldViewChunkCoords.y))
+      );
+
+    const chunkGrid =
+      new Vector(worldView.width, worldView.height)
+        .divide(Chunk.DIMENSIONS)
+        .ceil()
+        .add(1);
+
+    const chunkCoords = [];
+    for (let chunkY = 0; chunkY < chunkGrid.y; chunkY++) {
+      for (let chunkX = 0; chunkX < chunkGrid.x; chunkX++) {
+        chunkCoords.push(chunkMin.add(chunkX, chunkY));
+      }
+    }
+    return {
+      chunkCoords,
+      chunkGrid,
+      chunkMin
+    };
+  }
+
   public addChild (...children: MoveableSprite[]): void {
     for (const child of children) {
       this._layers[child.layer].addChild(child);
@@ -154,6 +196,7 @@ export default class Graphics extends Application {
 
     this.updateBackgroundSprite();
     this.updateTileGUI();
+    this.updateChunkBorders();
   }
 
   private setupLayers (): void {
@@ -216,6 +259,7 @@ export default class Graphics extends Application {
     debugText.position.set(1, 1);
     return debugText;
   }
+
   private createBackgroundSprite (): TilingSprite {
     const bgTexture = Textures.background.clone();
     bgTexture.frame = new Rectangle(bgTexture.orig.x, bgTexture.orig.height / 2, bgTexture.orig.width, bgTexture.orig.height / 2);
@@ -266,5 +310,25 @@ export default class Graphics extends Application {
 
     this._growthProgressBar.update();
     this._damageProgressBar.update();
+  }
+
+  private updateChunkBorders (): void {
+    // for (const chunkBorder of this._chunkBorders) {
+    //   chunkBorder.clear();
+    //   this._layers[GraphicsLayer.GUI].removeChild(chunkBorder);
+    //   chunkBorder.destroy();
+    // }
+    // const chunks = Graphics.getChunkCoordsForWorldViewport(this.getViewportWorldBounds());
+    // this._chunkBorders = chunks.map((chunk: Vector) => {
+    //   const chunkGraphics = new PIXIGraphics();
+    //   chunkGraphics.position.set(chunk.x * Chunk.WIDTH, chunk.x * Chunk.HEIGHT);
+    //   chunkGraphics.beginFill(0xFFFFFF * Math.random());
+    //   this._layers[GraphicsLayer.GUI].addChild(chunkGraphics);
+    //   return chunkGraphics;
+    // });
+    // for (const chunkBorder of this._chunkBorders) {
+    //   chunkBorder.drawRect(0, 0, Chunk.WIDTH, Chunk.HEIGHT);
+    //   chunkBorder.endFill();
+    // }
   }
 }

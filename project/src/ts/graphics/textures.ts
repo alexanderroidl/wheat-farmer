@@ -18,6 +18,10 @@ class TextureSources {
     "wheat 9",
     "wheat 10"
   ];
+  public static readonly palmTree: string[] = [
+    "palmtree 0",
+    "palmtree 1"
+  ];
   public static readonly explosion: string[] = [
     "explosion 0",
     "explosion 1",
@@ -85,6 +89,7 @@ export class Textures {
   notFound: Texture;
   background: Texture;
   wheat: Texture[];
+  palmTree: Texture[];
   explosion: Texture[];
   robot: RobotTextureGroups;
   bomb: Texture[];
@@ -96,6 +101,7 @@ export class Textures {
     this.notFound = Graphics.getTexture(TextureSources.notFound);
     this.background = Graphics.getTexture(TextureSources.background);
     this.wheat = Graphics.getTextures(TextureSources.wheat);
+    this.palmTree = Graphics.getTextures(TextureSources.palmTree);
     this.explosion = Graphics.getTextures(TextureSources.explosion);
     this.robot = {
       red: Graphics.getTextures(TextureSources.robot.red),
@@ -122,6 +128,10 @@ export class Textures {
 
   public static get wheat (): Texture[] {
     return Textures.instance.wheat;
+  }
+
+  public static get palmTree (): Texture[] {
+    return Textures.instance.palmTree;
   }
 
   public static get explosion (): Texture[] {
